@@ -82,14 +82,75 @@
         .delay-12 { animation-delay: 0.6s; }
         .delay-13 { animation-delay: 0.65s; }
         .delay-14 { animation-delay: 0.7s; }
+        /* Top navigation bar */
+        .top-nav {
+            width: 100%;
+            max-width: 80rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 1rem;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: #4B5563;
+            font-weight: 500;
+        }
+
+        .welcome-text span {
+            color: #E31B23;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background-color: #FFFFFF;
+            color: #E31B23;
+            border: 1.5px solid #E31B23;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-logout:hover {
+            background-color: #E31B23;
+            color: #FFFFFF;
+        }
     </style>
+
+    <script>
+        // Proteksi halaman: cek apakah user sudah login
+        (function() {
+            if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+                window.location.href = "login.html";
+            }
+        })();
+    </script>
 </head>
 <body class="text-gray-900 min-h-screen flex flex-col items-center py-12 px-4 md:px-8">
+
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav animate-fade-up">
+        <span class="welcome-text">Selamat datang, <span id="displayUsername"></span></span>
+        <button class="btn-logout" id="btnLogout">
+            <i class="ph ph-sign-out"></i>
+            Keluar
+        </button>
+    </nav>
 
     <header class="w-full max-w-5xl flex flex-col items-center mb-12 text-center animate-fade-up">
         <!-- Logo dengan aksen garis merah khas SIG -->
         <div class="w-24 h-24 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 overflow-hidden border-2 border-sig-red">
-            <img src="https://placehold.co/120x120/FFFFFF/E31B23?text=SIG" alt="Logo SIG" class="w-full h-full object-cover">
+            <img src="./logo/logosig.png" alt="Logo SIG" class="w-full h-full object-cover">
         </div>
         
         <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-sig-black">
@@ -203,6 +264,21 @@
         </a>
 
     </main>
+
+    <script>
+        // Tampilkan username yang login
+        document.addEventListener("DOMContentLoaded", function() {
+            const username = sessionStorage.getItem('username') || 'User';
+            document.getElementById('displayUsername').textContent = username;
+
+            // Tombol Logout
+            document.getElementById('btnLogout').addEventListener('click', function() {
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('username');
+                window.location.href = "login.html";
+            });
+        });
+    </script>
 
 </body>
 </html>

@@ -1,23 +1,32 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // Jika sudah login, langsung ke dashboard
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        window.location.href = "dashboard.html";
+        return;
+    }
+
     const loginForm = document.getElementById('loginForm');
 
     loginForm.addEventListener('submit', function(event) {
         event.preventDefault(); // Mencegah halaman refresh otomatis
         
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
         
         if (username !== '' && password !== '') {
-            // Animasi atau proses sederhana saat tombol ditekan
+            // Animasi loading saat tombol ditekan
             const btn = document.querySelector('.btn-login');
             btn.innerHTML = "Memproses...";
+            btn.disabled = true;
             
             setTimeout(() => {
-                alert(`Login simulasi berhasil! \nSelamat datang, ${username}.`);
-                btn.innerHTML = "Masuk";
-                // Nanti bisa diganti dengan kode pindah halaman:
-                // window.location.href = "dashboard.html";
-            }, 1000); // Jeda 1 detik seolah-olah sedang loading
+                // Simpan sesi login
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('username', username);
+
+                // Redirect ke dashboard
+                window.location.href = "dashboard.html";
+            }, 1000); // Jeda 1 detik untuk efek loading
         }
     });
 });
