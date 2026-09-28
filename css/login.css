@@ -1,0 +1,102 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-wrapper {
+    width: 100%;
+    /* Lebar aslinya 400px, sekarang dilebarkan menjadi 550px */
+    max-width: 550px; 
+    padding: 20px;
+}
+
+.login-card {
+    background-color: #ffffff;
+    /* Menambah ruang kosong di kiri-kanan dari 30px menjadi 50px agar isinya tidak terlalu mepet ke pinggir saat dilebarkan */
+    padding: 40px 50px; 
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+/* 1. Memperbesar Logo */
+.logo {
+    max-width: 180px; /* Sebelumnya 140px, sekarang diperbesar */
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* 2. Memperbesar Judul dan Teks Deskripsi */
+.login-card h2 {
+    color: #333333;
+    font-size: 28px; /* Diperbesar dari 24px */
+    margin-bottom: 8px;
+}
+
+.login-card p {
+    color: #666666;
+    font-size: 16px; /* Diperbesar dari 14px */
+    margin-bottom: 35px;
+}
+
+/* Memastikan seluruh isi input-group rata kiri */
+.input-group {
+    text-align: left; 
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* Mengatur label (Username / Email & Password) */
+.input-group label {
+    display: block;
+    color: #333333; /* Warna abu-abu gelap agar mudah dibaca */
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* Mengatur kotak ketikan (input) */
+.input-group input {
+    width: 100%;
+    padding: 12px 15px; /* Memberi jarak agar teks/kursor tidak menempel di garis tepi */
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box; /* Sangat penting agar padding tidak merusak ukuran kotak */
+    transition: border-color 0.3s ease;
+}
+
+/* Efek saat kotak diklik (fokus) */
+.input-group input:focus {
+    outline: none;
+    border-color: #d1121c; /* Warna merah saat aktif */
+}
+
+/* Mengatur tombol Masuk */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background-color: #d1121c; /* Merah SIG */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px; /* Jarak antara password dan tombol */
+    transition: background-color 0.3s ease;
+}
+
+.btn-login:hover {
+    background-color: #a80e16;
+}

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form BA Serah Terima Dokumen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tambahkan Library html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #333333;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #222; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        .a4-paper {
+            font-family: 'Times New Roman', Times, serif;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 20mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            color: black;
+            font-size: 11pt;
+            line-height: 1.5;
+            box-sizing: border-box; 
+        }
+
+        .a4-paper h1, .a4-paper h2, .a4-paper h3 {
+            text-align: center;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .a4-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .a4-table th, .a4-table td {
+            border: 1px solid black;
+            padding: 6px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .a4-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+        .a4-table .col-no { width: 5%; text-align: center; }
+        .a4-table .col-nama { width: 45%; }
+        .a4-table .col-nomor { width: 50%; }
+
+        .hidden-mode { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- ==================== BAGIAN 1: FORM INPUT ==================== -->
+    <div id="formSection" class="flex justify-center py-10 px-4 bg-[#F3F4F6] min-h-screen transition-all">
+        <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-fit">
+            
+            <div class="text-center mb-8">
+                <h2 class="text-xl font-bold text-[#1e293b] leading-tight">BA SERAH TERIMA DOKUMEN<br>PERMINTAAN PEMILIHAN PENYEDIA</h2>
+                <p class="text-sm text-gray-500 mt-2">Isi formulir sesuai dengan dokumen yang tersedia.</p>
+            </div>
+
+            <form id="baForm" class="flex flex-col gap-5">
+                
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Berita Acara</label>
+                    <input type="text" id="inNoBa" placeholder="Contoh: 1223" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Barang dan/atau Jasa</label>
+                    <input type="text" id="inNamaBarang" placeholder="Contoh: pisang" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor SKD/Surat Pembentukan Panitia Pengadaan</label>
+                    <input type="text" id="inNoSkd" placeholder="Contoh: 000" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Pembentukan Panitia Pengadaan</label>
+                    <input type="date" id="inTglSkd" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </div>
+
+                <div class="mt-2">
+                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Dokumen yang Diserahterimakan</label>
+                    <div id="dokumenContainer" class="flex flex-col gap-2">
+                        <div class="flex gap-2 items-center row-dokumen">
+                            <input type="text" placeholder="Nama Dokumen" class="in-dok-nama flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <input type="text" placeholder="Nomor Dokumen" class="in-dok-nomor flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <input type="date" class="in-dok-tgl flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-dokumen" disabled>
+                                <i class="ph ph-x text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" id="btnTambahDokumen" class="w-full mt-3 border border-dashed border-blue-400 text-blue-500 hover:bg-blue-50 rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                        <i class="ph ph-plus"></i> Tambah Dokumen
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tempat</label>
+                        <input type="text" id="inTempat" placeholder="Contoh: Padang" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Berita Acara</label>
+                        <input type="date" id="inTglBa" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Pejabat</label>
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pejabat yang Berwenang</label>
+                            <input type="text" id="inNamaPejabat" placeholder="Contoh: isan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Jabatan</label>
+                            <input type="text" id="inJabatan" placeholder="Contoh: ceo" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-t border-gray-100 pt-4">
+                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Panitia Pengadaan</label>
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Ketua Panitia Pengadaan</label>
+                            <input type="text" id="inKetua" placeholder="Contoh: maira" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
+                            <input type="text" id="inNamaPengadaan" placeholder="Otomatis mengikuti Nama Barang dan/atau Jasa" class="w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-500 cursor-not-allowed" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-[1fr_1fr_1fr] gap-3 mt-6 pt-4 border-t border-gray-100">
+                    <a href="index.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium flex items-center justify-center transition-colors">
+                        Kembali
+                    </a>
+                    <button type="button" id="btnView" class="bg-[#0ea5e9] hover:bg-blue-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors border border-blue-600 shadow-sm focus:ring-2 focus:ring-blue-400">
+                        <i class="ph-fill ph-eye text-lg"></i> View
+                    </button>
+                    <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                        <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (A4) ==================== -->
+    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4">
+        
+        <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
+            <div class="flex items-center gap-3">
+                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Kembali ke Editor">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </button>
+                <span class="text-sm font-medium truncate">Preview Dokumen: BA_Serah_Terima.pdf</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btnDownloadToolbar" class="p-2 hover:bg-white/10 rounded transition-colors" title="Download PDF">
+                    <i class="ph ph-download-simple text-xl"></i>
+                </button>
+                <button type="button" class="p-2 hover:bg-white/10 rounded transition-colors"><i class="ph ph-printer text-xl"></i></button>
+            </div>
+        </div>
+
+        <div class="a4-paper" id="dokumenA4">
+            
+            <!-- Tambahan Logo SIG -->
+            <div class="mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Semen_Indonesia_logo.svg/512px-Semen_Indonesia_logo.svg.png" crossorigin="anonymous" alt="Logo SIG" style="height: 30px;">
+            </div>
+
+            <h3>BERITA ACARA SERAH TERIMA</h3>
+            <h3 class="mb-4">DOKUMEN PERMINTAAN PEMILIHAN PENYEDIA</h3>
+            <p class="text-center mb-6">No. <span id="outNoBa">........................................</span></p>
+
+            <p class="text-justify mb-4">
+                Berdasarkan Permintaan Pengadaan <span id="outNamaBarang">........................................</span> dan SKD/Surat Pembentukan Panitia Pengadaan no. <span id="outNoSkd">........................................</span> tanggal <span id="outTglSkd">..............................</span>, dengan ini telah dilakukan serah terima dokumen Permintaan Pengadaan berupa:
+            </p>
+
+            <table class="a4-table" id="outTableDokumen">
+                <thead>
+                    <tr>
+                        <th class="col-no">No</th>
+                        <th class="col-nama">Nama Dokumen</th>
+                        <th class="col-nomor">Nomor dan Tanggal Dokumen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Baris tabel generate otomatis -->
+                </tbody>
+            </table>
+
+            <p class="text-justify mt-4 mb-8">
+                Dengan ditandatanganinya Berita Acara ini, maka dokumen Permintaan Pemilihan Penyedia dinyatakan lengkap dan dapat dilanjutkan ke proses berikutnya sesuai Pedoman Pengadaan Barang dan/atau Jasa nomor M/SIG/PRO/002.
+            </p>
+
+            <div class="flex justify-between mt-12">
+                <!-- Sisi Kiri -->
+                <div class="w-1/2">
+                    <p><span id="outTempat">......................</span>, <span id="outTglBa">......................</span></p>
+                    <p>Diserahkan oleh :</p>
+                    <p>Fungsi Pengadaan</p>
+                    <div class="h-20"></div> 
+                    <p class="font-bold underline" id="outNamaPejabat">........................................</p>
+                    <p id="outJabatan"></p> <!-- Jabatan diletakkan di bawah nama -->
+                </div>
+                
+                <!-- Sisi Kanan -->
+                <div class="w-1/2 pl-12">
+                    <p>&nbsp;</p> 
+                    <p>Diterima Oleh :</p>
+                    <p>Panitia Pengadaan <span id="outNamaPengadaanKanan">................................</span></p>
+                    <div class="h-20"></div>
+                    <p class="font-bold underline" id="outKetua">........................................</p>
+                    <p>Ketua Panitia</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LOGICS ==================== -->
+    <script>
+        // --- 1. SINKRONISASI FORM ---
+        const inputBarang = document.getElementById('inNamaBarang');
+        const inputPengadaan = document.getElementById('inNamaPengadaan');
+        const container = document.getElementById('dokumenContainer');
+        const btnTambah = document.getElementById('btnTambahDokumen');
+
+        inputBarang.addEventListener('input', function() {
+            inputPengadaan.value = this.value;
+        });
+
+        function updateDeleteButtons() {
+            const rows = container.querySelectorAll('.row-dokumen');
+            const btns = container.querySelectorAll('.hapus-dokumen');
+            btns.forEach(btn => {
+                btn.disabled = rows.length === 1;
+                if (rows.length === 1) {
+                    btn.classList.replace('bg-red-500', 'bg-gray-300');
+                    btn.classList.remove('hover:bg-red-600');
+                    btn.style.cursor = 'not-allowed';
+                } else {
+                    btn.classList.replace('bg-gray-300', 'bg-red-500');
+                    btn.classList.add('hover:bg-red-600');
+                    btn.style.cursor = 'pointer';
+                }
+            });
+        }
+
+        btnTambah.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.className = 'flex gap-2 items-center row-dokumen mt-2';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Nama Dokumen" class="in-dok-nama flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <input type="text" placeholder="Nomor Dokumen" class="in-dok-nomor flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <input type="date" class="in-dok-tgl flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-dokumen">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+            
+            newRow.querySelector('.hapus-dokumen').addEventListener('click', function() {
+                newRow.remove();
+                updateDeleteButtons();
+            });
+            updateDeleteButtons();
+        });
+        updateDeleteButtons();
+
+
+        // --- 2. UPDATE DATA KE VIEW ---
+        const formSection = document.getElementById('formSection');
+        const previewSection = document.getElementById('previewSection');
+
+        function formatDateID(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        function valOrDefault(val, defaultStr = '........................................') {
+            return val ? val : defaultStr;
+        }
+
+        function updatePreviewData() {
+            document.getElementById('outNoBa').innerText = valOrDefault(document.getElementById('inNoBa').value, '..............................');
+            document.getElementById('outNamaBarang').innerText = valOrDefault(inputBarang.value);
+            document.getElementById('outNoSkd').innerText = valOrDefault(document.getElementById('inNoSkd').value, '....................');
+            document.getElementById('outTglSkd').innerText = valOrDefault(formatDateID(document.getElementById('inTglSkd').value), '..............................');
+            
+            document.getElementById('outTempat').innerText = valOrDefault(document.getElementById('inTempat').value, '....................');
+            
+            // Perbaikan tampilan tanggal (jika dari input formatnya yyyy-mm-dd)
+            document.getElementById('outTglBa').innerText = valOrDefault(formatDateID(document.getElementById('inTglBa').value), '....................');
+            
+            document.getElementById('outNamaPejabat').innerText = valOrDefault(document.getElementById('inNamaPejabat').value);
+            // Jabatan kini tidak menimpa "Fungsi Pengadaan", melainkan di print ulang di bawah nama
+            document.getElementById('outJabatan').innerText = document.getElementById('inJabatan').value;
+            
+            document.getElementById('outNamaPengadaanKanan').innerText = valOrDefault(inputBarang.value, '....................');
+            document.getElementById('outKetua').innerText = valOrDefault(document.getElementById('inKetua').value);
+
+            const outTable = document.getElementById('outTableDokumen').querySelector('tbody');
+            outTable.innerHTML = ''; 
+            
+            const rows = container.querySelectorAll('.row-dokumen');
+            let docCount = 0;
+            rows.forEach((row) => {
+                const nama = row.querySelector('.in-dok-nama').value;
+                const nomor = row.querySelector('.in-dok-nomor').value;
+                const tgl = row.querySelector('.in-dok-tgl').value;
+                
+                if(nama || nomor || tgl) {
+                    docCount++;
+                    const formattedTgl = tgl ? `tanggal ${formatDateID(tgl)}` : '';
+                    // PERBAIKAN: Menggunakan spasi ' ' bukan koma ', ' agar persis seperti gambar 6
+                    const noTglCombined = [nomor, formattedTgl].filter(Boolean).join(' ');
+                    
+                    outTable.innerHTML += `
+                        <tr>
+                            <td class="text-center">${docCount}</td>
+                            <td>${valOrDefault(nama, '-')}</td>
+                            <td>${valOrDefault(noTglCombined, '-')}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (docCount === 0) {
+                outTable.innerHTML = `<tr><td class="text-center">1</td><td>-</td><td>-</td></tr>`;
+            }
+        }
+
+        function showPreview() {
+            formSection.classList.add('hidden-mode');
+            previewSection.classList.remove('hidden-mode');
+            previewSection.classList.add('flex');
+            document.body.style.backgroundColor = '#333333';
+        }
+
+        document.getElementById('btnView').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+        });
+
+        document.getElementById('btnBackToForm').addEventListener('click', () => {
+            previewSection.classList.add('hidden-mode');
+            previewSection.classList.remove('flex');
+            formSection.classList.remove('hidden-mode');
+            document.body.style.backgroundColor = ''; 
+        });
+
+        // --- 3. GENERATE & DOWNLOAD PDF LOGIC ---
+        function executeDownloadPDF() {
+            const elemenDokumen = document.getElementById('dokumenA4');
+            
+            const opsiPDF = {
+                margin:       0,
+                filename:     'BA_Serah_Terima_Dokumen.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    scrollY: 0 
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const boxshadowAsli = elemenDokumen.style.boxShadow;
+            const marginAsli = elemenDokumen.style.margin;
+            elemenDokumen.style.boxShadow = 'none';
+            elemenDokumen.style.margin = '0';
+
+            window.scrollTo(0, 0);
+
+            html2pdf().set(opsiPDF).from(elemenDokumen).save().then(() => {
+                elemenDokumen.style.boxShadow = boxshadowAsli;
+                elemenDokumen.style.margin = marginAsli;
+            });
+        }
+
+        document.getElementById('btnGeneratePDF').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+            setTimeout(() => {
+                executeDownloadPDF();
+            }, 500); 
+        });
+
+        document.getElementById('btnDownloadToolbar').addEventListener('click', () => {
+            executeDownloadPDF();
+        });
+
+    </script>
+</body>
+</html>

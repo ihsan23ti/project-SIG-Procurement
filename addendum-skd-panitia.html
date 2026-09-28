@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Addendum SKD Pembentukan Panitia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sig: {
+                            dark: '#0f4a46', // Warna hijau gelap header
+                            primary: '#0d9488', // Teal
+                            bg: '#f0f4f8'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f0f4f8; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Styling Lembar Dokumen A4 */
+        .a4-paper {
+            font-family: 'Times New Roman', Times, serif;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 20mm;
+            margin: 0 auto 24px auto;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            color: black;
+            font-size: 11pt;
+            line-height: 1.35;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+            page-break-after: always;
+        }
+
+        .pdf-mode-active .a4-paper {
+            width: 100% !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            page-break-after: always;
+        }
+        .pdf-mode-active .a4-paper:last-child { page-break-after: auto; }
+
+        .a4-paper h2, .a4-paper h3 {
+            text-align: center;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .a4-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; }
+        .a4-table th, .a4-table td { border: 1px solid black; padding: 5px 8px; text-align: left; vertical-align: middle; }
+        .a4-table th { text-align: center; font-weight: bold; }
+        
+        .no-border-table td { border: none !important; padding: 4px 8px !important; vertical-align: top; }
+
+        .hidden-mode { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- HEADER APLIKASI -->
+    <header class="bg-[#104d49] text-white py-6 px-8 shadow-md sticky top-0 z-40" id="topHeader">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-xl font-bold tracking-wide">Formulir Surat Keputusan Direksi</h1>
+            <p class="text-sm text-teal-100/80 mt-1">Isi data yang diperlukan untuk membuat dokumen secara otomatis.</p>
+        </div>
+    </header>
+
+    <!-- ==================== BAGIAN 1: FORM INPUT ==================== -->
+    <div id="formSection" class="max-w-4xl mx-auto py-10 px-4 transition-all flex flex-col gap-6">
+        
+        <form id="skdForm" class="flex flex-col gap-8">
+            
+            <!-- SECTION 1: Informasi Pemohon -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-[#115e59] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                    <div>
+                        <h2 class="text-[17px] font-bold text-gray-800">Informasi Pemohon</h2>
+                        <p class="text-[13px] text-gray-500">Data pihak yang mengajukan Surat Keputusan Direksi.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Pemohon <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPemohonNama" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Pemohon <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPemohonJabatan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Unit Kerja Pemohon <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPemohonUnit" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Direktorat Pemohon <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPemohonDirektorat" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Judul Surat Keputusan Direksi <span class="text-red-500">*</span></label>
+                        <input type="text" id="inJudulSk" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Ringkasan Surat Keputusan Direksi <span class="text-red-500">*</span></label>
+                        <textarea id="inRingkasan" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"></textarea>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Catatan</label>
+                        <textarea id="inCatatan" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Pihak Terkait -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-[#115e59] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                    <div>
+                        <h2 class="text-[17px] font-bold text-gray-800">Pihak Terkait</h2>
+                        <p class="text-[13px] text-gray-500">Data pihak yang tercantum pada lembar permohonan.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Peninjau <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPeninjauNama" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Peninjau <span class="text-red-500">*</span></label>
+                        <input type="text" id="inPeninjauJabatan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Peninjau Lain</label>
+                        <input type="text" id="inPeninjauLainNama" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Peninjau Lain</label>
+                        <input type="text" id="inPeninjauLainJabatan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Direktur <span class="text-red-500">*</span></label>
+                        <input type="text" id="inDirekturNama" value="Hadi Setiadi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Direktur <span class="text-red-500">*</span></label>
+                        <input type="text" id="inDirekturJabatan" value="Direktur Human Capital" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Data Surat Keputusan -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-[#115e59] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                    <div>
+                        <h2 class="text-[17px] font-bold text-gray-800">Data Surat Keputusan Direksi</h2>
+                        <p class="text-[13px] text-gray-500">Data yang akan dimasukkan ke dalam SKD.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nomor Surat Keputusan Direksi <span class="text-red-500">*</span></label>
+                        <input type="text" id="inNoSkBaru" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Kategori Barang dan/atau Jasa <span class="text-red-500">*</span></label>
+                        <input type="text" id="inKategori" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nomor SKD Sebelumnya <span class="text-red-500">*</span></label>
+                        <input type="text" id="inNoSkLama" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Tanggal SKD Sebelumnya <span class="text-red-500">*</span></label>
+                        <input type="date" id="inTglSkLama" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Pengadaan Barang dan/atau Jasa <span class="text-red-500">*</span></label>
+                        <input type="text" id="inNamaPengadaan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Tanggal Ditetapkan <span class="text-red-500">*</span></label>
+                        <input type="date" id="inTglDitetapkan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Berlaku Sampai Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" id="inTglBerakhir" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Tempat Ditetapkan <span class="text-red-500">*</span></label>
+                        <input type="text" id="inTempat" value="Jakarta" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Keanggotaan -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-[#115e59] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">4</div>
+                    <div>
+                        <h2 class="text-[17px] font-bold text-gray-800">Susunan Keanggotaan Panitia</h2>
+                        <p class="text-[13px] text-gray-500">Masukkan anggota panitia sesuai dokumen.</p>
+                    </div>
+                </div>
+                
+                <div id="anggotaContainer" class="flex flex-col gap-3">
+                    <!-- Baris Ketua -->
+                    <div class="flex gap-3 items-center row-anggota">
+                        <input type="text" value="Ketua" class="in-ang-jabatan w-[120px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" readonly>
+                        <input type="text" placeholder="Nama Ketua" class="in-ang-nama flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <input type="text" placeholder="Nomor Pegawai" class="in-ang-nip flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <button type="button" class="bg-red-100 text-red-500 w-[38px] h-[38px] rounded-lg flex items-center justify-center opacity-50 cursor-not-allowed" disabled>
+                            <i class="ph ph-x font-bold"></i>
+                        </button>
+                    </div>
+                    <!-- Baris Anggota Default -->
+                    <div class="flex gap-3 items-center row-anggota">
+                        <input type="text" value="Anggota" class="in-ang-jabatan w-[120px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <input type="text" placeholder="Nama Anggota" class="in-ang-nama flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <input type="text" placeholder="Nomor Pegawai" class="in-ang-nip flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <button type="button" class="bg-red-100 hover:bg-red-500 text-red-500 hover:text-white w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hapus-anggota">
+                            <i class="ph ph-x font-bold"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="button" id="btnTambahAnggota" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2.5 text-sm font-medium flex items-center gap-2 transition-colors w-fit">
+                    <i class="ph ph-plus font-bold"></i> Tambah Anggota
+                </button>
+            </div>
+
+            <!-- Tombol Action Utama -->
+            <div class="flex justify-end gap-3 pt-2">
+                <a href="index.html" class="bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg px-6 py-2.5 text-sm font-medium transition-colors">
+                    Kembali
+                </a>
+                <button type="button" id="btnView" class="bg-[#0ea5e9] hover:bg-blue-600 text-white rounded-lg px-8 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                    <i class="ph-fill ph-eye text-lg"></i> View
+                </button>
+                <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-600 text-white rounded-lg px-8 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                    <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
+                </button>
+            </div>
+            <div class="h-10"></div> <!-- spacing bawah -->
+        </form>
+    </div>
+
+    <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (Multi-Page A4) ==================== -->
+    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4 bg-[#333333] min-h-screen">
+        
+        <!-- Toolbar -->
+        <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
+            <div class="flex items-center gap-3">
+                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </button>
+                <span class="text-sm font-medium truncate">Preview Dokumen: Add_SKD_Pembentukan_Panitia.pdf</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btnDownloadToolbar" class="p-2 hover:bg-white/10 rounded transition-colors" title="Download PDF"><i class="ph ph-download-simple text-xl"></i></button>
+            </div>
+        </div>
+
+        <div id="dokumenA4Container">
+
+            <!-- HALAMAN 1: LEMBAR PERMOHONAN -->
+            <div class="a4-paper">
+                <h3 style="font-size: 13pt; margin-bottom: 25px;">LEMBAR PERMOHONAN PENANDATANGANAN<br>SURAT KEPUTUSAN DIREKSI</h3>
+                
+                <table class="a4-table no-border-table" style="font-size: 10.5pt;">
+                    <tr>
+                        <td style="width: 30%; font-weight: bold;">Nama Pemohon</td>
+                        <td style="width: 2%; text-align: center;">:</td>
+                        <td style="width: 68%;" id="outPemohonNamaTbl">........................</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Jabatan Pemohon</td>
+                        <td style="text-align: center;">:</td>
+                        <td id="outPemohonJabatanTbl">........................</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Unit Kerja Pemohon</td>
+                        <td style="text-align: center;">:</td>
+                        <td id="outPemohonUnitTbl">........................</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Direktorat Pemohon</td>
+                        <td style="text-align: center;">:</td>
+                        <td id="outPemohonDirTbl">........................</td>
+                    </tr>
+                </table>
+
+                <table class="a4-table no-border-table mt-4" style="font-size: 10.5pt;">
+                    <tr>
+                        <td style="width: 30%; font-weight: bold;">Judul Surat Keputusan Direksi</td>
+                        <td style="width: 2%; text-align: center;">:</td>
+                        <td id="outJudulSk" style="width: 68%;">........................</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Ringkasan Surat Keputusan Direksi</td>
+                        <td style="text-align: center;">:</td>
+                        <td id="outRingkasan" style="white-space: pre-line;">........................</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Catatan</td>
+                        <td style="text-align: center;">:</td>
+                        <td id="outCatatanPreview">........................</td>
+                    </tr>
+                </table>
+
+                <table class="a4-table mt-8" style="font-size: 10pt; text-align: center;">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Pihak</th>
+                            <th style="width: 25%;">Nama</th>
+                            <th style="width: 25%;">Jabatan</th>
+                            <th style="width: 16%;">Tanda Tangan</th>
+                            <th style="width: 16%;">Spesimen Paraf</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: left; font-weight: bold;">Pemohon</td>
+                            <td style="text-align: left;" id="outPemohonNama">................</td>
+                            <td style="text-align: left;" id="outPemohonJabatan">................</td>
+                            <td style="height: 45px;"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; font-weight: bold;">Peninjau</td>
+                            <td style="text-align: left;" id="outPeninjauNama">................</td>
+                            <td style="text-align: left;" id="outPeninjauJabatan">................</td>
+                            <td style="height: 45px;"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; font-weight: bold;">Peninjau Lain<br><span style="font-size: 8pt; font-weight: normal;">(apabila ada)</span></td>
+                            <td style="text-align: left;" id="outPeninjauLainNama"></td>
+                            <td style="text-align: left;" id="outPeninjauLainJabatan"></td>
+                            <td style="height: 45px;"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; font-weight: bold;">Direktur Utama/Direktur Bidang</td>
+                            <td style="text-align: left;" id="outDirNama">................</td>
+                            <td style="text-align: left;" id="outDirJabatan">................</td>
+                            <td style="height: 45px;"></td>
+                            <td>N/A</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- HALAMAN 2: SK DIREKSI (KONSIDERAN) -->
+            <div class="a4-paper">
+                <h3 class="mb-4">SURAT KEPUTUSAN DIREKSI<br>PT SEMEN INDONESIA (Persero) Tbk<br>NOMOR: <span id="outNoSkBaru1">..........</span></h3>
+                <h3 class="mb-6">TENTANG<br>PANITIA PENGADAAN <span id="outKategoriTop" class="uppercase">..........</span></h3>
+                <h3 class="mb-6">DIREKSI,</h3>
+
+                <table style="width: 100%; border: none;">
+                    <tr>
+                        <td style="vertical-align: top; width: 100px; font-weight: bold;">Menimbang</td>
+                        <td style="vertical-align: top; width: 20px; text-align: center;">:</td>
+                        <td style="vertical-align: top; text-align: justify; padding-bottom: 5px;">
+                            <ol type="a" style="margin: 0; padding-left: 15px;">
+                                <li style="padding-bottom: 5px;">bahwa dalam pelaksanaan proses pengadaan barang dan/atau jasa, PT Semen Indonesia (Persero) Tbk ("Perusahaan") membentuk panitia pengadaan untuk melaksanakan proses pengadaan pada tahap persiapan pemilihan penyedia dan pelaksanaan pemilihan penyedia;</li>
+                                <li style="padding-bottom: 5px;">bahwa berdasarkan Pedoman Pengadaan Barang dan/atau Jasa Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026, panitia pengadaan yang menjalankan tugas sebagaimana dimaksud dalam huruf a di atas untuk proses pengadaan barang dan/atau jasa dengan batas nilai ≥ Rp150.000.000.000,00 dibentuk oleh Direksi berdasarkan surat keputusan Direksi;</li>
+                                <li>berdasarkan pertimbangan sebagaimana dimaksud dalam huruf a dan b di atas, pembentukan panitia pengadaan tersebut selanjutnya ditetapkan melalui surat keputusan Direksi ("Surat Keputusan Direksi") ini.</li>
+                            </ol>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: top; padding-top: 10px; font-weight: bold;">Mengingat</td>
+                        <td style="vertical-align: top; padding-top: 10px; text-align: center;">:</td>
+                        <td style="vertical-align: top; padding-top: 10px; text-align: justify;">
+                            <ol type="1" style="margin: 0; padding-left: 15px;">
+                                <li style="padding-bottom: 5px;">Anggaran Dasar Perusahaan sebagaimana dimuat dalam akta nomor 23 tanggal 8 Mei 2026 yang dibuat di hadapan Aulia Taufani, S.H., Notaris di Kota Administrasi Jakarta Selatan.</li>
+                                <li style="padding-bottom: 5px;">Susunan keanggotaan Direksi dan Dewan Komisaris Perusahaan sebagaimana dimuat dalam akta nomor 100 tanggal 23 Mei 2025 yang dibuat di hadapan Aulia Taufani, S.H., Notaris di Kota Administrasi Jakarta Selatan.</li>
+                                <li style="padding-bottom: 5px;">Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026.</li>
+                                <li>Surat Keputusan Direksi nomor <span id="outNoSkLama">......</span> tanggal <span id="outTglSkLama">......</span> tentang Panitia Pengadaan <span id="outKategoriMengingat">......</span>.</li>
+                            </ol>
+                        </td>
+                    </tr>
+                </table>
+
+                <h3 class="my-6">MEMUTUSKAN:</h3>
+                
+                <table style="width: 100%; border: none;">
+                    <tr>
+                        <td style="vertical-align: top; width: 100px; font-weight: bold;">Menetapkan</td>
+                        <td style="vertical-align: top; width: 20px; text-align: center;">:</td>
+                        <td style="vertical-align: top; text-align: justify; font-weight: bold;">
+                            SURAT KEPUTUSAN DIREKSI PT SEMEN INDONESIA (Persero) Tbk TENTANG PANITIA PENGADAAN <span id="outKategoriBottom" class="uppercase">..........</span>.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- HALAMAN 3: PASAL 1 - PASAL 3 -->
+            <div class="a4-paper">
+                <h3>Pasal 1</h3>
+                <p class="text-justify mb-3">Kata dan/atau frasa yang memiliki huruf depan yang ditulis kapital dalam Surat Keputusan Direksi ini memiliki arti, makna, dan/atau maksud sebagai berikut:</p>
+                <ol style="margin-left: 15px; text-align: justify; margin-bottom: 15px;" class="flex flex-col gap-1.5 text-[11pt]">
+                    <li>1. <strong>Direksi</strong> adalah seluruh anggota Direksi Perusahaan secara bersama-sama.</li>
+                    <li>2. <strong>Direktur Bidang</strong> adalah direktur Perusahaan yang membawahi setiap unit kerja yang berada di bawahnya berdasarkan struktur organisasi Perusahaan yang berlaku.</li>
+                    <li>3. <strong>Panitia Pengadaan</strong> memiliki makna sebagaimana dimaksud dalam Pedoman Pengadaan Barang dan/atau Jasa.</li>
+                    <li>4. <strong>Pedoman Pengadaan Barang dan/atau Jasa</strong> adalah Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026.</li>
+                    <li>5. <strong>Perusahaan</strong> memiliki makna sebagaimana dimaksud dalam huruf a bagian konsiderans Surat Keputusan Direksi ini.</li>
+                    <li>6. <strong>Prosedur Pengadaan Barang dan/atau Jasa</strong> adalah dokumen-dokumen prosedur pengadaan barang dan/atau jasa Perusahaan yang merupakan turunan dari Pedoman Pengadaan Barang dan/atau Jasa.</li>
+                </ol>
+
+                <h3>Pasal 2</h3>
+                <p class="text-justify mb-2">(1) Direksi membentuk Panitia Pengadaan ini dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Keputusan Direksi ini.</p>
+                <p class="text-justify mb-4">(2) Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan <span id="outNamaPengadaanPasal" class="font-bold">......</span>, sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Keputusan Direksi ini berlaku.</p>
+
+                <h3>Pasal 3</h3>
+                <p class="text-justify mb-2">(1) Hal-hal yang belum dan/atau belum cukup diatur dalam Surat Keputusan Direksi ini akan diputuskan lebih lanjut oleh Direksi.</p>
+                <p class="text-justify mb-2">(2) Dengan diberlakukannya Surat Keputusan Direksi ini, maka Surat Keputusan Direksi nomor <span id="outNoSkLama2">......</span> tentang Pengadaan <span id="outKategoriPasal3">......</span> dinyatakan tidak berlaku.</p>
+                <p class="text-justify mb-8">(3) Surat Keputusan Direksi ini berlaku sejak tanggal ditetapkan sampai dengan <span id="outTglBerakhir">......</span>.</p>
+
+                <div class="flex justify-between text-[11pt]">
+                    <div class="w-1/2">
+                        <p>Salinan sesuai dengan aslinya</p>
+                        <p>Diumumkan di: Jakarta</p>
+                        <p class="mb-4">Pada tanggal: <span id="outTglDitetapkan1">......</span></p>
+                        <p class="font-bold mb-16">Sekretaris Perusahaan,</p>
+                        <p class="font-bold underline">Vita Mahreyni</p>
+                    </div>
+                    <div class="w-1/2 pl-6">
+                        <p>Ditetapkan di <span id="outTempat1">......</span></p>
+                        <p class="mb-4">Pada tanggal: <span id="outTglDitetapkan2">......</span></p>
+                        <p class="font-bold">PT Semen Indonesia (Persero) Tbk</p>
+                        <p class="font-bold mb-16">Direksi,</p>
+                        <p class="font-bold underline" id="outDirNamaTTD">Hadi Setiadi</p>
+                        <p id="outDirJabatanTTD">Direktur Human Capital</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HALAMAN 4: LAMPIRAN -->
+            <div class="a4-paper">
+                <div class="text-right text-[10pt] mb-8">
+                    <p class="font-bold">Lampiran Surat Keputusan Direksi</p>
+                    <p class="font-bold">PT Semen Indonesia (Persero) Tbk</p>
+                    <p>Nomor: <span id="outNoSkLampiran">..........</span></p>
+                    <p>Tanggal: <span id="outTglDitetapkan3">..........</span></p>
+                    <p>Halaman 1 dari 1</p>
+                </div>
+
+                <h3>SUSUNAN KEANGGOTAAN</h3>
+                
+                <table class="a4-table mt-6" id="outTableKeanggotaan">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Jabatan Panitia Pengadaan</th>
+                            <th style="width: 35%;">Nama</th>
+                            <th style="width: 20%;">Nomor Pegawai</th>
+                            <th style="width: 20%;">Entitas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Diisi otomatis oleh JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== LOGICS ==================== -->
+    <script>
+        // 1. DINAMIS INPUT ANGGOTA
+        const container = document.getElementById('anggotaContainer');
+        const btnTambah = document.getElementById('btnTambahAnggota');
+
+        // Fungsi khusus hapus anggota tambahan
+        container.addEventListener('click', function(e) {
+            const btn = e.target.closest('.hapus-anggota');
+            if(btn) {
+                btn.closest('.row-anggota').remove();
+            }
+        });
+
+        btnTambah.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.className = 'flex gap-3 items-center row-anggota mt-3';
+            newRow.innerHTML = `
+                <input type="text" value="Anggota" class="in-ang-jabatan w-[120px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                <input type="text" placeholder="Nama Anggota" class="in-ang-nama flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                <input type="text" placeholder="Nomor Pegawai" class="in-ang-nip flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                <button type="button" class="bg-red-100 hover:bg-red-500 text-red-500 hover:text-white w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hapus-anggota">
+                    <i class="ph ph-x font-bold"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+        });
+
+        // 2. FORMAT TANGGAL INDONESIA
+        function formatDateID(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+        function valOrDefault(val, defaultStr = '-') { return val ? val : defaultStr; }
+
+        // 3. UI TOGGLE & DATA MAPPING
+        const headerTop = document.getElementById('topHeader');
+        const formSection = document.getElementById('formSection');
+        const previewSection = document.getElementById('previewSection');
+
+        function updatePreviewData() {
+            // Sec 1: Pemohon
+            document.getElementById('outPemohonNamaTbl').innerText = valOrDefault(document.getElementById('inPemohonNama').value);
+            document.getElementById('outPemohonJabatanTbl').innerText = valOrDefault(document.getElementById('inPemohonJabatan').value);
+            document.getElementById('outPemohonUnitTbl').innerText = valOrDefault(document.getElementById('inPemohonUnit').value);
+            document.getElementById('outPemohonDirTbl').innerText = valOrDefault(document.getElementById('inPemohonDirektorat').value);
+            document.getElementById('outJudulSk').innerText = valOrDefault(document.getElementById('inJudulSk').value);
+            document.getElementById('outRingkasan').innerText = valOrDefault(document.getElementById('inRingkasan').value, "Pembentukan Komite Pengadaan, meliputi:\n• Ruang Lingkup\n• Tugas dan Tanggung Jawab\n• Susunan Keanggotaan");
+            document.getElementById('outCatatanPreview').innerText = valOrDefault(document.getElementById('inCatatan').value, 'kosong');
+            
+            document.getElementById('outPemohonNama').innerText = valOrDefault(document.getElementById('inPemohonNama').value);
+            document.getElementById('outPemohonJabatan').innerText = valOrDefault(document.getElementById('inPemohonJabatan').value);
+
+            // Sec 2: Pihak
+            document.getElementById('outPeninjauNama').innerText = valOrDefault(document.getElementById('inPeninjauNama').value);
+            document.getElementById('outPeninjauJabatan').innerText = valOrDefault(document.getElementById('inPeninjauJabatan').value);
+            document.getElementById('outPeninjauLainNama').innerText = document.getElementById('inPeninjauLainNama').value;
+            document.getElementById('outPeninjauLainJabatan').innerText = document.getElementById('inPeninjauLainJabatan').value;
+            
+            const dirNama = valOrDefault(document.getElementById('inDirekturNama').value, 'Hadi Setiadi');
+            const dirJabatan = valOrDefault(document.getElementById('inDirekturJabatan').value, 'Direktur Human Capital');
+            document.getElementById('outDirNama').innerText = dirNama;
+            document.getElementById('outDirJabatan').innerText = dirJabatan;
+            document.getElementById('outDirNamaTTD').innerText = dirNama;
+            document.getElementById('outDirJabatanTTD').innerText = dirJabatan;
+
+            // Sec 3: Data SKD
+            const noSk = document.getElementById('inNoSkBaru').value;
+            const kategori = document.getElementById('inKategori').value;
+            const noSkLama = document.getElementById('inNoSkLama').value;
+            const tglSkLama = formatDateID(document.getElementById('inTglSkLama').value);
+            const namaPengadaan = document.getElementById('inNamaPengadaan').value;
+            const tglDitetapkan = formatDateID(document.getElementById('inTglDitetapkan').value);
+            const tglBerakhir = formatDateID(document.getElementById('inTglBerakhir').value);
+            const tempat = document.getElementById('inTempat').value;
+
+            document.getElementById('outNoSkBaru1').innerText = valOrDefault(noSk);
+            document.getElementById('outKategoriTop').innerText = valOrDefault(kategori);
+            document.getElementById('outKategoriMengingat').innerText = valOrDefault(kategori);
+            document.getElementById('outKategoriBottom').innerText = valOrDefault(kategori);
+            document.getElementById('outKategoriPasal3').innerText = valOrDefault(kategori);
+            
+            document.getElementById('outNoSkLama').innerText = valOrDefault(noSkLama);
+            document.getElementById('outNoSkLama2').innerText = valOrDefault(noSkLama);
+            document.getElementById('outTglSkLama').innerText = valOrDefault(tglSkLama);
+            
+            document.getElementById('outNamaPengadaanPasal').innerText = valOrDefault(namaPengadaan);
+            document.getElementById('outTglBerakhir').innerText = valOrDefault(tglBerakhir);
+            
+            document.getElementById('outTempat1').innerText = valOrDefault(tempat, 'Jakarta');
+            document.getElementById('outTglDitetapkan1').innerText = valOrDefault(tglDitetapkan);
+            document.getElementById('outTglDitetapkan2').innerText = valOrDefault(tglDitetapkan);
+            
+            // Lampiran
+            document.getElementById('outNoSkLampiran').innerText = valOrDefault(noSk);
+            document.getElementById('outTglDitetapkan3').innerText = valOrDefault(tglDitetapkan);
+
+            // Sec 4: Keanggotaan
+            const tableBody = document.getElementById('outTableKeanggotaan').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            const rowsAnggota = container.querySelectorAll('.row-anggota');
+            rowsAnggota.forEach((row) => {
+                const jabatanPanitia = row.querySelector('.in-ang-jabatan').value;
+                const namaAng = row.querySelector('.in-ang-nama').value;
+                const nipAng = row.querySelector('.in-ang-nip').value;
+                if(namaAng || nipAng) {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: bold;">${valOrDefault(jabatanPanitia)}</td>
+                            <td>${valOrDefault(namaAng)}</td>
+                            <td>${valOrDefault(nipAng)}</td>
+                            <td>PT Semen Indonesia (Persero) Tbk</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function showPreview() {
+            headerTop.classList.add('hidden-mode');
+            formSection.classList.add('hidden-mode');
+            previewSection.classList.remove('hidden-mode');
+            previewSection.classList.add('flex');
+        }
+
+        document.getElementById('btnView').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+        });
+
+        document.getElementById('btnBackToForm').addEventListener('click', () => {
+            previewSection.classList.add('hidden-mode');
+            previewSection.classList.remove('flex');
+            formSection.classList.remove('hidden-mode');
+            headerTop.classList.remove('hidden-mode');
+        });
+
+        // 4. PDF EXPORT GENERATOR
+        function executeDownloadPDF() {
+            const elemenContainer = document.getElementById('dokumenA4Container');
+            elemenContainer.classList.add('pdf-mode-active');
+            
+            const opsiPDF = {
+                margin:       [15, 0, 15, 0], // Margin atas bawah diberikan jsPDF
+                filename:     'Addendum_SKD_Pembentukan_Panitia.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            window.scrollTo(0, 0);
+            html2pdf().set(opsiPDF).from(elemenContainer).save().then(() => {
+                elemenContainer.classList.remove('pdf-mode-active');
+            });
+        }
+
+        document.getElementById('btnGeneratePDF').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+            setTimeout(() => { executeDownloadPDF(); }, 500);
+        });
+
+        document.getElementById('btnDownloadToolbar').addEventListener('click', () => {
+            executeDownloadPDF();
+        });
+    </script>
+</body>
+</html>
