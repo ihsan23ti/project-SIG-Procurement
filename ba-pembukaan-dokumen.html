@@ -172,7 +172,6 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="flex flex-col">
                         <label class="input-label">Jumlah Rekanan Diundang</label>
-                        <!-- Menggunakan mt-auto agar kotak input sejajar bawah walau tinggi teks berbeda -->
                         <input type="number" id="jml-undang" class="input-field mt-auto" value="0" min="0">
                     </div>
                     <div class="flex flex-col">
@@ -241,117 +240,127 @@
     </div>
 
     <!-- ==================== PANEL KANAN (PREVIEW PDF) ==================== -->
-    <div class="flex-1 bg-[#eef2f6] h-full overflow-y-auto py-4 relative">
+    <div class="flex-1 flex flex-col h-full bg-[#eef2f6] z-0">
 
-        <!-- Toolbar Atas (Diberi mx-auto agar posisinya di tengah dan rapi sejajar dengan kertas) -->
-        <div class="w-[210mm] mx-auto flex justify-between items-center mb-4 sticky top-0 z-50 bg-[#eef2f6] py-2">
-            <h2 class="text-lg font-bold text-gray-800">Preview Surat</h2>
-            <button type="button" onclick="document.getElementById('btnGeneratePDF').click()"
-                class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-4 rounded shadow-sm">
-                Cetak
-            </button>
+        <!-- Toolbar Atas (Dipisahkan dari area scroll agar tidak tertimpa) -->
+        <div class="w-full flex-none bg-[#eef2f6] border-b border-gray-300 shadow-sm z-10 flex justify-center py-3">
+            <div class="w-[210mm] flex justify-between items-center px-4">
+                <h2 class="text-lg font-bold text-gray-800">Preview Surat</h2>
+                <button type="button" onclick="document.getElementById('btnGeneratePDF').click()"
+                    class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-4 rounded shadow-sm">
+                    Cetak
+                </button>
+            </div>
         </div>
 
-        <!-- A4 Document -->
-        <div id="dokumenA4Container">
-            <div class="a4-paper">
+        <!-- Area Kertas Scrollable -->
+        <div class="flex-1 overflow-y-auto py-8">
+            <div id="dokumenA4Container">
+                <div class="a4-paper">
 
-                <div style="font-style: italic; font-size: 8.5pt; margin-bottom: 20px;">
-                    (* Form untuk <span id="prev-jenis">Metode 1 Tahap 1 Sampul</span>)
-                </div>
-
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div style="font-weight: bold; font-size: 11pt; text-decoration: underline;">
-                        BERITA ACARA PEMBUKAAN DOKUMEN PENAWARAN
+                    <div style="font-style: italic; font-size: 8.5pt; margin-bottom: 20px;">
+                        (* Form untuk <span id="prev-jenis">Metode 1 Tahap 1 Sampul</span>)
                     </div>
-                    <div style="font-size: 9.5pt; margin-top: 5px;">
-                        No. <span id="prev-no-ba">.......................</span>
+
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-weight: bold; font-size: 11pt; text-decoration: underline;">
+                            BERITA ACARA PEMBUKAAN DOKUMEN PENAWARAN
+                        </div>
+                        <div style="font-size: 9.5pt; margin-top: 5px;">
+                            No. <span id="prev-no-ba">.......................</span>
+                        </div>
                     </div>
-                </div>
 
-                <div style="margin-bottom: 15px;">
-                    <b>Nomor Permintaan Pemilihan Penyedia:</b> <span id="prev-no-req">.......................</span>
-                </div>
-
-                <div style="text-align: justify; margin-bottom: 15px;">
-                    Pada hari <span id="prev-hari">.......</span> tanggal <span id="prev-tgl">.......</span> bulan <span
-                        id="prev-bln">.......</span> tahun <span id="prev-thn">.......</span>, melalui <span
-                        id="prev-media">.......................</span>, Panitia Pengadaan <span
-                        id="prev-panitia">.......................</span> telah mengadakan Pembukaan Dokumen Penawaran
-                    sesuai dengan jadwal yang ditetapkan, dengan daftar Peserta Pemilihan dan kesimpulan hasil pembukaan
-                    penawaran sebagai berikut:
-                </div>
-
-                <!-- List A, B, C, D Table Borderless -->
-                <table style="width: 100%; border: none; margin-bottom: 15px; font-size: 9.5pt; line-height: 1.6;">
-                    <tr>
-                        <td
-                            style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
-                            a.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
-                            Rekanan yang diundang sebanyak <b><span id="prev-jml-undang">0</span></b> rekanan.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td
-                            style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
-                            b.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
-                            Rekanan yang memasukkan dokumen penawaran sebanyak <b><span id="prev-jml-masuk">0</span></b>
-                            rekanan, yang kemudian disebut Peserta Pemilihan.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td
-                            style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
-                            c.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
-                            Rekanan yang tidak memasukkan dokumen penawaran sebanyak <b><span
-                                    id="prev-jml-tidak">0</span></b> rekanan.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td
-                            style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
-                            d.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
-                            Panitia Pengadaan telah meneliti kelengkapan dokumen penawaran dari Peserta Pemilihan.
-                        </td>
-                    </tr>
-                </table>
-
-                <div style="margin-bottom: 5px;">
-                    Daftar Calon Peserta Pemilihan & Kelengkapan Dokumen Penawaran
-                </div>
-
-                <!-- AREA TABEL DINAMIS (Akan diubah lewat JS berdasarkan dropdown jenis form) -->
-                <div id="dynamic-table-area">
-                    <!-- Default: Table Single (Metode 1 Tahap 1 Sampul) -->
-                </div>
-
-                <div
-                    style="font-size: 8pt; font-style: italic; line-height: 1.4; margin-top: 5px; margin-bottom: 25px;">
-                    <b>Keterangan pengisian tabel:</b><br>
-                    √ = dokumen ada/memenuhi syarat/sesuai/lulus<br>
-                    X = dokumen tidak ada/tidak memenuhi syarat/tidak sesuai/tidak lulus
-                </div>
-
-                <div style="text-align: justify; margin-bottom: 40px;">
-                    Demikian Berita Acara Pembukaan Dokumen Penawaran ini kami sampaikan, untuk dipergunakan sebagaimana
-                    mestinya.
-                </div>
-
-                <!-- Signature Box -->
-                <div style="display: flex; justify-content: flex-end; text-align: center;">
-                    <div style="width: 250px;">
-                        <span id="prev-ttd-tempat">Tempat</span>, <span id="prev-ttd-tgl">tanggal/bulan/tahun</span><br>
-                        Panitia Pengadaan
-                        <br><br><br><br><br>
-                        <b><u>(<span id="prev-ttd-ketua">Nama Ketua Panitia Pengadaan</span>)</u></b><br>
-                        Ketua Panitia
+                    <div style="margin-bottom: 15px;">
+                        <b>Nomor Permintaan Pemilihan Penyedia:</b> <span
+                            id="prev-no-req">.......................</span>
                     </div>
-                </div>
 
+                    <div style="text-align: justify; margin-bottom: 15px;">
+                        Pada hari <span id="prev-hari">.......</span> tanggal <span id="prev-tgl">.......</span> bulan
+                        <span id="prev-bln">.......</span> tahun <span id="prev-thn">.......</span>, melalui <span
+                            id="prev-media">.......................</span>, Panitia Pengadaan <span
+                            id="prev-panitia">.......................</span> telah mengadakan Pembukaan Dokumen
+                        Penawaran
+                        sesuai dengan jadwal yang ditetapkan, dengan daftar Peserta Pemilihan dan kesimpulan hasil
+                        pembukaan
+                        penawaran sebagai berikut:
+                    </div>
+
+                    <!-- List A, B, C, D Table Borderless -->
+                    <table style="width: 100%; border: none; margin-bottom: 15px; font-size: 9.5pt; line-height: 1.6;">
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                a.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang diundang sebanyak <b><span id="prev-jml-undang">0</span></b> rekanan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                b.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang memasukkan dokumen penawaran sebanyak <b><span
+                                        id="prev-jml-masuk">0</span></b>
+                                rekanan, yang kemudian disebut Peserta Pemilihan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                c.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang tidak memasukkan dokumen penawaran sebanyak <b><span
+                                        id="prev-jml-tidak">0</span></b> rekanan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                d.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Panitia Pengadaan telah meneliti kelengkapan dokumen penawaran dari Peserta Pemilihan.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-bottom: 5px;">
+                        Daftar Calon Peserta Pemilihan & Kelengkapan Dokumen Penawaran
+                    </div>
+
+                    <!-- AREA TABEL DINAMIS (Akan diubah lewat JS berdasarkan dropdown jenis form) -->
+                    <div id="dynamic-table-area">
+                        <!-- Default: Table Single (Metode 1 Tahap 1 Sampul) -->
+                    </div>
+
+                    <div
+                        style="font-size: 8pt; font-style: italic; line-height: 1.4; margin-top: 5px; margin-bottom: 25px;">
+                        <b>Keterangan pengisian tabel:</b><br>
+                        √ = dokumen ada/memenuhi syarat/sesuai/lulus<br>
+                        X = dokumen tidak ada/tidak memenuhi syarat/tidak sesuai/tidak lulus
+                    </div>
+
+                    <div style="text-align: justify; margin-bottom: 40px;">
+                        Demikian Berita Acara Pembukaan Dokumen Penawaran ini kami sampaikan, untuk dipergunakan
+                        sebagaimana
+                        mestinya.
+                    </div>
+
+                    <!-- Signature Box -->
+                    <div style="display: flex; justify-content: flex-end; text-align: center;">
+                        <div style="width: 250px;">
+                            <span id="prev-ttd-tempat">Tempat</span>, <span
+                                id="prev-ttd-tgl">tanggal/bulan/tahun</span><br>
+                            Panitia Pengadaan
+                            <br><br><br><br><br>
+                            <b><u>(<span id="prev-ttd-ketua">Nama Ketua Panitia Pengadaan</span>)</u></b><br>
+                            Ketua Panitia
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
