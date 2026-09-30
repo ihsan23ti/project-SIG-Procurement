@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Surat Pembentukan Panitia Pengadaan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #f0f4f8; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+
+        /* Styling Lembar A4 PDF */
+        .a4-paper {
+            font-family: 'Times New Roman', Times, serif;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 20mm;
+            margin: 0 auto 24px auto;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            color: black;
+            font-size: 11pt;
+            line-height: 1.35;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+            page-break-after: always;
+        }
+
+        .pdf-mode-active .a4-paper {
+            width: 100% !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            page-break-after: always;
+        }
+        .pdf-mode-active .a4-paper:last-child { page-break-after: auto; }
+
+        .a4-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; }
+        .a4-table th, .a4-table td { border: 1px solid black; padding: 5px 8px; text-align: left; vertical-align: middle; }
+        .a4-table th { text-align: center; font-weight: bold; background-color: #f9fafb; }
+        
+        .hidden-mode { display: none !important; }
+
+        /* Custom Class untuk Menimbang/Mengingat agar persis sama dengan aslinya */
+        .table-konsideran {
+            width: 100%;
+            border: none;
+            table-layout: auto;
+        }
+        .table-konsideran td {
+            vertical-align: top;
+            padding-bottom: 8px; /* Jarak antar poin a, b, c */
+            border: none;
+            padding-left: 0;
+            padding-right: 0;
+            padding-top: 0;
+        }
+        .col-judul {
+            width: 85px; /* Lebar untuk kata "Menimbang" / "Mengingat" */
+            font-weight: bold;
+        }
+        .col-titikdua {
+            width: 15px;
+            text-align: center;
+        }
+        .col-huruf {
+            width: 25px; /* Lebar untuk "a.", "b.", "1.", dll */
+            text-align: left;
+        }
+        .col-isi {
+            text-align: justify;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- BAGIAN 1: FORM INPUT -->
+    <div id="formSection" class="max-w-4xl mx-auto py-10 px-4 transition-all">
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Form Surat Pembentukan Panitia Pengadaan</h2>
+
+            <form id="suratForm" class="flex flex-col gap-6">
+                
+                <!-- Data Surat -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">Data Surat</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nomor Surat</label>
+                            <input type="text" id="inNoSurat" placeholder="Masukkan Nomor Surat" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Kategori Barang dan/atau Jasa</label>
+                            <input type="text" id="inKategori" placeholder="Contoh: PENGADAAN PERALATAN IT" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Pengadaan</label>
+                            <input type="text" id="inNamaPengadaan" placeholder="Otomatis mengikuti Nama Barang dan/atau Jasa" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Ditetapkan di (Kota)</label>
+                                <input type="text" id="inTempat" placeholder="Contoh: Padang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Pada Tanggal Ditetapkan</label>
+                                <input type="date" id="inTglDitetapkan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Berlaku Sampai Tanggal (Pasal 3)</label>
+                            <input type="date" id="inTglBerakhir" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-2 border-gray-200">
+
+                <!-- Data Pejabat -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">Data Pejabat</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Diajukan Oleh (Nama Pejabat)</label>
+                            <input type="text" id="inPengajuNama" placeholder="Nama pejabat" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Direviu Oleh (Nama Pejabat)</label>
+                            <input type="text" id="inPereviuNama" placeholder="Nama pejabat" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Pengaju</label>
+                            <input type="text" id="inPengajuJabatan" placeholder="Contoh: Fungsi Pengadaan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Pereviu</label>
+                            <input type="text" id="inPereviuJabatan" placeholder="Contoh: Fungsi Pengadaan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Disetujui Oleh (Nama Pejabat)</label>
+                            <input type="text" id="inPenyetujuNama" value="Ade Meiriyadi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Jabatan Penyetuju</label>
+                            <input type="text" id="inPenyetujuJabatan" value="GH of Procurement" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-2 border-gray-200">
+
+                <!-- Data Panitia Pengadaan (Lampiran) -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">Data Panitia Pengadaan (Lampiran)</h3>
+                    
+                    <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Ketua Panitia</label>
+                    <div class="flex gap-3 mb-4">
+                        <input type="text" id="inKetuaNama" placeholder="Nama Ketua" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        <input type="text" id="inKetuaNip" placeholder="No. Pegawai" class="w-[180px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                        <input type="text" id="inKetuaEntitas" placeholder="Entitas" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                    </div>
+
+                    <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Daftar Anggota Panitia</label>
+                    <div id="anggotaContainer" class="flex flex-col gap-3">
+                        <div class="flex gap-3 items-center row-anggota">
+                            <input type="text" placeholder="Nama Anggota" class="in-ang-nama flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <input type="text" placeholder="No. Pegawai" class="in-ang-nip w-[180px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <input type="text" placeholder="Entitas" class="in-ang-entitas flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <button type="button" class="bg-red-500 text-white hover:bg-red-600 w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hapus-anggota">
+                                <i class="ph ph-x font-bold"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" id="btnTambahAnggota" class="w-full mt-3 border border-dashed border-[#0d9488] text-[#0d9488] hover:bg-teal-50 rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                        <i class="ph ph-plus font-bold"></i> Tambah Anggota
+                    </button>
+                </div>
+
+                <div class="flex justify-between gap-3 mt-6 pt-4 border-t border-gray-100">
+                    <a href="index.html" class="bg-gray-200 hover:bg-gray-300 text-gray-700 w-1/3 text-center rounded-lg py-2.5 text-sm font-medium transition-colors">Kembali</a>
+                    <div class="w-2/3 flex gap-3">
+                        <button type="button" id="btnView" class="w-1/2 bg-[#0ea5e9] hover:bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph-fill ph-eye text-lg"></i> View
+                        </button>
+                        <button type="button" id="btnGeneratePDF" class="w-1/2 bg-[#10b981] hover:bg-emerald-600 text-white rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph-fill ph-file-pdf text-lg"></i> Download PDF
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- BAGIAN 2: DOCUMENT PREVIEW (A4 PDF Mode) -->
+    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4 bg-[#333333] min-h-screen">
+        
+        <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
+            <div class="flex items-center gap-3">
+                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </button>
+                <span class="text-sm font-medium truncate">Preview: Surat_Pembentukan_Panitia.pdf</span>
+            </div>
+            <button type="button" id="btnDownloadToolbar" class="p-2 hover:bg-white/10 rounded transition-colors" title="Download PDF">
+                <i class="ph ph-download-simple text-xl"></i>
+            </button>
+        </div>
+
+        <div id="dokumenA4Container">
+
+            <!-- HALAMAN 1: SURAT UTAMA -->
+            <div class="a4-paper">
+                <!-- Header Logo SIG -->
+                <div class="mb-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Semen_Indonesia_logo.svg/512px-Semen_Indonesia_logo.svg.png" crossorigin="anonymous" alt="Logo SIG" style="height: 25px;">
+                </div>
+
+                <h3 class="mb-2">SURAT PEMBENTUKAN PANITIA PENGADAAN</h3>
+                <h3 class="mb-6" style="font-weight: normal;">Nomor: <span id="outNoSurat">[Nomor Surat]</span></h3>
+
+                <!-- Tabel Menimbang dan Mengingat (Diperbaiki agar rapi ke bawah) -->
+                <table class="table-konsideran">
+                    <tr>
+                        <td class="col-judul">Menimbang</td>
+                        <td class="col-titikdua">:</td>
+                        <td class="col-huruf">a.</td>
+                        <td class="col-isi">bahwa dalam pelaksanaan proses pengadaan barang dan/atau jasa, PT Semen Indonesia (Persero) Tbk membentuk panitia pengadaan untuk melaksanakan proses pengadaan pada tahap persiapan pemilihan penyedia dan pelaksanaan pemilihan penyedia;</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td class="col-huruf">b.</td>
+                        <td class="col-isi">bahwa berdasarkan Pedoman Pengadaan Barang dan/atau Jasa Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026, panitia pengadaan yang menjalankan tugas sebagaimana dimaksud dalam huruf a di atas untuk proses pengadaan barang dan/atau jasa dengan batas nilai &le; Rp150.000.000.000,00 dibentuk berdasarkan surat pembentukan panitia pengadaan;</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td class="col-huruf">c.</td>
+                        <td class="col-isi">berdasarkan pertimbangan sebagaimana dimaksud dalam huruf a di atas, pembentukan panitia pengadaan tersebut selanjutnya ditetapkan melalui Surat Pembentukan Panitia Pengadaan ("Surat Pembentukan Panitia Pengadaan")</td>
+                    </tr>
+                    <tr>
+                        <td class="col-judul" style="padding-top: 10px;">Mengingat</td>
+                        <td class="col-titikdua" style="padding-top: 10px;">:</td>
+                        <td class="col-huruf" style="padding-top: 10px;">1.</td>
+                        <td class="col-isi" style="padding-top: 10px;">Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026.</td>
+                    </tr>
+                </table>
+
+                <table class="table-konsideran" style="margin-top: 10px;">
+                    <tr>
+                        <td class="col-judul" style="width: 85px;">Menetapkan</td>
+                        <td class="col-titikdua" style="width: 15px;">:</td>
+                        <td class="col-isi" style="font-weight: bold; padding-left: 5px;">
+                            SURAT PEMBENTUKAN PANITIA PENGADAAN <span id="outKategori" class="uppercase">[KATEGORI BARANG DAN/ATAU JASA]</span>
+                        </td>
+                    </tr>
+                </table>
+
+                <h3 class="mt-6 mb-2 text-[11pt]">Pasal 1</h3>
+                <p class="text-justify mb-2">Kata dan/atau frasa yang memiliki huruf depan yang ditulis kapital dalam Surat Pembentukan Panitia Pengadaan ini memiliki arti, makna, dan/atau maksud sebagai berikut:</p>
+                
+                <table class="table-konsideran">
+                    <tr>
+                        <td class="col-huruf" style="width: 20px;">1.</td>
+                        <td class="col-isi"><strong>Panitia Pengadaan</strong> memiliki makna sebagaimana dimaksud dalam Pedoman Pengadaan Barang dan/atau Jasa.</td>
+                    </tr>
+                    <tr>
+                        <td class="col-huruf">2.</td>
+                        <td class="col-isi"><strong>Pedoman Pengadaan Barang dan/atau Jasa</strong> adalah Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026.</td>
+                    </tr>
+                    <tr>
+                        <td class="col-huruf">3.</td>
+                        <td class="col-isi"><strong>Prosedur Pengadaan Barang dan/atau Jasa</strong> adalah dokumen-dokumen prosedur pengadaan barang dan/atau jasa Perusahaan yang merupakan turunan dari Pedoman Pengadaan Barang dan/atau Jasa.</td>
+                    </tr>
+                </table>
+
+                <h3 class="mt-2 mb-2 text-[11pt]">Pasal 2</h3>
+                <table class="table-konsideran">
+                    <tr>
+                        <td class="col-huruf" style="width: 20px;">1.</td>
+                        <td class="col-isi">Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan ini dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</td>
+                    </tr>
+                    <tr>
+                        <td class="col-huruf">2.</td>
+                        <td class="col-isi">Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan <strong>[<span id="outNamaPengadaanPasal">diisi nama pengadaan Barang dan/atau Jasa</span>]</strong>, sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</td>
+                    </tr>
+                </table>
+
+                <h3 class="mt-2 mb-2 text-[11pt]">Pasal 3</h3>
+                <table class="table-konsideran">
+                    <tr>
+                        <td class="col-huruf" style="width: 20px;">1.</td>
+                        <td class="col-isi">Hal-hal yang belum dan/atau belum cukup diatur dalam Surat Pembentukan Panitia Pengadaan ini akan diatur lebih lanjut oleh GH of Procurement.</td>
+                    </tr>
+                    <tr>
+                        <td class="col-huruf">2.</td>
+                        <td class="col-isi">Surat Pembentukan Panitia Pengadaan ini berlaku sejak tanggal ditetapkan dan berakhir sampai dengan <span id="outTglBerakhir">[tanggal/bulan/tahun]</span>.</td>
+                    </tr>
+                </table>
+
+                <div class="mb-4 mt-4">
+                    <p>Ditetapkan di: <span id="outTempat">Jakarta</span></p>
+                    <p>Pada tanggal: <span id="outTglDitetapkan">........................</span></p>
+                    <p class="font-bold">PT Semen Indonesia (Persero) Tbk.</p>
+                </div>
+
+                <div class="flex justify-between mt-4 text-[10.5pt]">
+                    <div class="w-1/3">
+                        <p>Diajukan oleh:</p>
+                        <div class="h-16"></div>
+                        <p class="font-bold underline" id="outPengajuNama">Diisi nama pejabat yang berwenang</p>
+                        <p id="outPengajuJabatan">Diisi nama jabatan yang berwenang</p>
+                    </div>
+                    <div class="w-1/3 text-center">
+                        <p>Direviu oleh:</p>
+                        <div class="h-16"></div>
+                        <p class="font-bold underline" id="outPereviuNama">Diisi nama pejabat yang berwenang</p>
+                        <p id="outPereviuJabatan">Diisi nama jabatan yang berwenang</p>
+                    </div>
+                    <div class="w-1/3 text-right">
+                        <p>Disetujui oleh:</p>
+                        <div class="h-16"></div>
+                        <p class="font-bold underline" id="outPenyetujuNama">Ade Meiriyadi</p>
+                        <p id="outPenyetujuJabatan">GH of Procurement</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HALAMAN 2: LAMPIRAN -->
+            <div class="a4-paper">
+                <div class="mb-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Semen_Indonesia_logo.svg/512px-Semen_Indonesia_logo.svg.png" crossorigin="anonymous" alt="Logo SIG" style="height: 25px;">
+                </div>
+                
+                <div class="mb-8 text-right text-[10pt]">
+                    <p class="font-bold">Lampiran 1 Surat Pembentukan Panitia Pengadaan</p>
+                    <p class="font-bold">PT Semen Indonesia (Persero) Tbk</p>
+                    <p>Nomor: <span id="outNoSuratLampiran">[Nomor Surat]</span></p>
+                    <p>Tanggal: <span id="outTglDitetapkanLampiran">........................</span></p>
+                </div>
+
+                <h3>SUSUNAN KEANGGOTAAN</h3>
+                
+                <table class="a4-table mt-6" id="outTableKeanggotaan">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Jabatan Panitia Pengadaan</th>
+                            <th style="width: 35%;">Nama</th>
+                            <th style="width: 20%;">Nomor Pegawai</th>
+                            <th style="width: 20%;">Entitas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Diisi JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        const container = document.getElementById('anggotaContainer');
+        const btnTambah = document.getElementById('btnTambahAnggota');
+
+        // Sinkronisasi Kategori ke Nama Pengadaan
+        const inKategori = document.getElementById('inKategori');
+        const inNamaPengadaan = document.getElementById('inNamaPengadaan');
+        inKategori.addEventListener('input', () => { inNamaPengadaan.value = inKategori.value; });
+
+        container.addEventListener('click', function(e) {
+            const btn = e.target.closest('.hapus-anggota');
+            if(btn && container.children.length > 1) {
+                btn.closest('.row-anggota').remove();
+            }
+        });
+
+        btnTambah.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.className = 'flex gap-3 items-center row-anggota mt-3';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Nama Anggota" class="in-ang-nama flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                <input type="text" placeholder="No. Pegawai" class="in-ang-nip w-[180px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                <input type="text" placeholder="Entitas" class="in-ang-entitas flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                <button type="button" class="bg-red-500 text-white hover:bg-red-600 w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hapus-anggota">
+                    <i class="ph ph-x font-bold"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+        });
+
+        function formatDateID(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+        function valOrDefault(val, defaultStr = '........................') { return val ? val : defaultStr; }
+
+        const formSection = document.getElementById('formSection');
+        const previewSection = document.getElementById('previewSection');
+
+        function updatePreviewData() {
+            const noSurat = document.getElementById('inNoSurat').value;
+            const kategori = document.getElementById('inKategori').value;
+            const namaPengadaan = document.getElementById('inNamaPengadaan').value;
+            const tempat = document.getElementById('inTempat').value;
+            const tglDitetapkan = formatDateID(document.getElementById('inTglDitetapkan').value);
+            const tglBerakhir = formatDateID(document.getElementById('inTglBerakhir').value);
+
+            document.getElementById('outNoSurat').innerText = valOrDefault(noSurat, '[Nomor Surat]');
+            document.getElementById('outNoSuratLampiran').innerText = valOrDefault(noSurat, '[Nomor Surat]');
+            document.getElementById('outKategori').innerText = valOrDefault(kategori, '[KATEGORI BARANG DAN/ATAU JASA]');
+            document.getElementById('outNamaPengadaanPasal').innerText = valOrDefault(namaPengadaan, 'diisi nama pengadaan Barang dan/atau Jasa');
+            
+            document.getElementById('outTempat').innerText = valOrDefault(tempat, 'Jakarta');
+            document.getElementById('outTglDitetapkan').innerText = valOrDefault(tglDitetapkan);
+            document.getElementById('outTglDitetapkanLampiran').innerText = valOrDefault(tglDitetapkan);
+            document.getElementById('outTglBerakhir').innerText = valOrDefault(tglBerakhir, '[tanggal/bulan/tahun]');
+
+            // Pejabat
+            document.getElementById('outPengajuNama').innerText = valOrDefault(document.getElementById('inPengajuNama').value, 'Diisi nama pejabat yang berwenang');
+            document.getElementById('outPengajuJabatan').innerText = valOrDefault(document.getElementById('inPengajuJabatan').value, 'Diisi nama jabatan yang berwenang');
+            document.getElementById('outPereviuNama').innerText = valOrDefault(document.getElementById('inPereviuNama').value, 'Diisi nama pejabat yang berwenang');
+            document.getElementById('outPereviuJabatan').innerText = valOrDefault(document.getElementById('inPereviuJabatan').value, 'Diisi nama jabatan yang berwenang');
+            document.getElementById('outPenyetujuNama').innerText = valOrDefault(document.getElementById('inPenyetujuNama').value, 'Ade Meiriyadi');
+            document.getElementById('outPenyetujuJabatan').innerText = valOrDefault(document.getElementById('inPenyetujuJabatan').value, 'GH of Procurement');
+
+            // Tabel Lampiran
+            const tableBody = document.getElementById('outTableKeanggotaan').querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            const ketuaNama = document.getElementById('inKetuaNama').value;
+            const ketuaNip = document.getElementById('inKetuaNip').value;
+            const ketuaEntitas = document.getElementById('inKetuaEntitas').value;
+            tableBody.innerHTML += `
+                <tr>
+                    <td style="font-weight: bold; text-align: center;">Ketua</td>
+                    <td>${valOrDefault(ketuaNama, '')}</td>
+                    <td>${valOrDefault(ketuaNip, '')}</td>
+                    <td>${valOrDefault(ketuaEntitas, '')}</td>
+                </tr>
+            `;
+
+            const rowsAnggota = container.querySelectorAll('.row-anggota');
+            rowsAnggota.forEach((row) => {
+                const namaAng = row.querySelector('.in-ang-nama').value;
+                const nipAng = row.querySelector('.in-ang-nip').value;
+                const entitasAng = row.querySelector('.in-ang-entitas').value;
+                if(namaAng || nipAng || entitasAng) {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: bold; text-align: center;">Anggota</td>
+                            <td>${valOrDefault(namaAng, '')}</td>
+                            <td>${valOrDefault(nipAng, '')}</td>
+                            <td>${valOrDefault(entitasAng, '')}</td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        function showPreview() {
+            formSection.classList.add('hidden-mode');
+            previewSection.classList.remove('hidden-mode');
+            previewSection.classList.add('flex');
+        }
+
+        document.getElementById('btnView').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+        });
+
+        document.getElementById('btnBackToForm').addEventListener('click', () => {
+            previewSection.classList.add('hidden-mode');
+            previewSection.classList.remove('flex');
+            formSection.classList.remove('hidden-mode');
+        });
+
+        function executeDownloadPDF() {
+            const elemenContainer = document.getElementById('dokumenA4Container');
+            elemenContainer.classList.add('pdf-mode-active');
+            
+            const nomorFile = document.getElementById('inNoSurat').value || 'Tanpa_Nomor';
+            
+            const opsiPDF = {
+                margin:       [15, 0, 15, 0], // Margin atas bawah diberikan jsPDF
+                filename:     `Surat_Pembentukan_Panitia_${nomorFile}.pdf`,
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            window.scrollTo(0, 0);
+            html2pdf().set(opsiPDF).from(elemenContainer).save().then(() => {
+                elemenContainer.classList.remove('pdf-mode-active');
+            });
+        }
+
+        document.getElementById('btnGeneratePDF').addEventListener('click', () => {
+            updatePreviewData();
+            showPreview();
+            setTimeout(() => { executeDownloadPDF(); }, 500);
+        });
+
+        document.getElementById('btnDownloadToolbar').addEventListener('click', () => {
+            executeDownloadPDF();
+        });
+    </script>
+</body>
+</html>
