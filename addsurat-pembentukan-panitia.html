@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Berita Acara - Pembukaan Dokumen Penawaran</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            /* Mencegah scroll pada body, scroll hanya di panel */
+        }
+
+        /* Custom scrollbar untuk panel */
+        .scrollable-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollable-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollable-panel::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .scrollable-panel::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .input-field {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+            ring: 1px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        /* ==================== STYLING KERTAS PDF ==================== */
+        .a4-paper {
+            font-family: Arial, Helvetica, sans-serif;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm 20mm 20mm 20mm;
+            /* Margin diatur auto agar berada di tengah, jarak atas-bawah diatur oleh container (py-8) */
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            color: black;
+            font-size: 10pt;
+            line-height: 1.5;
+            box-sizing: border-box;
+            position: relative;
+            page-break-after: always;
+        }
+
+        .pdf-mode-active .a4-paper {
+            margin: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 8.5pt;
+        }
+
+        .pdf-table th,
+        .pdf-table td {
+            border: 1px solid #000;
+            padding: 5px;
+            vertical-align: middle;
+        }
+
+        .pdf-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .hidden-mode {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="flex h-screen bg-gray-50 text-gray-800">
+
+    <!-- ==================== PANEL KIRI (FORM INPUT) ==================== -->
+    <div class="w-[420px] bg-white border-r border-gray-200 flex flex-col h-full shadow-sm z-10 relative">
+        <div class="p-5 border-b border-gray-200 bg-white sticky top-0 z-20">
+            <h1 class="text-[17px] font-bold text-gray-800">Form Berita Acara</h1>
+            <p class="text-[12px] text-gray-500">Pembukaan Dokumen Penawaran</p>
+        </div>
+
+        <div class="p-5 overflow-y-auto scrollable-panel flex-1" id="form-container">
+            <div class="space-y-5">
+
+                <!-- Jenis Form -->
+                <div>
+                    <label class="input-label">Jenis Form</label>
+                    <select id="jenis-form"
+                        class="input-field bg-gray-50 cursor-pointer font-semibold text-blue-700 border-blue-400">
+                        <option value="Metode 1 Tahap 1 Sampul">Metode 1 Tahap 1 Sampul</option>
+                        <option value="Metode 1 Tahap 2 Sampul">Metode 1 Tahap 2 Sampul</option>
+                        <option value="Metode 2 Tahap 2 Sampul - Administrasi & Teknis">Metode 2 Tahap 2 Sampul -
+                            Administrasi & Tek</option>
+                        <option value="Metode 2 Tahap 2 Sampul - Harga">Metode 2 Tahap 2 Sampul - Harga</option>
+                    </select>
+                </div>
+
+                <!-- Row 1: No. BA & No. Permintaan -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col">
+                        <label class="input-label">No. Berita Acara</label>
+                        <input type="text" id="no-ba" class="input-field mt-auto" placeholder="Contoh: 001/BA/PROC/">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="input-label">Nomor Permintaan<br>Pemilihan Penyedia</label>
+                        <input type="text" id="no-req" class="input-field mt-auto"
+                            placeholder="Masukkan nomor permi...">
+                    </div>
+                </div>
+
+                <!-- Row 2: Tanggal & Media -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col">
+                        <label class="input-label">Tanggal Pembukaan<br>Dokumen</label>
+                        <input type="date" id="tgl-buka" class="input-field mt-auto text-gray-600">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="input-label">Media Pembukaan<br>Dokumen</label>
+                        <input type="text" id="media" class="input-field mt-auto" placeholder="Contoh: Microsoft Team">
+                    </div>
+                </div>
+
+                <!-- Nama Panitia -->
+                <div>
+                    <label class="input-label">Nama Panitia Pengadaan</label>
+                    <input type="text" id="nama-panitia" class="input-field"
+                        placeholder="Contoh: Panitia Pengadaan Barang dan Jasa">
+                </div>
+
+                <!-- Row 3: Jumlah Rekanan -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col">
+                        <label class="input-label">Jumlah Rekanan Diundang</label>
+                        <!-- Menggunakan mt-auto agar kotak input sejajar bawah walau tinggi teks berbeda -->
+                        <input type="number" id="jml-undang" class="input-field mt-auto" value="0" min="0">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="input-label">Jumlah Rekanan<br>Memasukkan Dokumen<br>Penawaran</label>
+                        <input type="number" id="jml-masuk" class="input-field mt-auto" value="0" min="0">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="input-label">Jumlah Rekanan Tidak Memasukkan Dokumen Penawaran</label>
+                    <input type="number" id="jml-tidak" class="input-field" value="0" min="0">
+                </div>
+
+                <!-- PEMBATAS: Daftar Peserta -->
+                <div class="pt-3 border-t border-gray-200 mt-1">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h3 class="text-[13px] font-bold text-gray-800">Daftar Peserta</h3>
+                            <p class="text-[10px] text-gray-500 leading-tight">Tambahkan rekanan yang
+                                mengikuti<br>pemilihan.</p>
+                        </div>
+                        <button type="button" onclick="addPeserta()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium py-1.5 px-3 rounded whitespace-nowrap">
+                            + Tambah<br>Peserta
+                        </button>
+                    </div>
+
+                    <!-- Container Daftar Peserta -->
+                    <div id="peserta-container" class="space-y-3">
+                        <!-- Akan diisi oleh JS -->
+                    </div>
+                </div>
+
+                <!-- PEMBATAS: Penandatanganan Surat -->
+                <div class="pt-3 border-t border-gray-200 mt-1">
+                    <h3 class="text-[13px] font-bold text-gray-800 mb-1">Penandatanganan Surat</h3>
+                    <p class="text-[10px] text-gray-500 leading-tight mb-3">Bagian ini terpisah dari tanggal
+                        pembukaan<br>dokumen.</p>
+
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div class="flex flex-col">
+                            <label class="input-label">Tempat Penandatanganan</label>
+                            <input type="text" id="ttd-tempat" class="input-field mt-auto"
+                                placeholder="Contoh: Jakarta">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="input-label">Tanggal Penandatanganan<br>Surat</label>
+                            <input type="date" id="ttd-tgl" class="input-field mt-auto text-gray-600">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="input-label">Nama Ketua Panitia</label>
+                        <input type="text" id="ttd-ketua" class="input-field" placeholder="Nama lengkap Ketua Panitia">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Button -->
+        <div class="p-4 border-t border-gray-200 bg-white">
+            <button type="button" id="btnGeneratePDF"
+                class="bg-[#10b981] hover:bg-emerald-600 text-white font-bold text-[12px] py-2 px-5 rounded transition-colors w-auto">
+                Simpan PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== PANEL KANAN (PREVIEW PDF) ==================== -->
+    <div class="flex-1 flex flex-col h-full bg-[#eef2f6] z-0">
+
+        <!-- Toolbar Atas (Dipisahkan secara struktural agar TIDAK menutupi area kertas) -->
+        <div class="w-full flex-none bg-[#eef2f6] border-b border-gray-300 shadow-sm z-10 flex justify-center py-3">
+            <div class="w-[210mm] flex justify-between items-center px-4">
+                <h2 class="text-lg font-bold text-gray-800">Preview Surat</h2>
+                <button type="button" onclick="document.getElementById('btnGeneratePDF').click()"
+                    class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold py-1.5 px-4 rounded shadow-sm">
+                    Cetak
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Kertas (Memiliki fitur scroll tersendiri, kertas dijamin tidak akan terselip ke atas) -->
+        <div class="flex-1 overflow-y-auto py-8">
+            <div id="dokumenA4Container">
+                <div class="a4-paper">
+
+                    <div style="font-style: italic; font-size: 8.5pt; margin-bottom: 20px;">
+                        (* Form untuk <span id="prev-jenis">Metode 1 Tahap 1 Sampul</span>)
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-weight: bold; font-size: 11pt; text-decoration: underline;">
+                            BERITA ACARA PEMBUKAAN DOKUMEN PENAWARAN
+                        </div>
+                        <div style="font-size: 9.5pt; margin-top: 5px;">
+                            No. <span id="prev-no-ba">.......................</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <b>Nomor Permintaan Pemilihan Penyedia:</b> <span
+                            id="prev-no-req">.......................</span>
+                    </div>
+
+                    <div style="text-align: justify; margin-bottom: 15px;">
+                        Pada hari <span id="prev-hari">.......</span> tanggal <span id="prev-tgl">.......</span> bulan
+                        <span id="prev-bln">.......</span> tahun <span id="prev-thn">.......</span>, melalui <span
+                            id="prev-media">.......................</span>, Panitia Pengadaan <span
+                            id="prev-panitia">.......................</span> telah mengadakan Pembukaan Dokumen
+                        Penawaran
+                        sesuai dengan jadwal yang ditetapkan, dengan daftar Peserta Pemilihan dan kesimpulan hasil
+                        pembukaan
+                        penawaran sebagai berikut:
+                    </div>
+
+                    <!-- List A, B, C, D Table Borderless -->
+                    <table style="width: 100%; border: none; margin-bottom: 15px; font-size: 9.5pt; line-height: 1.6;">
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                a.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang diundang sebanyak <b><span id="prev-jml-undang">0</span></b> rekanan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                b.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang memasukkan dokumen penawaran sebanyak <b><span
+                                        id="prev-jml-masuk">0</span></b>
+                                rekanan, yang kemudian disebut Peserta Pemilihan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                c.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Rekanan yang tidak memasukkan dokumen penawaran sebanyak <b><span
+                                        id="prev-jml-tidak">0</span></b> rekanan.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="white-space: nowrap; width: 1%; vertical-align: top; border: none; padding: 0 10px 5px 20px;">
+                                d.</td>
+                            <td style="vertical-align: top; border: none; padding: 0 0 5px 0; text-align: justify;">
+                                Panitia Pengadaan telah meneliti kelengkapan dokumen penawaran dari Peserta Pemilihan.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-bottom: 5px;">
+                        Daftar Calon Peserta Pemilihan & Kelengkapan Dokumen Penawaran
+                    </div>
+
+                    <!-- AREA TABEL DINAMIS (Akan diubah lewat JS berdasarkan dropdown jenis form) -->
+                    <div id="dynamic-table-area">
+                        <!-- Default: Table Single (Metode 1 Tahap 1 Sampul) -->
+                    </div>
+
+                    <div
+                        style="font-size: 8pt; font-style: italic; line-height: 1.4; margin-top: 5px; margin-bottom: 25px;">
+                        <b>Keterangan pengisian tabel:</b><br>
+                        √ = dokumen ada/memenuhi syarat/sesuai/lulus<br>
+                        X = dokumen tidak ada/tidak memenuhi syarat/tidak sesuai/tidak lulus
+                    </div>
+
+                    <div style="text-align: justify; margin-bottom: 40px;">
+                        Demikian Berita Acara Pembukaan Dokumen Penawaran ini kami sampaikan, untuk dipergunakan
+                        sebagaimana
+                        mestinya.
+                    </div>
+
+                    <!-- Signature Box -->
+                    <div style="display: flex; justify-content: flex-end; text-align: center;">
+                        <div style="width: 250px;">
+                            <span id="prev-ttd-tempat">Tempat</span>, <span
+                                id="prev-ttd-tgl">tanggal/bulan/tahun</span><br>
+                            Panitia Pengadaan
+                            <br><br><br><br><br>
+                            <b><u>(<span id="prev-ttd-ketua">Nama Ketua Panitia Pengadaan</span>)</u></b><br>
+                            Ketua Panitia
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LOGICS ==================== -->
+    <script>
+        const pesertaContainer = document.getElementById('peserta-container');
+        const jenisFormSelect = document.getElementById('jenis-form');
+
+        // Render struktur Input Form dinamis di panel KIRI
+        function renderInputFormPeserta() {
+            const tipeForm = jenisFormSelect.value;
+            const items = pesertaContainer.querySelectorAll('.peserta-item');
+            const dataPeserta = [];
+
+            // Simpan data lama agar tidak hilang saat mode dropdown diganti
+            items.forEach(item => {
+                dataPeserta.push({
+                    nama: item.querySelector('.inp-nama') ? item.querySelector('.inp-nama').value : '',
+                    admin: item.querySelector('.inp-admin') ? item.querySelector('.inp-admin').value : '',
+                    teknis: item.querySelector('.inp-teknis') ? item.querySelector('.inp-teknis').value : '',
+                    harga: item.querySelector('.inp-harga') ? item.querySelector('.inp-harga').value : '',
+                    kesimTunggal: item.querySelector('.inp-kesim-tunggal') ? item.querySelector('.inp-kesim-tunggal').value : '',
+                    kesimAdmin: item.querySelector('.inp-kesim-admin') ? item.querySelector('.inp-kesim-admin').value : '',
+                    kesimHarga: item.querySelector('.inp-kesim-harga') ? item.querySelector('.inp-kesim-harga').value : ''
+                });
+            });
+
+            pesertaContainer.innerHTML = '';
+
+            if (dataPeserta.length === 0) {
+                addPesertaInternal(tipeForm, {}); // Tambahkan 1 default jika kosong
+            } else {
+                dataPeserta.forEach(data => addPesertaInternal(tipeForm, data));
+            }
+            updatePesertaLabels();
+        }
+
+        function addPesertaInternal(tipeForm, data) {
+            let innerHTML = '';
+            const n = data.nama || '';
+            const a = data.admin || '';
+            const t = data.teknis || '';
+            const h = data.harga || '';
+            const kTunggal = data.kesimTunggal || '';
+            const kAdmin = data.kesimAdmin || '';
+            const kHarga = data.kesimHarga || '';
+
+            const p = (val, target) => (val === target ? 'selected' : '');
+
+            innerHTML += `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold text-gray-700 lbl-peserta"></span>
+                    <button type="button" class="text-[11px] font-bold text-red-500 hover:text-red-700" onclick="removePeserta(this)">Hapus</button>
+                </div>
+                <div class="space-y-2">
+                    <div>
+                        <label class="input-label">Nama Perusahaan / Rekanan</label>
+                        <input type="text" class="input-field inp-nama" placeholder="Contoh: PT ABC Indonesia" value="${n}">
+                    </div>
+            `;
+
+            if (tipeForm === "Metode 1 Tahap 1 Sampul") {
+                innerHTML += `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="input-label">Administrasi</label>
+                            <select class="input-field bg-white inp-admin">
+                                <option value="">Pilih</option><option value="√" ${p(a, '√')}>Pilih √</option><option value="X" ${p(a, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">Teknis</label>
+                            <select class="input-field bg-white inp-teknis">
+                                <option value="">Pilih</option><option value="√" ${p(t, '√')}>Pilih √</option><option value="X" ${p(t, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                            <label class="input-label">Harga</label>
+                            <select class="input-field bg-white inp-harga">
+                                <option value="">Pilih</option><option value="√" ${p(h, '√')}>Pilih √</option><option value="X" ${p(h, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label text-blue-600">Kesimpulan</label>
+                            <select class="input-field bg-white border-blue-300 inp-kesim-tunggal">
+                                <option value="">Pilih Kesimpulan</option><option value="Lulus" ${p(kTunggal, 'Lulus')}>Pilih Lulus</option><option value="Tidak Lulus" ${p(kTunggal, 'Tidak Lulus')}>Pilih Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tipeForm === "Metode 1 Tahap 2 Sampul") {
+                innerHTML += `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="input-label">Administrasi</label>
+                            <select class="input-field bg-white inp-admin">
+                                <option value="">Pilih</option><option value="√" ${p(a, '√')}>Pilih √</option><option value="X" ${p(a, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">Teknis</label>
+                            <select class="input-field bg-white inp-teknis">
+                                <option value="">Pilih</option><option value="√" ${p(t, '√')}>Pilih √</option><option value="X" ${p(t, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                            <label class="input-label">Harga</label>
+                            <select class="input-field bg-white inp-harga">
+                                <option value="">Pilih</option><option value="√" ${p(h, '√')}>Pilih √</option><option value="X" ${p(h, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="input-label text-blue-600 leading-tight">Kesimpulan Administrasi<br>& Teknis</label>
+                            <select class="input-field bg-white border-blue-300 mt-auto inp-kesim-admin">
+                                <option value="">Pilih Kesimpulan</option><option value="Lulus" ${p(kAdmin, 'Lulus')}>Pilih Lulus</option><option value="Tidak Lulus" ${p(kAdmin, 'Tidak Lulus')}>Pilih Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="col-start-2">
+                            <label class="input-label text-blue-600">Kesimpulan Harga</label>
+                            <select class="input-field bg-white border-blue-300 inp-kesim-harga">
+                                <option value="">Pilih Kesimpulan</option><option value="Lulus" ${p(kHarga, 'Lulus')}>Pilih Lulus</option><option value="Tidak Lulus" ${p(kHarga, 'Tidak Lulus')}>Pilih Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tipeForm === "Metode 2 Tahap 2 Sampul - Administrasi & Teknis") {
+                innerHTML += `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="input-label">Administrasi</label>
+                            <select class="input-field bg-white inp-admin">
+                                <option value="">Pilih</option><option value="√" ${p(a, '√')}>Pilih √</option><option value="X" ${p(a, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">Teknis</label>
+                            <select class="input-field bg-white inp-teknis">
+                                <option value="">Pilih</option><option value="√" ${p(t, '√')}>Pilih √</option><option value="X" ${p(t, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                            <label class="input-label text-blue-600">Kesimpulan</label>
+                            <select class="input-field bg-white border-blue-300 inp-kesim-admin">
+                                <option value="">Pilih Kesimpulan</option><option value="Lulus" ${p(kAdmin, 'Lulus')}>Pilih Lulus</option><option value="Tidak Lulus" ${p(kAdmin, 'Tidak Lulus')}>Pilih Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (tipeForm === "Metode 2 Tahap 2 Sampul - Harga") {
+                innerHTML += `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="input-label">Harga</label>
+                            <select class="input-field bg-white inp-harga">
+                                <option value="">Pilih</option><option value="√" ${p(h, '√')}>Pilih √</option><option value="X" ${p(h, 'X')}>Pilih X</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label text-blue-600">Kesimpulan</label>
+                            <select class="input-field bg-white border-blue-300 inp-kesim-harga">
+                                <option value="">Pilih Kesimpulan</option><option value="Lulus" ${p(kHarga, 'Lulus')}>Pilih Lulus</option><option value="Tidak Lulus" ${p(kHarga, 'Tidak Lulus')}>Pilih Tidak</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+
+            innerHTML += `</div>`;
+            const div = document.createElement('div');
+            div.className = 'peserta-item bg-gray-50 border border-gray-200 rounded p-3 relative';
+            div.innerHTML = innerHTML;
+            pesertaContainer.appendChild(div);
+        }
+
+        function addPeserta() {
+            addPesertaInternal(jenisFormSelect.value, {});
+            updatePesertaLabels();
+        }
+
+        function removePeserta(btn) {
+            btn.closest('.peserta-item').remove();
+            updatePesertaLabels();
+        }
+
+        function updatePesertaLabels() {
+            const items = pesertaContainer.querySelectorAll('.peserta-item');
+            items.forEach((item, index) => {
+                item.querySelector('.lbl-peserta').innerText = `Peserta ${index + 1}`;
+            });
+            updatePreview();
+        }
+
+        jenisFormSelect.addEventListener('change', () => {
+            renderInputFormPeserta();
+        });
+
+
+        // =========================================================
+        // PREVIEW PDF RENDERING DYNAMIC
+        // =========================================================
+
+        function formatTanggalDetail(dateStr) {
+            if (!dateStr) return { hari: '.......', tgl: '.......', bln: '.......', thn: '.......' };
+            const d = new Date(dateStr);
+            const hariArr = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const blnArr = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            return {
+                hari: hariArr[d.getDay()],
+                tgl: d.getDate(),
+                bln: blnArr[d.getMonth()],
+                thn: d.getFullYear()
+            };
+        }
+
+        function formatTanggalIndo(dateStr) {
+            if (!dateStr) return 'tanggal/bulan/tahun';
+            const detail = formatTanggalDetail(dateStr);
+            return `${detail.tgl} ${detail.bln} ${detail.thn}`;
+        }
+
+        function renderPreviewTable(tipeForm) {
+            const area = document.getElementById('dynamic-table-area');
+            let tableHTML = '';
+
+            const rows = document.querySelectorAll('.peserta-item');
+            const dataP = [];
+            rows.forEach(r => {
+                dataP.push({
+                    nama: r.querySelector('.inp-nama') ? r.querySelector('.inp-nama').value : '',
+                    admin: r.querySelector('.inp-admin') ? r.querySelector('.inp-admin').value : '',
+                    teknis: r.querySelector('.inp-teknis') ? r.querySelector('.inp-teknis').value : '',
+                    harga: r.querySelector('.inp-harga') ? r.querySelector('.inp-harga').value : '',
+                    kesimTunggal: r.querySelector('.inp-kesim-tunggal') ? r.querySelector('.inp-kesim-tunggal').value : '',
+                    kesimAdmin: r.querySelector('.inp-kesim-admin') ? r.querySelector('.inp-kesim-admin').value : '',
+                    kesimHarga: r.querySelector('.inp-kesim-harga') ? r.querySelector('.inp-kesim-harga').value : ''
+                });
+            });
+
+            if (tipeForm === "Metode 1 Tahap 1 Sampul") {
+                tableHTML += `
+                    <table class="pdf-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">No</th>
+                                <th rowspan="2" style="width: 35%;">Daftar Calon Peserta Pemilihan</th>
+                                <th colspan="3">Kelengkapan Dokumen</th>
+                                <th rowspan="2" style="width: 15%;">Kesimpulan</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 15%;">Administrasi</th>
+                                <th style="width: 15%;">Teknis</th>
+                                <th style="width: 15%;">Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                if (dataP.length === 0) tableHTML += `<tr><td colspan="6" style="height:30px;"></td></tr>`;
+                dataP.forEach((d, i) => {
+                    tableHTML += `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td class="pl-2">${d.nama}</td>
+                        <td class="text-center font-bold">${d.admin.includes('Pilih') ? '' : d.admin}</td>
+                        <td class="text-center font-bold">${d.teknis.includes('Pilih') ? '' : d.teknis}</td>
+                        <td class="text-center font-bold">${d.harga.includes('Pilih') ? '' : d.harga}</td>
+                        <td class="text-center text-[8pt] font-semibold">${d.kesimTunggal.includes('Pilih') ? '' : d.kesimTunggal}</td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+            }
+            else if (tipeForm === "Metode 1 Tahap 2 Sampul") {
+                // Table A (Administrasi & Teknis)
+                tableHTML += `
+                    <div style="font-weight:bold; font-size:9.5pt; margin-bottom: 2px;">A. Dokumen Penawaran Administrasi & Teknis</div>
+                    <table class="pdf-table" style="margin-top:2px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">No</th>
+                                <th rowspan="2" style="width: 45%;">Daftar Calon Peserta Pemilihan</th>
+                                <th colspan="2">Kelengkapan Dokumen</th>
+                                <th rowspan="2" style="width: 15%;">Kesimpulan</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 17.5%;">Administrasi</th>
+                                <th style="width: 17.5%;">Teknis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                if (dataP.length === 0) tableHTML += `<tr><td colspan="5" style="height:30px;"></td></tr>`;
+                dataP.forEach((d, i) => {
+                    tableHTML += `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td class="pl-2">${d.nama}</td>
+                        <td class="text-center font-bold">${d.admin.includes('Pilih') ? '' : d.admin}</td>
+                        <td class="text-center font-bold">${d.teknis.includes('Pilih') ? '' : d.teknis}</td>
+                        <td class="text-center text-[8pt] font-semibold">${d.kesimAdmin.includes('Pilih') ? '' : d.kesimAdmin}</td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+
+                // Table B (Harga)
+                tableHTML += `
+                    <div style="font-weight:bold; font-size:9.5pt; margin-bottom: 2px; margin-top:15px;">B. Dokumen Penawaran Harga</div>
+                    <table class="pdf-table" style="margin-top:2px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">No</th>
+                                <th rowspan="2" style="width: 45%;">Daftar Calon Peserta Pemilihan</th>
+                                <th rowspan="2" style="width: 35%;">Kelengkapan Dokumen<br>Harga</th>
+                                <th rowspan="2" style="width: 15%;">Kesimpulan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                if (dataP.length === 0) tableHTML += `<tr><td colspan="4" style="height:30px;"></td></tr>`;
+                dataP.forEach((d, i) => {
+                    tableHTML += `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td class="pl-2">${d.nama}</td>
+                        <td class="text-center font-bold">${d.harga.includes('Pilih') ? '' : d.harga}</td>
+                        <td class="text-center text-[8pt] font-semibold">${d.kesimHarga.includes('Pilih') ? '' : d.kesimHarga}</td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+            }
+            else if (tipeForm === "Metode 2 Tahap 2 Sampul - Administrasi & Teknis") {
+                tableHTML += `
+                    <div style="font-weight:bold; font-size:9.5pt; margin-bottom: 2px;">Tahap Dokumen Administrasi & Teknis</div>
+                    <table class="pdf-table" style="margin-top:2px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">No</th>
+                                <th rowspan="2" style="width: 45%;">Daftar Calon Peserta Pemilihan</th>
+                                <th colspan="2">Kelengkapan Dokumen</th>
+                                <th rowspan="2" style="width: 15%;">Kesimpulan</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 17.5%;">Administrasi</th>
+                                <th style="width: 17.5%;">Teknis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                if (dataP.length === 0) tableHTML += `<tr><td colspan="5" style="height:30px;"></td></tr>`;
+                dataP.forEach((d, i) => {
+                    tableHTML += `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td class="pl-2">${d.nama}</td>
+                        <td class="text-center font-bold">${d.admin.includes('Pilih') ? '' : d.admin}</td>
+                        <td class="text-center font-bold">${d.teknis.includes('Pilih') ? '' : d.teknis}</td>
+                        <td class="text-center text-[8pt] font-semibold">${d.kesimAdmin.includes('Pilih') ? '' : d.kesimAdmin}</td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+            }
+            else if (tipeForm === "Metode 2 Tahap 2 Sampul - Harga") {
+                tableHTML += `
+                    <div style="font-weight:bold; font-size:9.5pt; margin-bottom: 2px;">Tahap Dokumen Harga</div>
+                    <table class="pdf-table" style="margin-top:2px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">No</th>
+                                <th rowspan="2" style="width: 45%;">Daftar Calon Peserta Pemilihan</th>
+                                <th rowspan="2" style="width: 35%;">Kelengkapan Dokumen<br>Harga</th>
+                                <th rowspan="2" style="width: 15%;">Kesimpulan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                if (dataP.length === 0) tableHTML += `<tr><td colspan="4" style="height:30px;"></td></tr>`;
+                dataP.forEach((d, i) => {
+                    tableHTML += `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td class="pl-2">${d.nama}</td>
+                        <td class="text-center font-bold">${d.harga.includes('Pilih') ? '' : d.harga}</td>
+                        <td class="text-center text-[8pt] font-semibold">${d.kesimHarga.includes('Pilih') ? '' : d.kesimHarga}</td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+            }
+
+            area.innerHTML = tableHTML;
+        }
+
+        function updatePreview() {
+            const val = (id) => document.getElementById(id).value.trim();
+            const setTxt = (outId, inId, fallback) => {
+                const res = val(inId);
+                document.getElementById(outId).innerText = res ? res : fallback;
+            };
+
+            const tipeForm = document.getElementById('jenis-form').value;
+            let tipeTeksPendek = tipeForm;
+            // Persingkat nama title dokumen PDF mengikuti jenis
+            if (tipeForm.includes("Administrasi")) tipeTeksPendek = "Metode 2 Tahap 2 Sampul";
+            if (tipeForm.includes("Harga")) tipeTeksPendek = "Metode 2 Tahap 2 Sampul";
+
+            document.getElementById('prev-jenis').innerText = tipeTeksPendek;
+
+            setTxt('prev-no-ba', 'no-ba', '.......................');
+            setTxt('prev-no-req', 'no-req', '.......................');
+            setTxt('prev-media', 'media', '.......................');
+            setTxt('prev-panitia', 'nama-panitia', '.......................');
+
+            setTxt('prev-jml-undang', 'jml-undang', '0');
+            setTxt('prev-jml-masuk', 'jml-masuk', '0');
+            setTxt('prev-jml-tidak', 'jml-tidak', '0');
+
+            const tglBuka = val('tgl-buka');
+            const detBuka = formatTanggalDetail(tglBuka);
+            document.getElementById('prev-hari').innerText = detBuka.hari;
+            document.getElementById('prev-tgl').innerText = detBuka.tgl;
+            document.getElementById('prev-bln').innerText = detBuka.bln;
+            document.getElementById('prev-thn').innerText = detBuka.thn;
+
+            setTxt('prev-ttd-tempat', 'ttd-tempat', 'Tempat');
+            document.getElementById('prev-ttd-tgl').innerText = formatTanggalIndo(val('ttd-tgl'));
+            setTxt('prev-ttd-ketua', 'ttd-ketua', 'Nama Ketua Panitia Pengadaan');
+
+            // Render Table dinamis
+            renderPreviewTable(tipeForm);
+        }
+
+        // Listener
+        document.getElementById('form-container').addEventListener('input', updatePreview);
+        document.getElementById('form-container').addEventListener('change', updatePreview);
+
+        // Init
+        renderInputFormPeserta();
+
+        // PDF Generation
+        document.getElementById('btnGeneratePDF').addEventListener('click', () => {
+            const elemen = document.getElementById('dokumenA4Container');
+            elemen.classList.add('pdf-mode-active');
+
+            const opsi = {
+                margin: 0,
+                filename: 'BA_Pembukaan_Dokumen.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opsi).from(elemen).save().then(() => {
+                elemen.classList.remove('pdf-mode-active');
+            });
+        });
+    </script>
+</body>
+
+</html>
