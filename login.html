@@ -1,177 +1,132 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Akses - Procurement Policy & Document Center</title>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Akses - Procurement Policy & Document Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+:root{--red:#D7192A;--red-dark:#B01220;--ink:#1B2430;--slate:#5B6675;--line:#D5DAE1;--bg:#F5F6F8;--navy:#16202C}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:1.5rem;line-height:1.6}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 
-        body {
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+.shell{width:100%;max-width:880px;display:grid;grid-template-columns:5fr 6fr;background:#fff;border:1px solid #E3E7EC;border-radius:14px;overflow:hidden;box-shadow:0 20px 40px -20px rgba(22,32,44,.3)}
 
-        .login-wrapper {
-            width: 100%;
-            /* Lebar aslinya 400px, sekarang dilebarkan menjadi 550px */
-            max-width: 550px; 
-            padding: 20px;
-        }
+/* Panel kiri */
+.side{background:var(--navy);color:#fff;padding:2.5rem 2rem;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:2rem}
+.side::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
+.side::after{content:"";position:absolute;right:-110px;bottom:-110px;width:300px;height:300px;border-radius:50%;border:48px solid rgba(255,255,255,.05)}
+.logo-box{background:#fff;border-radius:10px;padding:.6rem .9rem;width:fit-content;position:relative;z-index:1}
+.logo-box img{height:40px;width:auto;display:block}
+.side h1{font-size:1.6rem;line-height:1.25;font-weight:700;letter-spacing:-.01em;position:relative;z-index:1}
+.side p{margin-top:.75rem;color:#B9C3D0;font-size:.95rem;position:relative;z-index:1}
+.side small{color:#8593A3;font-size:.78rem;position:relative;z-index:1}
 
-        .login-card {
-            background-color: #ffffff;
-            /* Menambah ruang kosong di kiri-kanan dari 30px menjadi 50px agar isinya tidak terlalu mepet ke pinggir saat dilebarkan */
-            padding: 40px 50px; 
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
+/* Form */
+.form-area{padding:3rem 2.75rem;display:flex;flex-direction:column;justify-content:center}
+.form-area h2{font-size:1.5rem;font-weight:700}
+.form-area .sub{color:var(--slate);font-size:.92rem;margin:.3rem 0 1.75rem}
+.field{margin-bottom:1.2rem}
+.field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem}
+.control{position:relative}
+.control>i.lead{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);color:#8A95A3;font-size:1.1rem;pointer-events:none}
+.control input{width:100%;padding:.8rem 2.6rem .8rem 2.7rem;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.95rem;background:#fff;transition:border-color .2s,box-shadow .2s}
+.control input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(215,25,42,.15)}
+.toggle{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:0;padding:.45rem;color:#8A95A3;cursor:pointer;font-size:1.15rem;border-radius:6px;display:grid;place-items:center}
+.toggle:hover{color:var(--ink)}
+.btn-login{width:100%;margin-top:.6rem;padding:.9rem;background:var(--red);color:#fff;border:0;border-radius:8px;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:background .2s}
+.btn-login:hover:not(:disabled){background:var(--red-dark)}
+.btn-login:disabled{opacity:.8;cursor:progress}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.foot{margin-top:1.5rem;font-size:.78rem;color:var(--slate);text-align:center}
 
-        /* 1. Memperbesar Logo */
-        .logo {
-            max-width: 180px; /* Sebelumnya 140px, sekarang diperbesar */
-            height: auto;
-            margin-bottom: 20px;
-        }
-
-        /* 2. Memperbesar Judul dan Teks Deskripsi */
-        .login-card h2 {
-            color: #333333;
-            font-size: 28px; /* Diperbesar dari 24px */
-            margin-bottom: 8px;
-        }
-
-        .login-card p {
-            color: #666666;
-            font-size: 16px; /* Diperbesar dari 14px */
-            margin-bottom: 35px;
-        }
-
-        /* Memastikan seluruh isi input-group rata kiri */
-        .input-group {
-            text-align: left; 
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        /* Mengatur label (Username / Email & Password) */
-        .input-group label {
-            display: block;
-            color: #333333; /* Warna abu-abu gelap agar mudah dibaca */
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        /* Mengatur kotak ketikan (input) */
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px; /* Memberi jarak agar teks/kursor tidak menempel di garis tepi */
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-            font-size: 15px;
-            box-sizing: border-box; /* Sangat penting agar padding tidak merusak ukuran kotak */
-            transition: border-color 0.3s ease;
-        }
-
-        /* Efek saat kotak diklik (fokus) */
-        .input-group input:focus {
-            outline: none;
-            border-color: #d1121c; /* Warna merah saat aktif */
-        }
-
-        /* Mengatur tombol Masuk */
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background-color: #d1121c; /* Merah SIG */
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px; /* Jarak antara password dan tombol */
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-login:hover {
-            background-color: #a80e16;
-        }
-    </style>
+@media(max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .side{padding:1.75rem 1.5rem;gap:1rem}
+  .side p,.side small{display:none}
+  .form-area{padding:2rem 1.5rem}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}.spin{animation-duration:1.5s}}
+</style>
 </head>
 <body>
 
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="logo-container">
-                <!-- Memanggil gambar logo dari dalam folder logo -->
-                <img src="./logo/logosig.png" alt="Logo SIG" class="logo">
-            </div>
-            
-            <h2>Login Akses</h2>
-            <p>Procurement Policy & Document Center</p>
-
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="username">Username / Email</label>
-                    <input type="text" id="username" placeholder="Masukkan username" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Masukkan password" required>
-                </div>
-                
-                <button type="submit" class="btn-login">Masuk</button>
-            </form>
-        </div>
+<div class="shell">
+  <aside class="side">
+    <div class="logo-box"><img src="./logo/logosig.png" alt="Logo SIG"></div>
+    <div>
+      <h1>Procurement Policy &amp; Document Center</h1>
+      <p>Akses regulasi, template, dan arsip dokumen pengadaan PT Semen Indonesia (Persero) Tbk.</p>
     </div>
+    <small>&copy; 2026 PT Semen Indonesia (Persero) Tbk.</small>
+  </aside>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Jika sudah login, langsung ke dashboard
-            if (sessionStorage.getItem('isLoggedIn') === 'true') {
-                window.location.href = "dashboard.html";
-                return;
-            }
+  <section class="form-area">
+    <h2>Masuk ke akun Anda</h2>
+    <p class="sub">Gunakan username atau email untuk melanjutkan.</p>
 
-            const loginForm = document.getElementById('loginForm');
+    <form id="loginForm">
+      <div class="field">
+        <label for="username">Username / Email</label>
+        <div class="control">
+          <i class="ph ph-user lead"></i>
+          <input type="text" id="username" placeholder="Masukkan username" autocomplete="username" required>
+        </div>
+      </div>
 
-            loginForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // Mencegah halaman refresh otomatis
-                
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value.trim();
-                
-                if (username !== '' && password !== '') {
-                    // Animasi loading saat tombol ditekan
-                    const btn = document.querySelector('.btn-login');
-                    btn.innerHTML = "Memproses...";
-                    btn.disabled = true;
-                    
-                    setTimeout(() => {
-                        // Simpan sesi login
-                        sessionStorage.setItem('isLoggedIn', 'true');
-                        sessionStorage.setItem('username', username);
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="control">
+          <i class="ph ph-lock-key lead"></i>
+          <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" required>
+          <button type="button" class="toggle" id="togglePw" aria-label="Tampilkan password"><i class="ph ph-eye"></i></button>
+        </div>
+      </div>
 
-                        // Redirect ke dashboard
-                        window.location.href = "dashboard.html";
-                    }, 1000); // Jeda 1 detik untuk efek loading
-                }
-            });
-        });
-    </script>
+      <button type="submit" class="btn-login">Masuk</button>
+    </form>
+    <p class="foot">Hanya untuk pengguna yang berwenang.</p>
+  </section>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (sessionStorage.getItem('isLoggedIn') === 'true') {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const pw = document.getElementById('password');
+  const toggle = document.getElementById('togglePw');
+  toggle.addEventListener('click', function () {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    toggle.innerHTML = show ? '<i class="ph ph-eye-slash"></i>' : '<i class="ph ph-eye"></i>';
+    toggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = pw.value.trim();
+
+    if (username !== '' && password !== '') {
+      const btn = document.querySelector('.btn-login');
+      btn.innerHTML = '<span class="spin"></span> Memproses...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('username', username);
+        window.location.href = "index.html";
+      }, 1000);
+    }
+  });
+});
+</script>
 </body>
-
 </html>

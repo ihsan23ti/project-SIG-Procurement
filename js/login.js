@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     // Jika sudah login, langsung ke dashboard
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        window.location.href = "dashboard.html";
+        window.location.href = "index.html";
         return;
     }
 
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 sessionStorage.setItem('username', username);
 
                 // Redirect ke dashboard
-                window.location.href = "dashboard.html";
+                window.location.href = "index.html";
             }, 1000); // Jeda 1 detik untuk efek loading
         }
     });

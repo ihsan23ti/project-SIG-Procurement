@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procurement Policy SIG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script>
+  // Proteksi halaman: cek apakah user sudah login
+  (function () {
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = "login.html";
+    }
+  })();
+</script>
+<style>
+:root{--red:#D7192A;--red-dark:#B01220;--ink:#1B2430;--slate:#5B6675;--line:#E3E7EC;--bg:#F5F6F8;--navy:#16202C}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.5}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+.nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.nav-inner{max-width:1120px;margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:.95rem}
+.brand img{height:36px;width:auto}
+.brand small{display:block;font-weight:400;color:var(--slate);font-size:.75rem;line-height:1.2}
+.user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:var(--slate)}
+.user strong{color:var(--ink);font-weight:600}
+.who{display:flex;align-items:center;gap:.6rem}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.btn-back{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.45rem .9rem;border-radius:6px;font-size:.85rem;font-weight:500;transition:.2s}
+.btn-back:hover{border-color:var(--red);color:var(--red);background:#FFF5F5}
+
+.hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
+.hero::after{content:"";position:absolute;right:-120px;top:-140px;width:400px;height:400px;border-radius:50%;border:56px solid rgba(255,255,255,.04)}
+.hero-inner{max-width:1120px;margin:0 auto;padding:2.75rem 1.5rem 5rem;position:relative;z-index:1}
+.crumb{font-size:.85rem;color:#8FA0B3;margin-bottom:.75rem}
+.crumb a:hover{color:#fff}
+.hero h1{font-size:clamp(1.7rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.hero p{margin-top:.6rem;color:#B9C3D0;max-width:58ch}
+
+.wrap{max-width:1120px;margin:-2.75rem auto 0;padding:0 1.5rem 3rem;width:100%;position:relative;z-index:2}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.15rem;display:flex;align-items:center;gap:1rem;position:relative;transition:border-color .2s,box-shadow .2s;box-shadow:0 6px 18px -12px rgba(22,32,44,.25)}
+.card:hover{border-color:var(--red);box-shadow:0 10px 24px -12px rgba(215,25,42,.3)}
+.card .icon{flex:none;width:44px;height:44px;border-radius:10px;background:#FDEDEE;color:var(--red);display:grid;place-items:center;font-size:1.35rem;transition:.2s}
+.card:hover .icon{background:var(--red);color:#fff}
+.card .t{flex:1;font-size:.93rem;font-weight:600;line-height:1.35}
+.card .arrow{flex:none;color:#9AA5B2;transition:transform .2s,color .2s}
+.card:hover .arrow{color:var(--red);transform:translateX(3px)}
+.card.soon{cursor:default;background:#FBFBFC;box-shadow:none}
+.card.soon:hover{border-color:var(--line);box-shadow:none}
+.card.soon .icon{background:#EEF0F3;color:#8A95A3}
+.card.soon:hover .icon{background:#EEF0F3;color:#8A95A3}
+.card.soon .t{color:var(--slate)}
+.badge{flex:none;font-size:.72rem;font-weight:600;color:var(--slate);background:#EEF0F3;border-radius:999px;padding:.15rem .6rem}
+
+footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-align:center;font-size:.8rem;color:var(--slate);padding:1.1rem 1rem}
+
+@media(max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .user .label{display:none}
+  .hero-inner{padding:2rem 1.5rem 4.25rem}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <img src="./logo/logosig.png" alt="Logo SIG">
+      <span>Procurement Portal<small>PT Semen Indonesia (Persero) Tbk</small></span>
+    </a>
+    <div class="user">
+      <div class="who">
+        <div class="avatar" id="avatar">U</div>
+        <span class="label">Selamat datang, <strong id="displayUsername"></strong></span>
+      </div>
+      <a href="index.html" class="btn-back"><i class="ph ph-arrow-left"></i> Kembali ke Portal</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="crumb"><a href="index.html">Portal</a> / Procurement Policy</div>
+    <h1>Procurement Policy SIG</h1>
+    <p>Pedoman dan prosedur pengadaan beserta template dokumen turunannya.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
+
+<script>
+  // Daftar menu. Isi href dengan nama file; jika href "#", kartu tampil sebagai "Segera tersedia".
+  const items = [
+    { t: "Pedoman Pengadaan Barang dan/atau Jasa", i: "book-open", href: "#" },
+    { t: "Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia", i: "clipboard-text", href: "#" },
+    { t: "BA Serah Terima Dokumen Permintaan Pemilihan", i: "handshake", href: "ba-serah-terima.html" },
+    { t: "SKD Pembentukan Panitia Pengadaan", i: "users-three", href: "skd-panitia.html" },
+    { t: "Add. SKD Pembentukan Panitia Pengadaan", i: "user-plus", href: "addendum-skd-panitia.html" },
+    { t: "Surat Pembentukan Panitia Pengadaan", i: "envelope-open", href: "surat-panitia.html" },
+    { t: "Add. Surat Pembentukan Panitia Pengadaan", i: "envelope-simple", href: "addsurat-pembentukan-panitia.html" },
+    { t: "Pakta Integritas Panitia Pengadaan", i: "shield-check", href: "pakta-integritas.html" },
+    { t: "Harga Perkiraan Sendiri (HPS)", i: "calculator", href: "hps.html" },
+    { t: "IKPP", i: "file-search", href: "ikpp.html" },
+    { t: "BA Pembukaan Dokumen Penawaran", i: "folder-open", href: "ba-pembukaan-dokumen.html" },
+    { t: "LHPP", i: "chart-bar", href: "#" },
+    { t: "Pengumuman Hasil Pemilihan Penyedia", i: "megaphone", href: "pengumuman-hasil-pemilihan.html" },
+    { t: "Panduan Bravo", i: "compass", href: "#" }
+  ];
+
+  document.getElementById('grid').innerHTML = items.map(function (it) {
+    const soon = it.href === "#";
+    const tag = soon ? 'div' : 'a';
+    const attrs = soon ? 'class="card soon"' : 'class="card" href="' + it.href + '"';
+    const end = soon ? '<span class="badge">Segera tersedia</span>' : '<i class="ph ph-arrow-right arrow"></i>';
+    return '<' + tag + ' ' + attrs + '>' +
+      '<div class="icon"><i class="ph ph-' + it.i + '"></i></div>' +
+      '<span class="t">' + it.t + '</span>' + end +
+      '</' + tag + '>';
+  }).join('');
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const username = sessionStorage.getItem('username') || 'User';
+    document.getElementById('displayUsername').textContent = username;
+    document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
+  });
+</script>
+</body>
+</html>

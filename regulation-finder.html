@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regulation Finder - Procurement SIG</title>
+
+<!-- Tailwind dipertahankan karena kartu hasil di js/regulation-finder.js kemungkinan memakai class Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sig: { black: '#1B2430', red: '#D7192A', redHover: '#B01220', lightGray: '#F9FAFB', border: '#E3E7EC' }
+        },
+        fontFamily: { sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>
+  // Proteksi halaman
+  (function () {
+    if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = "login.html";
+  })();
+</script>
+
+<style>
+:root{--red:#D7192A;--ink:#1B2430;--slate:#5B6675;--line:#E3E7EC;--bg:#F5F6F8;--navy:#16202C}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+/* Navbar */
+.nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.nav-inner{max-width:1120px;margin:0 auto;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:.95rem}
+.brand img{height:36px;width:auto}
+.brand small{display:block;font-weight:400;color:var(--slate);font-size:.75rem;line-height:1.2}
+.user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:var(--slate)}
+.user strong{color:var(--ink);font-weight:600}
+.who{display:flex;align-items:center;gap:.6rem}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.btn-back{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.45rem .9rem;border-radius:6px;font-size:.85rem;font-weight:500;transition:.2s}
+.btn-back:hover{border-color:var(--red);color:var(--red);background:#FFF5F5}
+
+/* Hero */
+.hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
+.hero::after{content:"";position:absolute;right:-120px;top:-140px;width:400px;height:400px;border-radius:50%;border:56px solid rgba(255,255,255,.04)}
+.hero-inner{max-width:1120px;margin:0 auto;padding:2.75rem 1.5rem 5.5rem;position:relative;z-index:1}
+.crumb{font-size:.85rem;color:#8FA0B3;margin-bottom:.75rem}
+.crumb a:hover{color:#fff}
+.hero h1{font-size:clamp(1.7rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.hero p{margin-top:.6rem;color:#B9C3D0;max-width:60ch}
+
+/* Pencarian */
+.wrap{max-width:1120px;margin:-2.75rem auto 0;padding:0 1.5rem 3rem;width:100%;position:relative;z-index:2}
+.search-box{position:relative}
+.search-box .lead{position:absolute;left:1.1rem;top:50%;transform:translateY(-50%);color:#8A95A3;font-size:1.3rem;pointer-events:none}
+#searchInput{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 3.2rem 1.1rem 3.3rem;font:inherit;font-size:1.05rem;box-shadow:0 12px 28px -14px rgba(22,32,44,.35);transition:border-color .2s,box-shadow .2s}
+#searchInput::placeholder{color:#8A95A3}
+#searchInput:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(215,25,42,.15),0 12px 28px -14px rgba(22,32,44,.35)}
+#clearSearch{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);padding:.55rem;color:#8A95A3;border-radius:8px;background:none;border:0;cursor:pointer}
+#clearSearch:hover{color:var(--red)}
+
+.meta{margin:1.5rem 0 1rem;font-size:.88rem;color:var(--slate);display:flex;align-items:center;gap:.5rem}
+.meta::before{content:"";width:3px;height:1em;background:var(--red);border-radius:2px}
+
+/* Kartu hasil (dirender oleh JS) */
+#resultsContainer{display:flex;flex-direction:column;gap:.9rem}
+.result-card{background:#fff;border:1px solid var(--line);border-radius:10px;transition:border-color .2s,box-shadow .2s}
+.result-card:hover{border-color:#E9959C;box-shadow:0 10px 24px -14px rgba(215,25,42,.35)}
+.highlight{background:#FFE98A;color:var(--ink);font-weight:600;padding:0 2px;border-radius:3px}
+
+footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-align:center;font-size:.8rem;color:var(--slate);padding:1.1rem 1rem}
+
+@media(max-width:640px){
+  .user .label{display:none}
+  .hero-inner{padding:2rem 1.5rem 4.5rem}
+  #searchInput{font-size:1rem}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <img src="./logo/logosig.png" alt="Logo SIG">
+      <span>Procurement Portal<small>PT Semen Indonesia (Persero) Tbk</small></span>
+    </a>
+    <div class="user">
+      <div class="who">
+        <div class="avatar" id="avatar">U</div>
+        <span class="label"><strong id="displayUsername">User</strong></span>
+      </div>
+      <a href="index.html" class="btn-back"><i class="ph ph-arrow-left"></i> Kembali ke Portal</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="crumb"><a href="index.html">Portal</a> / Regulation Finder</div>
+    <h1>Regulation Finder</h1>
+    <p>Cari kata kunci, pasal, atau istilah dalam seluruh dokumen pedoman pengadaan SIG.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="search-box">
+    <i class="ph ph-magnifying-glass lead"></i>
+    <input type="text" id="searchInput" autocomplete="off" aria-label="Cari regulasi"
+           placeholder="Ketik kata kunci, misalnya: tender, evaluasi, vendor">
+    <button id="clearSearch" class="hidden" aria-label="Hapus pencarian"><i class="ph ph-x-circle text-xl"></i></button>
+  </div>
+
+  <div class="meta"><span id="resultCount" aria-live="polite">Menampilkan semua dokumen</span></div>
+
+  <div id="resultsContainer">
+    <!-- Konten akan di-render oleh JavaScript -->
+  </div>
+</main>
+
+<footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const username = sessionStorage.getItem('username');
+    if (username) {
+      document.getElementById('displayUsername').textContent = username;
+      document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
+    }
+  });
+</script>
+<script src="js/regulation-finder.js"></script>
+</body>
+</html>
