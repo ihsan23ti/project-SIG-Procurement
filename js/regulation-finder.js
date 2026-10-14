@@ -3,48 +3,55 @@
 const documentsData = [
     {
         id: 1,
-        title: "1.3 Revisi 01 Pedoman Pengadaan Barang dan Jasa 1 Juni 2026",
+        title: "Pedoman Pengadaan Barang dan Jasa 2024",
         category: "Pedoman Utama",
         content: "Proses tender harus dilakukan secara transparan. Evaluasi penawaran vendor didasarkan pada aspek teknis dan komersial dengan bobot yang telah ditentukan sebelumnya dalam dokumen pengadaan.",
-        fileUrl: "data regulation finder/1.3 Revisi 01 Pedoman Pengadaan Barang dan Jasa 1 Juni 2026.pdf"
+        fileUrl: "#"
     },
     {
         id: 2,
-        title: "2.1 Prosedur tahap 1-Permintaan Pemilihan Penyedia lewat PMO",
+        title: "SK Direksi No. 45/2023 - Sistem Vendor Management",
         category: "Surat Keputusan",
         content: "Setiap vendor wajib terdaftar dalam sistem VMS (Vendor Management System) sebelum mengikuti proses pengadaan. Kualifikasi vendor ditinjau setiap tahun.",
-        fileUrl: "data regulation finder/2.1 Prosedur tahap 1-Permintaan Pemilihan Penyedia lewat PMO.pdf"
+        fileUrl: "#"
     },
     {
         id: 3,
-        title: "3.2 Revisi 02 Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia",
+        title: "SOP Penunjukan Langsung",
         category: "Prosedur (SOP)",
         content: "Metode penunjukan langsung hanya dapat dilakukan dalam keadaan darurat, krisis, atau jika barang/jasa spesifik hanya dimiliki oleh satu pemegang hak paten tunggal (sole agent).",
-        fileUrl: "data regulation finder/3.2 Revisi 02 Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia.pdf"
+        fileUrl: "#"
     },
     {
         id: 4,
-        title: "4. Prosedur tahap 4,5-Penandatanganan dan Pelaksanaan Kontrak",
+        title: "Panduan Evaluasi Kewajaran Harga (HPS)",
         category: "Panduan Teknis",
         content: "Penyusunan Harga Perkiraan Sendiri (HPS) atau Owner Estimate (OE) harus melibatkan riset pasar terbaru, membandingkan minimal tiga referensi harga yang valid.",
-        fileUrl: "data regulation finder/4. Prosedur tahap 4,5-Penandatanganan dan Pelaksanaan Kontrak.pdf"
+        fileUrl: "#"
     },
     {
         id: 5,
-        title: "5. Prosedur tahap 6-Penyerahan dan Penerimaan Barang atau Jasa",
+        title: "Formulir Lembar Persetujuan IKPP (Instruksi Kepada Peserta Pemilihan)",
         category: "Instruksi & Formulir",
         content: "Dokumen Instruksi Kepada Peserta Pemilihan (IKPP) mengatur tahapan proses pemilihan penyedia mulai dari penjelasan dokumen pengadaan (aanwijzing), penyampaian dokumen penawaran administrasi, teknis, dan harga, hingga evaluasi. Terdapat preferensi harga bagi produk dalam negeri dengan nilai TKDN lebih besar atau sama dengan 25%. Evaluasi penawaran menggunakan Sistem Gugur. Negosiasi harga dilakukan jika penawaran maksimal 20% di atas HPS. Peserta wajib mematuhi aturan masa sanggah dan menyerahkan Jaminan Sanggahan, Jaminan Penawaran, Jaminan Uang Muka, Jaminan Pelaksanaan (5%), dan Jaminan Pemeliharaan (5%). Pembayaran dilakukan melalui TT (telegraphic transfer) paling lambat 90 hari kalender.",
-        fileUrl: "data regulation finder/5. Prosedur tahap 6-Penyerahan dan Penerimaan Barang atau Jasa.pdf"
+        fileUrl: "pdf/Formulir Lembar Persetujuan IKPP.pdf"
     },
+    {
+        id: 6,
+        title: "Surat Pembentukan Panitia Pengadaan",
+        category: "Surat Keputusan",
+        content: "PT Semen Indonesia (Persero) Tbk membentuk panitia pengadaan untuk melaksanakan proses pengadaan pada tahap persiapan pemilihan penyedia dan pelaksanaan pemilihan penyedia. Berlaku berdasarkan Pedoman Pengadaan Barang dan/atau Jasa Kode Dokumen M/SIG/PRO/002, Revisi ke-1 Tanggal Revisi 01 Juni 2026. Berlaku untuk pengadaan dengan batas nilai Rp150.000.000.000,00. Disetujui oleh GH of Procurement, Ade Meiriyadi. Dokumen ini juga memuat lampiran susunan keanggotaan panitia pengadaan.",
+        fileUrl: "pdf/Surat_Pembentukan_Panitia_Tanpa_Nomor.pdf"
+    }
 ];
 
-document.addEventListener("DOMContentLoaded", function () {
-
+document.addEventListener("DOMContentLoaded", function() {
+    
     if (sessionStorage.getItem('isLoggedIn') === 'false' || !sessionStorage.getItem('isLoggedIn')) {
         window.location.href = "login.html";
         return;
     }
-
+    
     const username = sessionStorage.getItem('username') || 'Admin';
     const displayUsernameEl = document.getElementById('displayUsername');
     if (displayUsernameEl) displayUsernameEl.innerText = username;
@@ -90,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderResults(data, keyword = '') {
-        resultsContainer.innerHTML = '';
+        resultsContainer.innerHTML = ''; 
 
         if (data.length === 0) {
             resultsContainer.innerHTML = `
@@ -145,15 +152,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const keyword = e.target.value.trim().toLowerCase();
-
+            
             if (keyword.length > 0) {
                 clearBtn.classList.remove('hidden');
             } else {
                 clearBtn.classList.add('hidden');
             }
 
-            const filteredData = documentsData.filter(item =>
-                item.title.toLowerCase().includes(keyword) ||
+            const filteredData = documentsData.filter(item => 
+                item.title.toLowerCase().includes(keyword) || 
                 item.content.toLowerCase().includes(keyword)
             );
 
@@ -166,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
             searchInput.value = '';
             clearBtn.classList.add('hidden');
             searchInput.focus();
-            renderResults(documentsData);
+            renderResults(documentsData); 
         });
     }
 });
