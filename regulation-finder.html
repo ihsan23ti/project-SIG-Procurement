@@ -140,5 +140,62 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
   });
 </script>
 <script src="js/regulation-finder.js"></script>
+
+<!-- Script Tambahan untuk Highlight Kata Kunci -->
+<script>
+  (function() {
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    function applyHighlight() {
+      const keyword = searchInput.value.trim();
+      if (!keyword) return;
+
+      // Escape karakter khusus agar regex tidak error
+      const safeKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(${safeKeyword})`, 'gi');
+
+      function traverse(node) {
+        if (node.nodeType === 3) { // Hanya menargetkan Node Teks
+          const text = node.nodeValue;
+          if (regex.test(text)) {
+            const tempSpan = document.createElement('span');
+            // Menghindari XSS dengan escape karakter HTML dasar sebelum highlight
+            const escapedText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            tempSpan.innerHTML = escapedText.replace(regex, '<span class="highlight">$1</span>');
+            
+            const fragment = document.createDocumentFragment();
+            while(tempSpan.firstChild) {
+              fragment.appendChild(tempSpan.firstChild);
+            }
+            node.parentNode.replaceChild(fragment, node);
+          }
+        } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && !node.classList.contains('highlight')) {
+          // Loop ke semua child elements
+          Array.from(node.childNodes).forEach(traverse);
+        }
+      }
+
+      Array.from(resultsContainer.childNodes).forEach(traverse);
+    }
+
+    // Gunakan MutationObserver untuk memantau kapan hasil baru masuk ke resultsContainer
+    const observer = new MutationObserver((mutations) => {
+      let shouldHighlight = false;
+      mutations.forEach(mutation => {
+        if (mutation.addedNodes.length > 0) shouldHighlight = true;
+      });
+      
+      if (shouldHighlight) {
+        observer.disconnect(); // Matikan sementara agar tidak infinite loop saat menambah <span>
+        applyHighlight();
+        observer.observe(resultsContainer, { childList: true, subtree: true }); // Nyalakan lagi
+      }
+    });
+
+    observer.observe(resultsContainer, { childList: true, subtree: true });
+  })();
+</script>
+
 </body>
 </html>
