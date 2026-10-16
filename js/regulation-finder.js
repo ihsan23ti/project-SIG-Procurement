@@ -1,172 +1,197 @@
-// regulation-finder.js
-
-const documentsData = [
-    {
-        id: 1,
-        title: "1.3 Revisi 01 Pedoman Pengadaan Barang dan Jasa 1 Juni 2026",
-        category: "Pedoman Utama",
-        content: "Proses tender harus dilakukan secara transparan. Evaluasi penawaran vendor didasarkan pada aspek teknis dan komersial dengan bobot yang telah ditentukan sebelumnya dalam dokumen pengadaan.",
-        fileUrl: "data regulation finder/1.3 Revisi 01 Pedoman Pengadaan Barang dan Jasa 1 Juni 2026.pdf"
-    },
-    {
-        id: 2,
-        title: "2.1 Prosedur tahap 1-Permintaan Pemilihan Penyedia lewat PMO",
-        category: "Surat Keputusan",
-        content: "Setiap vendor wajib terdaftar dalam sistem VMS (Vendor Management System) sebelum mengikuti proses pengadaan. Kualifikasi vendor ditinjau setiap tahun.",
-        fileUrl: "data regulation finder/2.1 Prosedur tahap 1-Permintaan Pemilihan Penyedia lewat PMO.pdf"
-    },
-    {
-        id: 3,
-        title: "3.2 Revisi 02 Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia",
-        category: "Prosedur (SOP)",
-        content: "Metode penunjukan langsung hanya dapat dilakukan dalam keadaan darurat, krisis, atau jika barang/jasa spesifik hanya dimiliki oleh satu pemegang hak paten tunggal (sole agent).",
-        fileUrl: "data regulation finder/3.2 Revisi 02 Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia.pdf"
-    },
-    {
-        id: 4,
-        title: "4. Prosedur tahap 4,5-Penandatanganan dan Pelaksanaan Kontrak",
-        category: "Panduan Teknis",
-        content: "Penyusunan Harga Perkiraan Sendiri (HPS) atau Owner Estimate (OE) harus melibatkan riset pasar terbaru, membandingkan minimal tiga referensi harga yang valid.",
-        fileUrl: "data regulation finder/4. Prosedur tahap 4,5-Penandatanganan dan Pelaksanaan Kontrak.pdf"
-    },
-    {
-        id: 5,
-        title: "5. Prosedur tahap 6-Penyerahan dan Penerimaan Barang atau Jasa",
-        category: "Instruksi & Formulir",
-        content: "Dokumen Instruksi Kepada Peserta Pemilihan (IKPP) mengatur tahapan proses pemilihan penyedia mulai dari penjelasan dokumen pengadaan (aanwijzing), penyampaian dokumen penawaran administrasi, teknis, dan harga, hingga evaluasi. Terdapat preferensi harga bagi produk dalam negeri dengan nilai TKDN lebih besar atau sama dengan 25%. Evaluasi penawaran menggunakan Sistem Gugur. Negosiasi harga dilakukan jika penawaran maksimal 20% di atas HPS. Peserta wajib mematuhi aturan masa sanggah dan menyerahkan Jaminan Sanggahan, Jaminan Penawaran, Jaminan Uang Muka, Jaminan Pelaksanaan (5%), dan Jaminan Pemeliharaan (5%). Pembayaran dilakukan melalui TT (telegraphic transfer) paling lambat 90 hari kalender.",
-        fileUrl: "data regulation finder/5. Prosedur tahap 6-Penyerahan dan Penerimaan Barang atau Jasa.pdf"
-    },
-];
 
 document.addEventListener("DOMContentLoaded", function () {
-
-    if (sessionStorage.getItem('isLoggedIn') === 'false' || !sessionStorage.getItem('isLoggedIn')) {
+    // Periksa login
+    if (!sessionStorage.getItem("isLoggedIn") ||
+        sessionStorage.getItem("isLoggedIn") === "false") {
         window.location.href = "login.html";
         return;
     }
 
-    const username = sessionStorage.getItem('username') || 'Admin';
-    const displayUsernameEl = document.getElementById('displayUsername');
-    if (displayUsernameEl) displayUsernameEl.innerText = username;
+    // Ambil elemen halaman
+    const searchInput = document.getElementById("searchInput");
+    const clearBtn = document.getElementById("clearSearch");
+    const resultsContainer = document.getElementById("resultsContainer");
+    const resultCount = document.getElementById("resultCount");
 
-    const searchInput = document.getElementById('searchInput');
-    const clearBtn = document.getElementById('clearSearch');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const resultCount = document.getElementById('resultCount');
+    const username = sessionStorage.getItem("username") || "Admin";
+    const displayUsername = document.getElementById("displayUsername");
 
-    if (resultsContainer) {
-        renderResults(documentsData);
+    if (displayUsername) {
+        displayUsername.textContent = username;
     }
 
-    function highlightText(text, keyword) {
-        if (!keyword) return text;
-        const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${safeKeyword})`, 'gi');
-        return text.replace(regex, '<span class="highlight">$1</span>');
+    if (!searchInput || !clearBtn ||
+        !resultsContainer || !resultCount) {
+        console.error("Elemen pencarian tidak ditemukan.");
+        return;
     }
 
-    function getSnippet(text, keyword, maxLength = 150) {
-        if (!keyword) {
-            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-        }
+    let timerPencarian;
+    let nomorPermintaan = 0;
 
-        const lowerText = text.toLowerCase();
-        const lowerKeyword = keyword.toLowerCase();
-        const matchIndex = lowerText.indexOf(lowerKeyword);
+    function tampilkanPesan(pesan) {
+        resultsContainer.replaceChildren();
 
-        if (matchIndex === -1) {
-            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-        }
+        const elemen = document.createElement("div");
+        elemen.className =
+            "bg-white p-8 rounded-2xl border border-gray-200 text-center text-gray-600";
+        elemen.textContent = pesan;
 
-        const start = Math.max(0, matchIndex - 50);
-        const end = Math.min(text.length, matchIndex + keyword.length + 100);
-
-        let snippet = text.substring(start, end);
-
-        if (start > 0) snippet = '... ' + snippet;
-        if (end < text.length) snippet = snippet + ' ...';
-
-        return snippet;
+        resultsContainer.appendChild(elemen);
     }
 
-    function renderResults(data, keyword = '') {
-        resultsContainer.innerHTML = '';
+    function tampilkanHasil(data, kataKunci) {
+        resultsContainer.replaceChildren();
 
-        if (data.length === 0) {
-            resultsContainer.innerHTML = `
-                <div class="bg-white p-8 rounded-2xl border border-gray-200 text-center flex flex-col items-center">
-                    <i class="ph ph-file-dashed text-4xl text-gray-300 mb-3"></i>
-                    <h3 class="text-gray-900 font-semibold text-lg">Tidak ada hasil ditemukan</h3>
-                    <p class="text-gray-500 text-sm">Coba gunakan kata kunci atau istilah lain.</p>
-                </div>
-            `;
-            resultCount.innerText = "0 hasil ditemukan";
+        if (data.pesan) {
+            resultCount.textContent = "Folder PDF tidak ditemukan";
+            tampilkanPesan(data.pesan);
             return;
         }
 
-        data.forEach(item => {
-            const highlightedTitle = highlightText(item.title, keyword);
-            const contentSnippet = getSnippet(item.content, keyword);
-            const highlightedContent = highlightText(contentSnippet, keyword);
+        const hasil = data.hasil || [];
 
-            let finalUrl = item.fileUrl || '#';
-            if (item.fileUrl && item.fileUrl !== '#' && keyword) {
-                finalUrl = `${item.fileUrl}#search=${encodeURIComponent(keyword)}`;
+        resultCount.textContent =
+            `Ditemukan pada ${data.jumlah ?? hasil.length} halaman`;
+
+        if (hasil.length === 0) {
+            tampilkanPesan(
+                `Kata "${kataKunci}" tidak ditemukan dalam dokumen PDF.`
+            );
+            return;
+        }
+
+        hasil.forEach(function (item) {
+            const kartu = document.createElement("article");
+            kartu.className =
+                "result-card bg-white p-6 rounded-2xl border border-gray-200 mb-4";
+
+            const namaFile = document.createElement("h2");
+            namaFile.className =
+                "text-lg font-bold text-sig-black mb-2 break-words";
+            namaFile.textContent = item.file;
+
+            const infoHalaman = document.createElement("p");
+            infoHalaman.className = "text-sm text-gray-500 mb-3";
+            infoHalaman.textContent = `Halaman ${item.halaman}`;
+
+            const label = document.createElement("span");
+            label.className =
+                "inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full mb-3";
+            label.textContent = "Dokumen PDF";
+
+            const cuplikan = document.createElement("p");
+            cuplikan.className =
+                "text-gray-600 text-sm leading-relaxed bg-gray-50 p-4 rounded-xl break-words";
+            cuplikan.textContent = item.cuplikan || "Cuplikan tidak tersedia.";
+
+            const tombol = document.createElement("a");
+            tombol.className =
+                "inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-white text-sig-red border border-sig-red font-semibold text-sm rounded-xl hover:bg-sig-red hover:text-white transition-colors";
+
+            // Buka PDF langsung pada halaman yang ditemukan
+            tombol.href =
+                "/data%20regulation%20finder/" +
+                encodeURIComponent(item.file) +
+                "#page=" + encodeURIComponent(item.halaman);
+
+            tombol.target = "_blank";
+            tombol.rel = "noopener noreferrer";
+            tombol.textContent = "Buka Dokumen";
+
+            kartu.append(
+                label,
+                namaFile,
+                infoHalaman,
+                cuplikan,
+                tombol
+            );
+
+            resultsContainer.appendChild(kartu);
+        });
+    }
+
+    async function cariDokumen(kataKunci) {
+        const idPermintaan = ++nomorPermintaan;
+
+        if (!kataKunci) {
+            resultCount.textContent = "Masukkan kata kunci pencarian";
+            tampilkanPesan(
+                "Ketik kata atau frasa untuk mencari di dalam dokumen PDF."
+            );
+            return;
+        }
+
+        resultCount.textContent = "Sedang mencari di seluruh PDF...";
+        tampilkanPesan("Sedang mencari. Mohon tunggu...");
+
+        try {
+            const response = await fetch("/api/search", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    kata: kataKunci
+                })
+            });
+
+            const data = await response.json();
+
+            // Abaikan respons pencarian lama
+            if (idPermintaan !== nomorPermintaan) {
+                return;
             }
 
-            const cardHtml = `
-                <div class="result-card bg-white p-6 rounded-2xl border border-gray-200 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    <div class="flex-1">
-                        <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full mb-2 border border-gray-200">
-                            ${item.category}
-                        </span>
-                        <h2 class="text-xl font-bold text-sig-black mb-2 leading-tight">${highlightedTitle}</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">
-                            ${highlightedContent}
-                        </p>
-                    </div>
-                    <div class="mt-4 md:mt-0 md:ml-4 w-full md:w-auto flex-shrink-0">
-                        <a href="${finalUrl}" target="_blank" class="w-full md:w-auto px-5 py-2.5 bg-white text-sig-red border border-sig-red font-semibold text-sm rounded-xl hover:bg-sig-red hover:text-white transition-colors flex items-center justify-center gap-2">
-                            <i class="ph ph-file-text text-lg"></i> Buka Dokumen
-                        </a>
-                    </div>
-                </div>
-            `;
-            resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
-        });
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Pencarian gagal."
+                );
+            }
 
-        if (keyword) {
-            resultCount.innerHTML = `Menemukan <span class="font-bold text-sig-black">${data.length}</span> dokumen untuk kata kunci "<span class="text-sig-red font-semibold">${keyword}</span>"`;
-        } else {
-            resultCount.innerText = `Menampilkan semua dokumen (${data.length})`;
+            tampilkanHasil(data, kataKunci);
+
+        } catch (error) {
+            if (idPermintaan !== nomorPermintaan) {
+                return;
+            }
+
+            resultCount.textContent = "Pencarian gagal";
+            tampilkanPesan(
+                error.message +
+                " Pastikan server Flask berjalan dan endpoint /api/search tersedia."
+            );
+
+            console.error("Kesalahan pencarian:", error);
         }
     }
 
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const keyword = e.target.value.trim().toLowerCase();
+    // Cari saat pengguna mengetik
+    searchInput.addEventListener("input", function () {
+        const kataKunci = searchInput.value.trim();
 
-            if (keyword.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
+        clearBtn.classList.toggle("hidden", !searchInput.value);
 
-            const filteredData = documentsData.filter(item =>
-                item.title.toLowerCase().includes(keyword) ||
-                item.content.toLowerCase().includes(keyword)
-            );
+        clearTimeout(timerPencarian);
 
-            renderResults(filteredData, keyword);
-        });
-    }
+        timerPencarian = setTimeout(function () {
+            cariDokumen(kataKunci);
+        }, 400);
+    });
 
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            clearBtn.classList.add('hidden');
-            searchInput.focus();
-            renderResults(documentsData);
-        });
-    }
+    // Kosongkan pencarian
+    clearBtn.addEventListener("click", function () {
+        searchInput.value = "";
+        clearBtn.classList.add("hidden");
+
+        clearTimeout(timerPencarian);
+        cariDokumen("");
+        searchInput.focus();
+    });
+
+    // Tampilan awal
+    resultCount.textContent = "Siap mencari dokumen";
+    tampilkanPesan(
+        "Masukkan kata kunci untuk mencari isi seluruh dokumen PDF."
+    );
 });
