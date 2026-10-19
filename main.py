@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 import unicodedata
-
+import google.generativeai as genai
 import pymupdf
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -16,6 +16,70 @@ FOLDER_PDF = BASE_DIR / "data regulation finder"
 
 app = Flask(__name__)
 
+# ==========================================
+# KONFIGURASI GEMINI AI & KNOWLEDGE BASE
+# ==========================================
+API_KEY = "AQ.Ab8RN6JRt0GJreirZW6gfBfJ6VaF856bd4k31oTjV2pqvwY18g"
+genai.configure(api_key=API_KEY)
+# Kita gunakan model 1.5 flash versi Python yang paling stabil
+model = genai.GenerativeModel('gemini-3.8-flash')
+KNOWLEDGE_BASE = ""
+
+def load_knowledge_base():
+    global KNOWLEDGE_BASE
+    if not FOLDER_PDF.is_dir():
+        return
+    
+    print("Mengekstrak teks dari 5 PDF untuk diserap AI...")
+    daftar_pdf = sorted(file for file in FOLDER_PDF.iterdir() if file.is_file() and file.suffix.lower() == ".pdf")
+    
+    for file_pdf in daftar_pdf:
+        try:
+            with pymupdf.open(file_pdf) as dokumen:
+                teks_dokumen = ""
+                for halaman in dokumen:
+                    teks_dokumen += halaman.get_text("text") + "\n"
+                
+                # Bersihkan spasi ganda agar rapi saat dibaca AI
+                teks_dokumen = re.sub(r"\s+", " ", teks_dokumen).strip()
+                KNOWLEDGE_BASE += f"\n\n--- DOKUMEN REFERENSI: {file_pdf.name} ---\n{teks_dokumen}"
+        except Exception as e:
+            print(f"Gagal membaca {file_pdf.name} untuk AI: {e}")
+            
+    print("Seluruh isi PDF berhasil diserap! Chatbot AI siap digunakan.\n")
+
+# Panggil fungsi ini agar AI menghafal PDF saat server Flask pertama kali menyala
+load_knowledge_base()
+
+# ==========================================
+# API CHATBOT (RAG)
+# ==========================================
+@app.post("/api/chat")
+def api_chat():
+    data = request.get_json(silent=True) or {}
+    pertanyaan = data.get("pesan", "").strip()
+
+    if not pertanyaan:
+        return jsonify({"error": "Pesan tidak boleh kosong"}), 400
+
+    prompt = f"""
+Kamu adalah Asisten AI profesional untuk Portal Pengadaan PT Semen Indonesia (Persero) Tbk (SIG).
+Tugasmu adalah menjawab pertanyaan pengguna HANYA berdasarkan isi dokumen pengadaan berikut ini.
+Gunakan bahasa Indonesia yang ramah, sopan, jelas, dan profesional.
+Jika kamu mengutip aturan, sebutkan dari mana nama "DOKUMEN REFERENSI" tersebut berasal.
+Jika jawaban tidak ada di dalam dokumen referensi, katakan dengan sopan bahwa informasi tersebut tidak tersedia di pedoman pengadaan.
+
+ISI DOKUMEN PENGADAAN SIG (JADIKAN INI SUMBER KEBENARAN MUTLAK):
+{KNOWLEDGE_BASE}
+
+Pertanyaan Pengguna: "{pertanyaan}"
+"""
+    try:
+        response = model.generate_content(prompt)
+        return jsonify({"jawaban": response.text})
+    except Exception as e:
+        app.logger.exception("Gagal memanggil Gemini API")
+        return jsonify({"error": f"Server AI error: {str(e)}"}), 500
 
 # ==========================================
 # NORMALISASI TEKS

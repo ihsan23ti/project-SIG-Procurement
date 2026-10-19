@@ -7,6 +7,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
+<!-- Tambahan Tailwind agar desain chatbot berfungsi sempurna -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    corePlugins: { preflight: false },
+    theme: {
+      extend: {
+        colors: { 'sig-red': '#D7192A' }
+      }
+    }
+  }
+</script>
 <style>
 :root{
   --red:#D7192A; --red-dark:#B01220; --ink:#1B2430; --slate:#5B6675;
@@ -118,6 +130,53 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
 
 <footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
 
+<!-- CHATBOT WIDGET -->
+<!-- Tombol Bulat Buka Chat (Floating Action Button) -->
+<button id="chatbot-toggle" class="fixed bottom-8 right-8 z-40 bg-sig-red text-white w-16 h-16 border-none rounded-full shadow-xl hover:shadow-2xl hover:scale-105 hover:bg-red-700 transition-all flex items-center justify-center cursor-pointer">
+    <i class="ph ph-chat-centered-dots text-3xl"></i>
+</button>
+
+<!-- Area Chat Full Height (Awalnya disembunyikan) -->
+<!-- Backdrop gelap agar fokus ke chat -->
+<div id="chatbot-window" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex justify-end transition-opacity">
+    
+    <!-- Kotak Chat Full Panel Kanan -->
+    <div class="bg-white w-full md:w-[600px] h-full shadow-2xl flex flex-col transform transition-transform">
+        
+        <!-- Header -->
+        <div class="bg-sig-red p-5 text-white flex justify-between items-center shadow-md z-10">
+            <div class="flex items-center gap-3">
+                <i class="ph ph-robot text-4xl"></i>
+                <div>
+                    <h3 class="font-bold text-lg m-0 leading-tight">SIG Procurement Bot</h3>
+                    <p class="text-xs text-red-200 m-0">Asisten Pintar Regulasi Pengadaan</p>
+                </div>
+            </div>
+            <button id="chatbot-close" class="hover:bg-red-700 p-2 rounded-full transition-colors border-none bg-transparent text-white cursor-pointer flex items-center justify-center">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- Area Pesan (Fleksibel mengisi sisa tinggi layar) -->
+        <div id="chatbot-messages" class="flex-1 p-6 overflow-y-auto flex flex-col gap-4 bg-gray-50 text-base">
+            <div class="bg-white border border-gray-200 text-gray-800 p-4 rounded-tr-2xl rounded-br-2xl rounded-bl-2xl self-start max-w-[85%] shadow-sm leading-relaxed">
+                Halo, admin! Saya asisten AI Procurement SIG. Tampilan saya sekarang sudah lebih luas. Ada yang bisa saya bantu terkait pedoman, prosedur, atau formulir pengadaan hari ini?
+            </div>
+        </div>
+
+        <!-- Area Input -->
+        <div class="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+            <div class="flex gap-3">
+                <input type="text" id="chatbot-input" placeholder="Tanya seputar pengadaan..." class="flex-1 px-5 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-sig-red focus:ring-2 focus:ring-sig-red text-base transition-all">
+                <button id="chatbot-send" class="bg-sig-red text-white w-12 h-12 border-none rounded-xl hover:bg-red-700 flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-md">
+                    <i class="ph ph-paper-plane-right text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   if (sessionStorage.getItem('isLoggedIn') !== 'true') {
@@ -136,5 +195,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+
+<!-- Script Logika Chatbot -->
+<script src="js/chatbot.js"></script>
+
 </body>
 </html>
