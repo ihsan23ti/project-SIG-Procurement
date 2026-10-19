@@ -25,9 +25,7 @@
 
 <script>
   // Proteksi halaman
-  (function () {
-    if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = "login.html";
-  })();
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') window.location.href = "login.html";
 </script>
 
 <style>
@@ -51,7 +49,6 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
 /* Hero */
 .hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
-.hero::after{content:"";position:absolute;right:-120px;top:-140px;width:400px;height:400px;border-radius:50%;border:56px solid rgba(255,255,255,.04)}
 .hero-inner{max-width:1120px;margin:0 auto;padding:2.75rem 1.5rem 5.5rem;position:relative;z-index:1}
 .crumb{font-size:.85rem;color:#8FA0B3;margin-bottom:.75rem}
 .crumb a:hover{color:#fff}
@@ -60,8 +57,6 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
 
 /* Wrap content */
 .wrap{max-width:1120px;margin:-2.75rem auto 0;padding:0 1.5rem 3rem;width:100%;position:relative;z-index:2}
-
-/* Header result / info */
 .meta{margin:1.5rem 0 1rem;font-size:.88rem;color:var(--slate);display:flex;align-items:center;gap:.5rem}
 .meta::before{content:"";width:3px;height:1em;background:var(--red);border-radius:2px}
 
@@ -74,12 +69,6 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
 .result-card:hover{border-color:#E9959C;box-shadow:0 10px 24px -14px rgba(215,25,42,.35)}
 
 footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-align:center;font-size:.8rem;color:var(--slate);padding:1.1rem 1rem}
-
-@media(max-width:640px){
-  .user .label{display:none}
-  .hero-inner{padding:2rem 1.5rem 4.5rem}
-}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* Modal Animasi */
 .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
@@ -111,65 +100,27 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
   <div class="hero-inner">
     <div class="crumb"><a href="index.html">Portal</a> / Pusat Dokumen</div>
     <h1>Pusat Dokumen Procurement</h1>
-    <p>Pilih dan lihat dokumen pedoman, prosedur, dan referensi pengadaan SIG.</p>
+    <p>Kelola dokumen pedoman, prosedur, dan referensi pengadaan SIG. Dokumen yang diunggah akan otomatis masuk ke sistem Pencarian dan otak Chatbot AI.</p>
+    
+    <!-- Fitur Upload Dokumen -->
+    <div class="mt-6 flex flex-col sm:flex-row items-center gap-3">
+        <label class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2.5 rounded-lg font-medium cursor-pointer transition-colors flex items-center gap-2 w-full sm:w-max justify-center">
+            <i class="ph ph-upload-simple text-lg"></i> Pilih File PDF Baru
+            <input type="file" id="fileInput" accept=".pdf" class="hidden">
+        </label>
+        <span id="fileName" class="text-sm text-red-200">Belum ada file dipilih...</span>
+        <button id="btnUpload" class="bg-sig-red text-white hover:bg-red-700 px-6 py-2.5 rounded-lg font-bold transition-colors hidden items-center justify-center gap-2 w-full sm:w-max">
+            <i class="ph ph-cloud-arrow-up text-lg"></i> Mulai Unggah
+        </button>
+    </div>
   </div>
 </header>
 
 <main class="wrap">
-  <!-- Tidak ada search bar di sini sesuai dengan permintaan -->
-  <div class="meta" style="margin-top: 0;"><span id="resultCount" aria-live="polite">Menampilkan semua dokumen (4)</span></div>
+  <div class="meta" style="margin-top: 0;"><span id="resultCount" aria-live="polite">Memuat daftar dokumen...</span></div>
 
-  <div id="resultsContainer">
-      <!-- Dokumen 1 -->
-      <div class="result-card">
-          <div class="flex-1">
-              <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">Pedoman Utama</span>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Pedoman Pengadaan Barang dan/atau Jasa</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Kode Dokumen: M/SIG/PRO/002 | Revisi: 1 | 01 Juni 2026. Pedoman utama yang menjadi landasan seluruh proses pengadaan di lingkungan perusahaan...</p>
-          </div>
-          <!-- Tombol Buka Dokumen -->
-          <button onclick="openPreview('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'Pedoman Pengadaan Barang dan/atau Jasa')" class="border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
-              <i class="ph ph-file-text text-lg"></i> Buka Dokumen
-          </button>
-      </div>
-
-      <!-- Dokumen 2 -->
-      <div class="result-card">
-          <div class="flex-1">
-              <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">Prosedur (SOP)</span>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Prosedur Persiapan & Pelaksanaan Pemilihan Penyedia</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Prosedur operasional standar (SOP) teknis tahapan persiapan dan pelaksanaan tender/pengadaan.</p>
-          </div>
-          <!-- Tombol Buka Dokumen -->
-          <button onclick="openPreview('file-prosedur-anda.pdf', 'Prosedur Persiapan & Pelaksanaan Pemilihan Penyedia')" class="border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
-              <i class="ph ph-file-text text-lg"></i> Buka Dokumen
-          </button>
-      </div>
-
-      <!-- Dokumen 3 -->
-      <div class="result-card">
-          <div class="flex-1">
-              <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">Panduan Sistem</span>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Buku Panduan Penggunaan Aplikasi Bravo</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Panduan teknis penggunaan sistem e-procurement (Bravo) bagi user internal kepanitiaan pengadaan.</p>
-          </div>
-          <button onclick="openPreview('file-panduan-bravo.pdf', 'Panduan Penggunaan Aplikasi Bravo')" class="border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
-              <i class="ph ph-file-text text-lg"></i> Buka Dokumen
-          </button>
-      </div>
-
-      <!-- Dokumen 4 -->
-      <div class="result-card">
-          <div class="flex-1">
-              <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">Dokumen Pendukung</span>
-              <h3 class="text-lg font-bold text-gray-900 mb-2">Dokumen Template Referensi Lainnya</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Kumpulan referensi template untuk berbagai kebutuhan dokumen pengadaan di luar sistem form.</p>
-          </div>
-          <button onclick="openPreview('file-referensi.pdf', 'Dokumen Template Referensi Lainnya')" class="border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
-              <i class="ph ph-file-text text-lg"></i> Buka Dokumen
-          </button>
-      </div>
-  </div>
+  <!-- Container yang dirender dari backend -->
+  <div id="resultsContainer"></div>
 </main>
 
 <footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
@@ -211,32 +162,155 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
       document.getElementById('displayUsername').textContent = username;
       document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
     }
+
+    // --- LOGIKA MENGAMBIL DAN MENAMPILKAN DOKUMEN ---
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultCount = document.getElementById('resultCount');
+
+    function getDeskripsiCerdas(nama) {
+        let badge = "Dokumen Regulasi";
+        if (/pedoman/i.test(nama)) badge = "Pedoman Utama";
+        else if (/prosedur/i.test(nama)) badge = "Prosedur (SOP)";
+        else if (/panduan/i.test(nama)) badge = "Panduan Sistem";
+        
+        return { badge: badge, judul: nama.replace(/\.pdf$/i, "").replace(/^[0-9.]+\s*/, "").trim() };
+    }
+
+    async function muatDokumen() {
+        resultsContainer.innerHTML = "<p class='text-gray-500 p-6 bg-white rounded-lg border text-center'>Sedang memuat dokumen...</p>";
+        try {
+            const res = await fetch('/api/documents');
+            const data = await res.json();
+            
+            if (data.documents.length === 0) {
+                resultsContainer.innerHTML = "<p class='text-gray-500 p-6 bg-white rounded-lg border text-center'>Belum ada dokumen PDF di server.</p>";
+                resultCount.textContent = `Menampilkan semua dokumen (0)`;
+                return;
+            }
+
+            resultsContainer.innerHTML = "";
+            resultCount.textContent = `Menampilkan semua dokumen (${data.jumlah})`;
+
+            data.documents.forEach(namaFile => {
+                const info = getDeskripsiCerdas(namaFile);
+                const fileUrl = "/data%20regulation%20finder/" + encodeURIComponent(namaFile);
+
+                const card = document.createElement('div');
+                card.className = "result-card";
+                card.innerHTML = `
+                    <div class="flex-1">
+                        <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">${info.badge}</span>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">${info.judul}</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed font-mono text-[11px]">${namaFile}</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                        <button onclick="hapusDokumen('${namaFile}')" class="w-full sm:w-10 h-10 border border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 rounded-lg text-xl transition-colors flex items-center justify-center shrink-0" title="Hapus Dokumen">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                        <button onclick="openPreview('${fileUrl}', '${info.judul}')" class="w-full sm:w-auto border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
+                            <i class="ph ph-file-text text-lg"></i> Buka Dokumen
+                        </button>
+                    </div>
+                `;
+                resultsContainer.appendChild(card);
+            });
+        } catch (error) {
+            resultsContainer.innerHTML = "<p class='text-red-500 p-6 bg-white rounded-lg border text-center'>Gagal terhubung ke server backend Flask.</p>";
+        }
+    }
+
+    muatDokumen(); // Panggil saat halaman pertama kali load
+
+    // --- LOGIKA UPLOAD ---
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileName');
+    const btnUpload = document.getElementById('btnUpload');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = this.files[0].name;
+            btnUpload.classList.remove('hidden');
+            btnUpload.classList.add('flex');
+        } else {
+            fileNameDisplay.textContent = 'Belum ada file dipilih...';
+            btnUpload.classList.add('hidden');
+            btnUpload.classList.remove('flex');
+        }
+    });
+
+    btnUpload.addEventListener('click', async function() {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        btnUpload.innerHTML = '<i class="ph ph-spinner-gap animate-spin text-lg"></i> Mengunggah...';
+        btnUpload.disabled = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert(data.message + "\n(AI sekarang sudah hafal dan file bisa langsung dicari!)");
+                fileInput.value = "";
+                fileNameDisplay.textContent = 'Belum ada file dipilih...';
+                btnUpload.classList.add('hidden');
+                btnUpload.classList.remove('flex');
+                muatDokumen(); // Reload daftar UI
+            } else {
+                alert("Error: " + data.error);
+            }
+        } catch (error) {
+            alert("Gagal mengunggah file. Pastikan server Flask menyala.");
+        } finally {
+            btnUpload.innerHTML = '<i class="ph ph-cloud-arrow-up text-lg"></i> Mulai Unggah';
+            btnUpload.disabled = false;
+        }
+    });
+
+    // --- LOGIKA HAPUS DOKUMEN ---
+    window.hapusDokumen = async function(namaFile) {
+        if (!confirm(`Yakin ingin menghapus dokumen "${namaFile}" secara permanen? \n\n(Dokumen ini juga akan dihapus dari ingatan AI Chatbot dan mesin Regulation Finder)`)) return;
+
+        try {
+            const res = await fetch('/api/documents/' + encodeURIComponent(namaFile), { method: 'DELETE' });
+            if (res.ok) {
+                alert("Dokumen berhasil dihapus!");
+                muatDokumen(); // Reload daftar UI
+            } else {
+                const data = await res.json();
+                alert("Gagal: " + data.error);
+            }
+        } catch (error) {
+            alert("Gagal menghapus. Pastikan server Flask menyala.");
+        }
+    };
   });
 
+  // LOGIKA MODAL PREVIEW
   const previewModal = document.getElementById('previewModal');
   const pdfViewer = document.getElementById('pdfViewer');
   const previewTitle = document.getElementById('previewTitle');
   const loadingIndicator = document.getElementById('loadingIndicator');
   const btnDownloadAsli = document.getElementById('btnDownloadAsli');
 
-  function openPreview(url, title) {
+  window.openPreview = function(url, title) {
       previewTitle.innerText = title;
       btnDownloadAsli.href = url;
-      
       previewModal.classList.remove('hidden');
       previewModal.classList.add('flex', 'modal-enter');
-      
       pdfViewer.classList.add('hidden');
       loadingIndicator.classList.remove('hidden');
       pdfViewer.src = url;
-
       pdfViewer.onload = function() {
           loadingIndicator.classList.add('hidden');
           pdfViewer.classList.remove('hidden');
       };
   }
-
-  function closePreview() {
+  
+  window.closePreview = function() {
       previewModal.classList.add('hidden');
       previewModal.classList.remove('flex', 'modal-enter');
       pdfViewer.src = '';
