@@ -45,11 +45,74 @@ a{color:inherit;text-decoration:none}
 /* Hero */
 .hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--red)}
-.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;border:60px solid rgba(255,255,255,.04)}
-.hero-inner{max-width:1120px;margin:0 auto;padding:4rem 1.5rem 5.5rem;position:relative;z-index:1}
-.hero h1{font-size:clamp(1.9rem,4vw,2.9rem);font-weight:700;line-height:1.15;letter-spacing:-.02em;max-width:18ch}
-.hero p{margin-top:1rem;max-width:56ch;color:#B9C3D0;font-size:1.05rem}
-.hero-logo{position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);z-index:1;display:none}
+.hero::after{content:"";position:absolute;right:-100px;top:-100px;width:420px;height:420px;border-radius:50%;border:40px solid rgba(255,255,255,.025);pointer-events:none}
+.hero-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 5.5rem;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2.5rem;
+}
+.hero-text {
+  flex: 1;
+  min-width: 0;
+}
+.hero h1 {
+  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  max-width: 18ch;
+}
+.hero p {
+  margin-top: 1rem;
+  max-width: 56ch;
+  color: #B9C3D0;
+  font-size: 1.05rem;
+}
+.hero-logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-logo img {
+  display: block;
+  width: 195px;
+  height: 195px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.22));
+}
+
+/* Tampilan Layar Sedang & Mobile */
+@media (max-width: 860px) {
+  .hero-inner {
+    padding: 3rem 1.5rem 4.5rem;
+    gap: 2rem;
+  }
+  .hero-logo img {
+    width: 155px;
+    height: 155px;
+  }
+}
+@media (max-width: 640px) {
+  .hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2.5rem 1.25rem 4rem;
+    gap: 1.5rem;
+  }
+  .hero-logo img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+
 
 /* Menu */
 .wrap{max-width:1120px;margin:-3rem auto 0;padding:0 1.5rem 3rem;width:100%;position:relative;z-index:2}
@@ -69,7 +132,6 @@ a{color:inherit;text-decoration:none}
 
 footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);text-align:center;font-size:.8rem;color:var(--slate);padding:1.1rem 1rem}
 
-@media(min-width:960px){.hero-logo{display:block}}
 @media(max-width:860px){
   .panel{grid-template-columns:1fr}
   .item{border-right:0;border-bottom:1px solid var(--line)}
@@ -98,10 +160,24 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
   </div>
 </nav>
 
+
 <header class="hero">
   <div class="hero-inner">
-    <h1>Pusat informasi pengadaan SIG</h1>
-    <p>Temukan regulasi, unduh template dokumen, dan telusuri arsip hasil pengadaan barang dan jasa dalam satu tempat.</p>
+
+    <div class="hero-text">
+      <h1>Pusat informasi pengadaan SIG</h1>
+      <p>
+        Temukan regulasi, unduh template dokumen, dan telusuri arsip hasil pengadaan barang dan jasa dalam satu tempat.
+      </p>
+    </div>
+
+    <div class="hero-logo">
+      <img
+        src="./logo/logo_policy.png"
+        alt="Procurement Policy SIG"
+      >
+    </div>
+
   </div>
 </header>
 
