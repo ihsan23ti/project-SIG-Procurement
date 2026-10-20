@@ -37,12 +37,19 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
 .control input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(215,25,42,.15)}
 .toggle{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);background:none;border:0;padding:.45rem;color:#8A95A3;cursor:pointer;font-size:1.15rem;border-radius:6px;display:grid;place-items:center}
 .toggle:hover{color:var(--ink)}
+
+/* Alert Pesan Error */
+.alert-msg {display:none; background-color:#FEE2E2; color:#B91C1C; border:1px solid #F87171; padding:.8rem; border-radius:8px; font-size:.85rem; font-weight:600; margin-bottom:1.2rem; text-align:center;}
+.alert-msg.show {display:block;}
+
 .btn-login{width:100%;margin-top:.6rem;padding:.9rem;background:var(--red);color:#fff;border:0;border-radius:8px;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:background .2s}
 .btn-login:hover:not(:disabled){background:var(--red-dark)}
 .btn-login:disabled{opacity:.8;cursor:progress}
 .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
-.foot{margin-top:1.5rem;font-size:.78rem;color:var(--slate);text-align:center}
+.foot{margin-top:1.5rem;font-size:.85rem;color:var(--slate);text-align:center}
+.foot a {color:var(--red); font-weight:600; text-decoration:none; transition: color 0.2s;}
+.foot a:hover {color:var(--red-dark); text-decoration:underline;}
 
 @media(max-width:760px){
   .shell{grid-template-columns:1fr}
@@ -66,8 +73,11 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
   </aside>
 
   <section class="form-area">
-    <h2>Masuk ke akun Anda</h2>
-    <p class="sub">Gunakan username atau email untuk melanjutkan.</p>
+    <h2 id="formTitle">Masuk ke akun Anda</h2>
+    <p class="sub" id="formSub">Gunakan username atau email untuk melanjutkan.</p>
+
+    <!-- Kotak Error -->
+    <div id="errorBox" class="alert-msg">Username atau password salah!</div>
 
     <form id="loginForm">
       <div class="field">
@@ -87,9 +97,12 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
         </div>
       </div>
 
-      <button type="submit" class="btn-login">Masuk</button>
+      <button type="submit" id="btnSubmit" class="btn-login">Masuk</button>
     </form>
-    <p class="foot">Hanya untuk pengguna yang berwenang.</p>
+    
+    <p class="foot" id="toggleText">
+      Belum punya akun? <a href="#" id="toggleModeBtn">Daftar Akun Baru</a>
+    </p>
   </section>
 </div>
 
@@ -100,30 +113,101 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  const pw = document.getElementById('password');
-  const toggle = document.getElementById('togglePw');
-  toggle.addEventListener('click', function () {
-    const show = pw.type === 'password';
-    pw.type = show ? 'text' : 'password';
-    toggle.innerHTML = show ? '<i class="ph ph-eye-slash"></i>' : '<i class="ph ph-eye"></i>';
-    toggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+  const formTitle = document.getElementById('formTitle');
+  const formSub = document.getElementById('formSub');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const toggleText = document.getElementById('toggleText');
+  const errorBox = document.getElementById('errorBox');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const togglePwBtn = document.getElementById('togglePw');
+
+  let isLoginMode = true; 
+
+  // Toggle Show/Hide Password
+  togglePwBtn.addEventListener('click', function () {
+    const show = passwordInput.type === 'password';
+    passwordInput.type = show ? 'text' : 'password';
+    togglePwBtn.innerHTML = show ? '<i class="ph ph-eye-slash"></i>' : '<i class="ph ph-eye"></i>';
   });
 
-  document.getElementById('loginForm').addEventListener('submit', function (event) {
+  // Fungsi Switch Mode menggunakan Event Delegation (Bebas Error)
+  toggleText.addEventListener('click', function(e) {
+      if(e.target && e.target.id === 'toggleModeBtn') {
+          e.preventDefault();
+          isLoginMode = !isLoginMode;
+          errorBox.classList.remove('show');
+          passwordInput.value = ""; 
+          
+          if (isLoginMode) {
+              formTitle.textContent = "Masuk ke akun Anda";
+              formSub.textContent = "Gunakan username atau email untuk melanjutkan.";
+              btnSubmit.textContent = "Masuk";
+              toggleText.innerHTML = 'Belum punya akun? <a href="#" id="toggleModeBtn">Daftar Akun Baru</a>';
+          } else {
+              formTitle.textContent = "Buat Akun Baru";
+              formSub.textContent = "Daftarkan username dan password baru Anda.";
+              btnSubmit.textContent = "Daftar Sekarang";
+              toggleText.innerHTML = 'Sudah punya akun? <a href="#" id="toggleModeBtn">Kembali ke Login</a>';
+          }
+      }
+  });
+
+  // Submit Fetch ke Database Python (Flask API)
+  document.getElementById('loginForm').addEventListener('submit', async function (event) {
     event.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const password = pw.value.trim();
+    const usernameVal = usernameInput.value.trim();
+    const passwordVal = passwordInput.value.trim();
 
-    if (username !== '' && password !== '') {
-      const btn = document.querySelector('.btn-login');
-      btn.innerHTML = '<span class="spin"></span> Memproses...';
-      btn.disabled = true;
+    errorBox.classList.remove('show');
 
-      setTimeout(() => {
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('username', username);
-        window.location.href = "index.html";
-      }, 1000);
+    if (usernameVal !== '' && passwordVal !== '') {
+        const originalText = btnSubmit.textContent;
+        btnSubmit.innerHTML = '<span class="spin"></span> Memproses...';
+        btnSubmit.disabled = true;
+
+        const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: usernameVal, password: passwordVal })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (isLoginMode) {
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('username', usernameVal);
+                    window.location.href = "index.html";
+                } else {
+                    // Pendaftaran berhasil
+                    alert(data.message);
+                    
+                    // Kembalikan ke mode login secara otomatis
+                    isLoginMode = true;
+                    formTitle.textContent = "Masuk ke akun Anda";
+                    formSub.textContent = "Gunakan username atau email untuk melanjutkan.";
+                    btnSubmit.textContent = "Masuk";
+                    toggleText.innerHTML = 'Belum punya akun? <a href="#" id="toggleModeBtn">Daftar Akun Baru</a>';
+                    usernameInput.value = "";
+                    passwordInput.value = "";
+                }
+            } else {
+                errorBox.textContent = data.error || "Terjadi kesalahan.";
+                errorBox.classList.add('show');
+            }
+        } catch (error) {
+            errorBox.textContent = "Koneksi ke database gagal. Pastikan server Flask menyala.";
+            errorBox.classList.add('show');
+        } finally {
+            if (!isLoginMode || (isLoginMode && btnSubmit.disabled)) {
+                btnSubmit.innerHTML = isLoginMode ? "Masuk" : "Daftar Sekarang";
+                btnSubmit.disabled = false;
+            }
+        }
     }
   });
 });
