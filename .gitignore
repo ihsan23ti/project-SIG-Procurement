@@ -1,9 +1,0 @@
-# SQLite temporary files
-*.db-journal
-*.db-wal
-*.db-shm
-
-# Python cache
-__pycache__/
-*.py[cod]
-*$py.class
