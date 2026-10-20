@@ -39,11 +39,11 @@ def init_db():
     else:
         # Pastikan password admin selalu ter-hash secara aman
         try:
-            if not check_password_hash(user_admin[0], '123'):
-                c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+            if not check_password_hash(user_admin[0], 'admin123'):
+                c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('admin123'),))
         except ValueError:
             # Jika sebelumnya tersimpan sebagai plain text '123'
-            c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+            c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('admin123'),))
         
     conn.commit()
     conn.close()
