@@ -23,7 +23,7 @@ app = Flask(__name__)
 DB_NAME = BASE_DIR / "database.db"
 
 def init_db():
-    """Membuat tabel users jika belum ada, dan membuat 1 akun admin default."""
+    """Membuat tabel users jika belum ada, dan membuat 1 akun admin default dengan password ter-hash."""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users 
@@ -32,10 +32,19 @@ def init_db():
                   password TEXT NOT NULL)''')
     
     # Cek apakah akun admin sudah ada
-    c.execute("SELECT * FROM users WHERE username='admin'")
-    if not c.fetchone():
-        hashed_pw = generate_password_hash('123')
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_pw))
+    c.execute("SELECT password FROM users WHERE username='admin'")
+    user_admin = c.fetchone()
+    if not user_admin:
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', generate_password_hash('123')))
+    else:
+        # Pastikan password admin selalu ter-hash secara aman
+        try:
+            if not check_password_hash(user_admin[0], '123'):
+                c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+        except ValueError:
+            # Jika sebelumnya tersimpan sebagai plain text '123'
+            c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+        
     conn.commit()
     conn.close()
     print("[DB] Database SQLite 'database.db' siap dan terhubung!")
@@ -74,8 +83,22 @@ def api_login():
     user = c.fetchone()
     conn.close()
 
-    # Cek apakah user ada dan password cocok dengan data hash di database
-    if user and check_password_hash(user[0], password):
+    # Cek kecocokan password dengan hash (dengan backward-compatibility jika ada akun lama plain text)
+    is_valid = False
+    if user:
+        try:
+            is_valid = check_password_hash(user[0], password)
+        except ValueError:
+            is_valid = (user[0] == password)
+
+    if user and is_valid:
+        # Jika data user lama masih plain text, sekalian amankan menjadi hash
+        if user[0] == password:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("UPDATE users SET password=? WHERE username=?", (generate_password_hash(password), username))
+            conn.commit()
+            conn.close()
         return jsonify({"message": "Login berhasil!"}), 200
     else:
         return jsonify({"error": "Username atau password salah!"}), 401
@@ -197,7 +220,7 @@ def normalisasi_teks(teks):
     """Membersihkan teks dan mengubah menjadi huruf kecil untuk pencarian."""
     return bersihkan_teks(teks).casefold()
 
-def ekstrak_cuplikan(teks_asli, teks_cari, kata_cari, panjang_sebelum=450, panjang_sesudah=650):
+def ekstrak_cuplikan(teks_asli, teks_cari, kata_cari, panjang_sebelum=750, panjang_sesudah=1100):
     """Mengekstrak cuplikan/ringkasan yang jauh lebih panjang, utuh, dan rapi dari teks halaman PDF."""
     posisi = teks_cari.find(kata_cari)
     if posisi == -1:
@@ -262,8 +285,8 @@ def cari_kata(kata):
                         teks_asli=teks_asli,
                         teks_cari=teks_cari,
                         kata_cari=kata_normal,
-                        panjang_sebelum=450,
-                        panjang_sesudah=650
+                        panjang_sebelum=750,
+                        panjang_sesudah=1100
                     )
 
                     hasil.append({

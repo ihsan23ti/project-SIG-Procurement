@@ -201,15 +201,15 @@ document.addEventListener("DOMContentLoaded", function () {
             content.appendChild(descEl);
 
             const cuplikanContainer = document.createElement("div");
-            cuplikanContainer.className = "bg-gray-50 p-3.5 md:p-4 rounded-lg border border-gray-200 mt-2.5";
+            cuplikanContainer.className = "bg-gray-50/80 hover:bg-gray-50 transition-colors p-4 md:p-5 rounded-xl border border-gray-200 mt-3 text-left shadow-sm";
 
             const cuplikanHeader = document.createElement("div");
-            cuplikanHeader.className = "flex items-center gap-1.5 text-xs font-semibold text-gray-500 mb-1.5";
-            cuplikanHeader.innerHTML = '<i class="ph-bold ph-quotes text-[#D7192A]"></i> Ringkasan Regulasi:';
+            cuplikanHeader.className = "flex items-center justify-between flex-wrap gap-2 text-xs font-semibold text-gray-500 mb-2.5 border-b border-gray-200/70 pb-2";
+            cuplikanHeader.innerHTML = '<span class="flex items-center gap-1.5 text-gray-800 font-bold"><i class="ph-bold ph-article text-[#D7192A] text-sm"></i> Ringkasan Regulasi:</span>' + (halaman ? '<span class="text-[11px] text-gray-500 bg-white px-2.5 py-0.5 rounded-full border border-gray-200 font-medium">Halaman ' + halaman + '</span>' : '');
             cuplikanContainer.appendChild(cuplikanHeader);
 
             const cuplikanEl = document.createElement("p");
-            cuplikanEl.className = "text-sm text-gray-700 leading-relaxed break-words font-normal";
+            cuplikanEl.className = "text-[13.5px] text-gray-700 leading-relaxed break-words font-normal whitespace-pre-line";
             cuplikanEl.textContent = cuplikan;
             cuplikanContainer.appendChild(cuplikanEl);
 
