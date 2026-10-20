@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 import unicodedata
 import os
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 import pymupdf
 from flask import Flask, jsonify, request, send_from_directory
@@ -14,6 +16,70 @@ FOLDER_PDF = BASE_DIR / "data regulation finder"
 FOLDER_PDF.mkdir(parents=True, exist_ok=True) # Pastikan folder otomatis ada
 
 app = Flask(__name__)
+
+# ==========================================
+# DATABASE SQLITE (SISTEM LOGIN)
+# ==========================================
+DB_NAME = BASE_DIR / "database.db"
+
+def init_db():
+    """Membuat tabel users jika belum ada, dan membuat 1 akun admin default."""
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  username TEXT UNIQUE NOT NULL, 
+                  password TEXT NOT NULL)''')
+    
+    # Cek apakah akun admin sudah ada
+    c.execute("SELECT * FROM users WHERE username='admin'")
+    if not c.fetchone():
+        hashed_pw = generate_password_hash('123')
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_pw))
+    conn.commit()
+    conn.close()
+    print("[DB] Database SQLite 'database.db' siap dan terhubung!")
+
+init_db()
+
+@app.post("/api/register")
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "Username dan password wajib diisi."}), 400
+
+    hashed_pw = generate_password_hash(password)
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_pw))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Akun berhasil didaftarkan!"}), 200
+    except sqlite3.IntegrityError:
+        return jsonify({"error": "Username ini sudah terdaftar. Silakan pilih yang lain."}), 400
+
+@app.post("/api/login")
+def api_login():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT password FROM users WHERE username=?", (username,))
+    user = c.fetchone()
+    conn.close()
+
+    # Cek apakah user ada dan password cocok dengan data hash di database
+    if user and check_password_hash(user[0], password):
+        return jsonify({"message": "Login berhasil!"}), 200
+    else:
+        return jsonify({"error": "Username atau password salah!"}), 401
+
 
 # ==========================================
 # KONFIGURASI GEMINI AI & KNOWLEDGE BASE
