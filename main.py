@@ -116,17 +116,54 @@ def api_delete(nama_file):
     return jsonify({"error": "File tidak ditemukan"}), 404
 
 # ==========================================
-# NORMALISASI TEKS
+# NORMALISASI & PEMBERSIHAN TEKS
 # ==========================================
-def normalisasi_teks(teks):
+def bersihkan_teks(teks):
+    """Membersihkan teks PDF dengan tetap mempertahankan huruf besar/kecil asli."""
+    # Sambungkan kata yang terpenggal tanda hubung dan baris baru di PDF (contoh: penga-\n daan -> pengadaan)
+    teks = re.sub(r"(\w+)-\s*\n\s*(\w+)", r"\1\2", teks)
     teks = unicodedata.normalize("NFKC", teks)
     teks = teks.replace("\u00ad", "")
     teks = teks.replace("\u00a0", " ")
-    teks = re.sub(r"\s+", " ", teks)
-    return teks.casefold().strip()
+    return re.sub(r"\s+", " ", teks).strip()
+
+def normalisasi_teks(teks):
+    """Membersihkan teks dan mengubah menjadi huruf kecil untuk pencarian."""
+    return bersihkan_teks(teks).casefold()
+
+def ekstrak_cuplikan(teks_asli, teks_cari, kata_cari, panjang_sebelum=450, panjang_sesudah=650):
+    """Mengekstrak cuplikan/ringkasan yang jauh lebih panjang, utuh, dan rapi dari teks halaman PDF."""
+    posisi = teks_cari.find(kata_cari)
+    if posisi == -1:
+        return ""
+
+    panjang_kata = len(kata_cari)
+    awal = max(0, posisi - panjang_sebelum)
+    akhir = min(len(teks_asli), posisi + panjang_kata + panjang_sesudah)
+
+    # Rapikan batas awal ke spasi terdekat agar tidak memenggal kata di tengah
+    if awal > 0:
+        spasi_awal = teks_asli.find(" ", awal)
+        if spasi_awal != -1 and spasi_awal < posisi:
+            awal = spasi_awal + 1
+
+    # Rapikan batas akhir ke spasi terdekat agar tidak memenggal kata di tengah
+    if akhir < len(teks_asli):
+        spasi_akhir = teks_asli.rfind(" ", posisi + panjang_kata, akhir)
+        if spasi_akhir != -1 and spasi_akhir > posisi + panjang_kata:
+            akhir = spasi_akhir
+
+    cuplikan = teks_asli[awal:akhir].strip()
+
+    if awal > 0:
+        cuplikan = "... " + cuplikan
+    if akhir < len(teks_asli):
+        cuplikan = cuplikan + " ..."
+
+    return cuplikan
 
 # ==========================================
-# MENCARI KATA DALAM SELURUH PDF
+# MENCARI KATA / KALIMAT DALAM SELURUH PDF
 # ==========================================
 def cari_kata(kata):
     hasil = []
@@ -149,15 +186,19 @@ def cari_kata(kata):
                     if not teks.strip():
                         continue
 
-                    teks_normal = normalisasi_teks(teks)
-                    posisi = teks_normal.find(kata_normal)
+                    teks_asli = bersihkan_teks(teks)
+                    teks_cari = teks_asli.casefold()
 
-                    if posisi == -1:
+                    if kata_normal not in teks_cari:
                         continue
 
-                    awal = max(0, posisi - 100)
-                    akhir = min(len(teks_normal), posisi + len(kata_normal) + 150)
-                    cuplikan = teks_normal[awal:akhir]
+                    cuplikan = ekstrak_cuplikan(
+                        teks_asli=teks_asli,
+                        teks_cari=teks_cari,
+                        kata_cari=kata_normal,
+                        panjang_sebelum=450,
+                        panjang_sesudah=650
+                    )
 
                     hasil.append({
                         "file": file_pdf.name,
@@ -288,8 +329,8 @@ def api_search():
         return jsonify({"error": "Kata pencarian harus berupa teks."}), 400
 
     kata = kata.strip()
-    if len(kata) > 200:
-        return jsonify({"error": "Kata pencarian maksimal 200 karakter."}), 400
+    if len(kata) > 1000:
+        return jsonify({"error": "Kata atau kalimat pencarian maksimal 1000 karakter."}), 400
 
     if not kata:
         return jsonify({"kata": "", "jumlah": 0, "hasil": []})

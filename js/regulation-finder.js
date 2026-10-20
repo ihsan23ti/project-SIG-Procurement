@@ -200,10 +200,20 @@ document.addEventListener("DOMContentLoaded", function () {
             descEl.textContent = deskripsi;
             content.appendChild(descEl);
 
+            const cuplikanContainer = document.createElement("div");
+            cuplikanContainer.className = "bg-gray-50 p-3.5 md:p-4 rounded-lg border border-gray-200 mt-2.5";
+
+            const cuplikanHeader = document.createElement("div");
+            cuplikanHeader.className = "flex items-center gap-1.5 text-xs font-semibold text-gray-500 mb-1.5";
+            cuplikanHeader.innerHTML = '<i class="ph-bold ph-quotes text-[#D7192A]"></i> Ringkasan Regulasi:';
+            cuplikanContainer.appendChild(cuplikanHeader);
+
             const cuplikanEl = document.createElement("p");
-            cuplikanEl.className = "text-sm text-gray-600 leading-relaxed bg-gray-50 p-3.5 rounded-lg border border-gray-100 mt-2 break-words";
+            cuplikanEl.className = "text-sm text-gray-700 leading-relaxed break-words font-normal";
             cuplikanEl.textContent = cuplikan;
-            content.appendChild(cuplikanEl);
+            cuplikanContainer.appendChild(cuplikanEl);
+
+            content.appendChild(cuplikanContainer);
         } else {
             const descEl = document.createElement("p");
             descEl.className = "text-sm text-gray-500 leading-relaxed";
