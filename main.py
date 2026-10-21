@@ -148,7 +148,13 @@ def api_admin_get_users():
     users = []
     for r in rows:
         role_val = r[2] if (len(r) > 2 and r[2]) else ("admin" if r[1].lower() == "admin" else "user")
-        users.append({"id": r[0], "username": r[1], "role": role_val})
+        is_main = bool(r[0] == 1 or r[1].lower() == "admin")
+        users.append({
+            "id": r[0],
+            "username": r[1],
+            "role": role_val,
+            "is_main_admin": is_main
+        })
 
     return jsonify({"users": users})
 
@@ -289,13 +295,20 @@ def api_admin_delete_user():
 
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT id, role FROM users WHERE LOWER(username)=LOWER(?)", (target_username,))
+    c.execute("SELECT id, role, username FROM users WHERE LOWER(username)=LOWER(?)", (target_username,))
     target = c.fetchone()
     if not target:
         conn.close()
         return jsonify({"error": f"Pengguna '{target_username}' tidak ditemukan."}), 404
 
     target_id, target_role = target[0], target[1]
+    actual_username = target[2] if len(target) > 2 else target_username
+
+    # Lindungi Akun Admin Utama agar tidak dapat dihapus
+    if target_id == 1 or actual_username.lower() == "admin":
+        conn.close()
+        return jsonify({"error": "Akun Admin Utama tidak dapat dihapus demi keamanan sistem."}), 400
+
     if target_role == "admin":
         c.execute("SELECT COUNT(*) FROM users WHERE role='admin'")
         admin_count = c.fetchone()[0]
@@ -307,7 +320,7 @@ def api_admin_delete_user():
     conn.commit()
     conn.close()
 
-    return jsonify({"message": f"Pengguna '{target_username}' berhasil dihapus!"}), 200
+    return jsonify({"message": f"Akun '{actual_username}' berhasil dihapus!"}), 200
 
 
 # ==========================================
