@@ -41,11 +41,11 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color
 .brand{display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:.95rem}
 .brand img{height:36px;width:auto}
 .brand small{display:block;font-weight:400;color:var(--slate);font-size:.75rem;line-height:1.2}
-.user{display:flex;align-items:center;gap:1rem;font-size:.9rem;color:var(--slate)}
+.user{display:flex;align-items:center;gap:.65rem;font-size:.84rem;color:var(--slate)}
 .user strong{color:var(--ink);font-weight:600}
-.who{display:flex;align-items:center;gap:.6rem}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.85rem}
-.btn-back{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.45rem .9rem;border-radius:6px;font-size:.85rem;font-weight:500;transition:.2s}
+.who{display:flex;align-items:center;gap:.45rem}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.78rem}
+.btn-back{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--line);background:#fff;color:var(--ink);padding:.35rem .75rem;border-radius:6px;font-size:.82rem;font-weight:500;transition:.2s}
 .btn-back:hover{border-color:var(--red);color:var(--red);background:#FFF5F5}
 
 /* Hero */
@@ -118,8 +118,17 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 <header class="hero">
   <div class="hero-inner">
     <div class="crumb"><a href="index.html">Portal</a> / Regulation Finder</div>
-    <h1>Regulation Finder</h1>
-    <p>Cari kata kunci, kalimat, pasal, atau istilah dalam seluruh dokumen pedoman pengadaan SIG.</p>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <h1>Regulation Finder</h1>
+        <p>Cari kata kunci, kalimat, pasal, atau istilah dalam seluruh dokumen pedoman pengadaan SIG.</p>
+      </div>
+      <div>
+        <button type="button" id="btnOpenUploadModal" class="inline-flex items-center gap-2 bg-[#D7192A] hover:bg-[#B01220] text-white px-5 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all text-sm cursor-pointer border-0">
+          <i class="ph-bold ph-plus-circle text-lg"></i> Tambah Data Regulasi
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -139,6 +148,63 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 </main>
 
 <footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
+
+<!-- MODAL TAMBAH DATA REGULASI -->
+<div id="uploadModal" class="fixed inset-0 bg-gray-900/80 z-50 hidden flex-col justify-center items-center backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col modal-enter">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-lg bg-red-100 text-[#D7192A] flex items-center justify-center font-bold text-lg">
+                    <i class="ph-bold ph-file-arrow-up"></i>
+                </div>
+                <h3 class="font-bold text-gray-800 text-lg">Tambah Data Regulasi</h3>
+            </div>
+            <button type="button" id="btnCloseUploadModal" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors cursor-pointer">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 flex flex-col gap-4">
+            <p class="text-sm text-gray-600">Unggah file dokumen PDF pedoman, prosedur, atau regulasi SIG. Dokumen yang diunggah akan otomatis dipelajari oleh model AI dan bisa langsung dicari kata kuncinya.</p>
+            
+            <!-- Area Dropzone / Pilih File -->
+            <div id="uploadDropzone" class="border-2 border-dashed border-gray-300 hover:border-[#D7192A] rounded-xl p-6 flex flex-col items-center justify-center gap-2 bg-gray-50/60 hover:bg-red-50/20 transition-colors cursor-pointer text-center">
+                <div class="w-12 h-12 rounded-full bg-red-50 text-[#D7192A] flex items-center justify-center text-2xl mb-1">
+                    <i class="ph ph-cloud-arrow-up"></i>
+                </div>
+                <p class="text-sm font-semibold text-gray-800">Klik untuk pilih file PDF atau seret ke sini</p>
+                <p class="text-xs text-gray-400">Format yang didukung: <strong>.pdf</strong></p>
+                <input type="file" id="regFileInput" accept=".pdf" class="hidden">
+            </div>
+
+            <!-- File Preview Info -->
+            <div id="uploadFileInfo" class="hidden items-center justify-between p-3.5 bg-red-50/80 border border-red-200 rounded-lg text-sm">
+                <div class="flex items-center gap-2.5 truncate">
+                    <i class="ph-fill ph-file-pdf text-[#D7192A] text-2xl shrink-0"></i>
+                    <div class="truncate text-left">
+                        <span id="uploadFileName" class="font-bold text-gray-800 block truncate">nama-file.pdf</span>
+                        <span id="uploadFileSize" class="text-xs text-gray-500">0 KB</span>
+                    </div>
+                </div>
+                <button type="button" id="btnCancelSelectedFile" class="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors shrink-0 cursor-pointer" title="Batalkan pilihan">
+                    <i class="ph-bold ph-x text-base"></i>
+                </button>
+            </div>
+
+            <!-- Alert Box / Status -->
+            <div id="uploadAlert" class="hidden text-sm p-3 rounded-lg"></div>
+        </div>
+
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-2 shrink-0">
+            <button type="button" id="btnBatalUploadModal" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
+                Batal
+            </button>
+            <button type="button" id="btnSubmitUploadModal" disabled class="px-5 py-2 bg-[#D7192A] hover:bg-[#B01220] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer">
+                <i class="ph-bold ph-cloud-arrow-up text-lg"></i> Mulai Unggah
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- MODAL PRATINJAU (PREVIEW) PDF FULL SCREEN -->
 <div id="previewModal" class="fixed inset-0 bg-gray-900/80 z-50 hidden flex-col justify-center items-center backdrop-blur-sm p-4 md:p-8">

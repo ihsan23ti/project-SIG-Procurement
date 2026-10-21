@@ -223,9 +223,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         kartu.appendChild(content);
 
-        // Tombol Buka Dokumen (desain persis procurement-document.html, dibuka di tab baru)
+        // Tombol Aksi (Buka Dokumen & Hapus jika pada tampilan semua dokumen)
         const fileUrl = "/data%20regulation%20finder/" + encodeURIComponent(namaFile);
         const previewUrl = halaman ? fileUrl + "#page=" + halaman : fileUrl;
+
+        const aksiContainer = document.createElement("div");
+        aksiContainer.className = "flex flex-col sm:flex-row items-center gap-2 shrink-0";
+
+        if (!halaman && !cuplikan) {
+            const btnHapus = document.createElement("button");
+            btnHapus.type = "button";
+            btnHapus.className = "w-full sm:w-10 h-10 border border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 rounded-lg text-xl transition-colors flex items-center justify-center shrink-0 cursor-pointer";
+            btnHapus.title = "Hapus Dokumen Regulasi";
+            btnHapus.innerHTML = '<i class="ph ph-trash"></i>';
+            btnHapus.onclick = function() {
+                hapusDokumenRegulasi(namaFile);
+            };
+            aksiContainer.appendChild(btnHapus);
+        }
 
         const tombol = document.createElement("a");
         tombol.href = previewUrl;
@@ -234,7 +249,8 @@ document.addEventListener("DOMContentLoaded", function () {
         tombol.className = "border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0 no-underline";
         tombol.innerHTML = '<i class="ph ph-file-text text-lg"></i> Buka Dokumen';
 
-        kartu.appendChild(tombol);
+        aksiContainer.appendChild(tombol);
+        kartu.appendChild(aksiContainer);
 
         return kartu;
     }
@@ -390,6 +406,206 @@ document.addEventListener("DOMContentLoaded", function () {
         muatSemuaDokumen();
         searchInput.focus();
     });
+
+    // ------------------------------------------
+    // HAPUS DOKUMEN REGULASI
+    // ------------------------------------------
+    window.hapusDokumenRegulasi = async function (namaFile) {
+        if (!confirm(`Yakin ingin menghapus dokumen regulasi "${namaFile}" secara permanen? \n\n(Dokumen ini juga akan dihapus dari ingatan AI Chatbot dan mesin Regulation Finder)`)) return;
+
+        try {
+            const res = await fetch("/api/documents/" + encodeURIComponent(namaFile), { method: "DELETE" });
+            if (res.ok) {
+                alert("Dokumen regulasi berhasil dihapus dan model AI telah diperbarui!");
+                if (searchInput.value.trim()) {
+                    cariDokumen(searchInput.value.trim());
+                } else {
+                    muatSemuaDokumen();
+                }
+            } else {
+                const data = await res.json();
+                alert("Gagal: " + (data.error || "Gagal menghapus dokumen."));
+            }
+        } catch (error) {
+            alert("Gagal menghapus dokumen. Pastikan server Flask menyala.");
+        }
+    };
+
+    // ------------------------------------------
+    // LOGIKA MODAL TAMBAH DATA REGULASI
+    // ------------------------------------------
+    const uploadModal = document.getElementById("uploadModal");
+    const btnOpenUploadModal = document.getElementById("btnOpenUploadModal");
+    const btnCloseUploadModal = document.getElementById("btnCloseUploadModal");
+    const btnBatalUploadModal = document.getElementById("btnBatalUploadModal");
+    const uploadDropzone = document.getElementById("uploadDropzone");
+    const regFileInput = document.getElementById("regFileInput");
+    const uploadFileInfo = document.getElementById("uploadFileInfo");
+    const uploadFileName = document.getElementById("uploadFileName");
+    const uploadFileSize = document.getElementById("uploadFileSize");
+    const btnCancelSelectedFile = document.getElementById("btnCancelSelectedFile");
+    const uploadAlert = document.getElementById("uploadAlert");
+    const btnSubmitUploadModal = document.getElementById("btnSubmitUploadModal");
+
+    let fileRegulasiTerpilih = null;
+
+    function resetFormUpload() {
+        fileRegulasiTerpilih = null;
+        if (regFileInput) regFileInput.value = "";
+        if (uploadFileInfo) {
+            uploadFileInfo.classList.add("hidden");
+            uploadFileInfo.classList.remove("flex");
+        }
+        if (uploadDropzone) uploadDropzone.classList.remove("hidden");
+        if (uploadAlert) {
+            uploadAlert.classList.add("hidden");
+            uploadAlert.textContent = "";
+        }
+        if (btnSubmitUploadModal) {
+            btnSubmitUploadModal.disabled = true;
+            btnSubmitUploadModal.innerHTML = '<i class="ph-bold ph-cloud-arrow-up text-lg"></i> Mulai Unggah';
+        }
+    }
+
+    function bukaModalUpload() {
+        if (!uploadModal) return;
+        resetFormUpload();
+        uploadModal.classList.remove("hidden");
+        uploadModal.classList.add("flex");
+    }
+
+    function tutupModalUpload() {
+        if (!uploadModal) return;
+        uploadModal.classList.add("hidden");
+        uploadModal.classList.remove("flex");
+        resetFormUpload();
+    }
+
+    function formatBytes(bytes) {
+        if (!bytes || bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function setFileTerpilih(file) {
+        if (!file) return;
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            if (uploadAlert) {
+                uploadAlert.className = "text-sm p-3 rounded-lg bg-red-100 text-red-800 border border-red-300 block";
+                uploadAlert.textContent = "Hanya file dengan ekstensi .pdf yang diperbolehkan.";
+            }
+            return;
+        }
+
+        fileRegulasiTerpilih = file;
+        if (uploadFileName) uploadFileName.textContent = file.name;
+        if (uploadFileSize) uploadFileSize.textContent = formatBytes(file.size);
+        if (uploadFileInfo) {
+            uploadFileInfo.classList.remove("hidden");
+            uploadFileInfo.classList.add("flex");
+        }
+        if (uploadDropzone) uploadDropzone.classList.add("hidden");
+        if (uploadAlert) uploadAlert.classList.add("hidden");
+        if (btnSubmitUploadModal) btnSubmitUploadModal.disabled = false;
+    }
+
+    if (btnOpenUploadModal) btnOpenUploadModal.addEventListener("click", bukaModalUpload);
+    if (btnCloseUploadModal) btnCloseUploadModal.addEventListener("click", tutupModalUpload);
+    if (btnBatalUploadModal) btnBatalUploadModal.addEventListener("click", tutupModalUpload);
+
+    if (uploadModal) {
+        uploadModal.addEventListener("click", function (e) {
+            if (e.target === uploadModal) tutupModalUpload();
+        });
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && uploadModal && !uploadModal.classList.contains("hidden")) {
+            tutupModalUpload();
+        }
+    });
+
+    if (uploadDropzone && regFileInput) {
+        uploadDropzone.addEventListener("click", function () {
+            regFileInput.click();
+        });
+
+        uploadDropzone.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            uploadDropzone.classList.add("border-[#D7192A]", "bg-red-50/40");
+        });
+
+        uploadDropzone.addEventListener("dragleave", function (e) {
+            e.preventDefault();
+            uploadDropzone.classList.remove("border-[#D7192A]", "bg-red-50/40");
+        });
+
+        uploadDropzone.addEventListener("drop", function (e) {
+            e.preventDefault();
+            uploadDropzone.classList.remove("border-[#D7192A]", "bg-red-50/40");
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                setFileTerpilih(e.dataTransfer.files[0]);
+            }
+        });
+
+        regFileInput.addEventListener("change", function () {
+            if (regFileInput.files && regFileInput.files.length > 0) {
+                setFileTerpilih(regFileInput.files[0]);
+            }
+        });
+    }
+
+    if (btnCancelSelectedFile) {
+        btnCancelSelectedFile.addEventListener("click", function (e) {
+            e.stopPropagation();
+            resetFormUpload();
+        });
+    }
+
+    if (btnSubmitUploadModal) {
+        btnSubmitUploadModal.addEventListener("click", async function () {
+            if (!fileRegulasiTerpilih) return;
+
+            btnSubmitUploadModal.disabled = true;
+            btnSubmitUploadModal.innerHTML = '<i class="ph-bold ph-spinner-gap animate-spin text-lg"></i> Mengunggah & Melatih AI...';
+            if (uploadAlert) uploadAlert.classList.add("hidden");
+
+            const formData = new FormData();
+            formData.append("file", fileRegulasiTerpilih);
+
+            try {
+                const response = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert((data.message || "Dokumen regulasi berhasil diunggah!") + "\n\nDokumen sudah otomatis masuk ke mesin pencarian dan otak Chatbot AI.");
+                    tutupModalUpload();
+                    searchInput.value = "";
+                    clearBtn.classList.add("hidden");
+                    await muatSemuaDokumen();
+                } else {
+                    if (uploadAlert) {
+                        uploadAlert.className = "text-sm p-3 rounded-lg bg-red-100 text-red-800 border border-red-300 block";
+                        uploadAlert.textContent = "Gagal: " + (data.error || "Gagal mengunggah file");
+                    }
+                    btnSubmitUploadModal.disabled = false;
+                    btnSubmitUploadModal.innerHTML = '<i class="ph-bold ph-cloud-arrow-up text-lg"></i> Mulai Unggah';
+                }
+            } catch (err) {
+                if (uploadAlert) {
+                    uploadAlert.className = "text-sm p-3 rounded-lg bg-red-100 text-red-800 border border-red-300 block";
+                    uploadAlert.textContent = "Koneksi gagal. Pastikan server Flask menyala.";
+                }
+                btnSubmitUploadModal.disabled = false;
+                btnSubmitUploadModal.innerHTML = '<i class="ph-bold ph-cloud-arrow-up text-lg"></i> Mulai Unggah';
+            }
+        });
+    }
 
     // ------------------------------------------
     // TAMPILKAN DOKUMEN PERTAMA KALI
