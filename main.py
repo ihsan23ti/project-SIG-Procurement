@@ -82,6 +82,23 @@ def is_admin(username):
     except Exception:
         return False
 
+def is_main_admin_user(username):
+    """Memeriksa apakah username yang diberikan adalah akun Admin Utama (ID == 1)."""
+    if not username:
+        return False
+    u = username.strip().lower()
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        c = conn.cursor()
+        c.execute("SELECT id, username FROM users WHERE id=1")
+        row = c.fetchone()
+        conn.close()
+        if row and row[1] and row[1].strip().lower() == u:
+            return True
+        return False
+    except Exception:
+        return False
+
 @app.post("/api/register")
 def api_register():
     data = request.get_json(silent=True) or {}
@@ -245,6 +262,8 @@ def api_admin_get_users():
     rows = c.fetchall()
     conn.close()
 
+    caller_is_main = is_main_admin_user(admin_user)
+
     users = []
     for r in rows:
         role_val = r[2] if (len(r) > 2 and r[2]) else "user"
@@ -256,7 +275,10 @@ def api_admin_get_users():
             "is_main_admin": is_main
         })
 
-    return jsonify({"users": users})
+    return jsonify({
+        "users": users,
+        "caller_is_main_admin": caller_is_main
+    })
 
 @app.post("/api/admin/add-user")
 def api_admin_add_user():
@@ -276,6 +298,11 @@ def api_admin_add_user():
     if role not in ["admin", "user"]:
         role = "user"
 
+    is_caller_main = is_main_admin_user(admin_user)
+    # Hanya Admin Utama yang berhak menambahkan akun dengan peran Administrator
+    if role == "admin" and not is_caller_main:
+        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak menambahkan akun Administrator baru."}), 403
+
     hashed_pw = generate_password_hash(password)
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -290,7 +317,7 @@ def api_admin_add_user():
 
 @app.post("/api/admin/edit-user")
 def api_admin_edit_user():
-    """Mengedit username, role, dan/atau password pengguna (termasuk akun admin) oleh admin."""
+    """Mengedit username, role, dan/atau password pengguna oleh admin."""
     data = request.get_json(silent=True) or {}
     admin_user = (data.get("admin_user", "") or request.headers.get("X-Admin-User", "")).strip()
     user_id = data.get("user_id")
@@ -307,6 +334,13 @@ def api_admin_edit_user():
     if new_role not in ["admin", "user"]:
         new_role = "user"
 
+    target_id_int = int(user_id)
+    is_caller_main = is_main_admin_user(admin_user)
+
+    # 1. Admin biasa TIDAK BISA mengubah akun/password Admin Utama (id == 1)
+    if target_id_int == 1 and not is_caller_main:
+        return jsonify({"error": "Akses ditolak! Admin biasa tidak berhak mengubah akun atau password Admin Utama."}), 403
+
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT id, username, role FROM users WHERE id=?", (user_id,))
@@ -317,9 +351,15 @@ def api_admin_edit_user():
 
     old_username = target[1]
     old_role = target[2]
+    is_self = (old_username.strip().lower() == admin_user.strip().lower())
+
+    # 2. Admin biasa TIDAK BISA mengubah akun/password Administrator lain (hanya Admin Utama atau dirinya sendiri)
+    if old_role == "admin" and target_id_int != 1 and not is_caller_main and not is_self:
+        conn.close()
+        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak mengubah atau mereset akun Administrator lain."}), 403
 
     # Admin Utama (id == 1) selalu berstatus admin dan tidak bisa diubah ke role lain
-    if int(user_id) == 1:
+    if target_id_int == 1:
         new_role = "admin"
 
     # Validasi: jika akun yang diedit saat ini adalah admin dan role-nya diubah ke user biasa,
@@ -342,7 +382,6 @@ def api_admin_edit_user():
         conn.commit()
         conn.close()
 
-        is_self = (old_username.lower() == admin_user.lower())
         return jsonify({
             "message": f"Data akun '{new_username}' berhasil diperbarui!",
             "old_username": old_username,
@@ -368,21 +407,34 @@ def api_admin_change_password():
     if not target_username or not new_password:
         return jsonify({"error": "Username target dan password baru wajib diisi."}), 400
 
-    hashed_pw = generate_password_hash(new_password)
-
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT id FROM users WHERE LOWER(username)=LOWER(?)", (target_username,))
+    c.execute("SELECT id, username, role FROM users WHERE LOWER(username)=LOWER(?)", (target_username,))
     user = c.fetchone()
     if not user:
         conn.close()
         return jsonify({"error": f"Pengguna '{target_username}' tidak ditemukan."}), 404
 
-    c.execute("UPDATE users SET password=? WHERE id=?", (hashed_pw, user[0]))
+    target_id, target_name, target_role = user[0], user[1], user[2]
+    is_caller_main = is_main_admin_user(admin_user)
+    is_self = (target_name.strip().lower() == admin_user.strip().lower())
+
+    # Admin biasa tidak bisa mereset password Admin Utama (id == 1)
+    if target_id == 1 and not is_caller_main:
+        conn.close()
+        return jsonify({"error": "Akses ditolak! Admin biasa tidak berhak mengubah password Admin Utama."}), 403
+
+    # Admin biasa tidak bisa mereset password Admin lainnya
+    if target_role == "admin" and target_id != 1 and not is_caller_main and not is_self:
+        conn.close()
+        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak mereset password Administrator lain."}), 403
+
+    hashed_pw = generate_password_hash(new_password)
+    c.execute("UPDATE users SET password=? WHERE id=?", (hashed_pw, target_id))
     conn.commit()
     conn.close()
 
-    return jsonify({"message": f"Password untuk '{target_username}' berhasil diubah dan diamankan dengan hash!"}), 200
+    return jsonify({"message": f"Password untuk '{target_name}' berhasil diubah dan diamankan dengan hash!"}), 200
 
 @app.post("/api/admin/delete-user")
 def api_admin_delete_user():
@@ -409,19 +461,25 @@ def api_admin_delete_user():
         return jsonify({"error": "Akun pengguna tidak ditemukan."}), 404
 
     target_id, target_role, actual_username = target[0], target[1], target[2]
+    is_caller_main = is_main_admin_user(admin_user)
 
-    # Lindungi Akun Admin Utama (HANYA id == 1) agar tidak dapat dihapus
+    # 1. Lindungi Akun Admin Utama (HANYA id == 1) agar tidak dapat dihapus oleh siapapun
     if target_id == 1:
         conn.close()
         return jsonify({"error": "Akun Admin Utama tidak dapat dihapus demi keamanan sistem."}), 400
 
-    # Tidak dapat menghapus akun sendiri yang sedang aktif digunakan
+    # 2. Tidak dapat menghapus akun sendiri yang sedang aktif digunakan
     if actual_username.strip().lower() == admin_user.strip().lower():
         conn.close()
         return jsonify({"error": "Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan."}), 400
 
-    # Jika yang dihapus adalah role admin lain, pastikan masih ada minimal 1 admin lain tersisa
+    # 3. Jika target adalah Administrator biasa: HANYA Admin Utama yang berhak menghapus!
     is_target_admin = bool(target_role and target_role.strip().lower() in ["admin", "administrator"])
+    if is_target_admin and not is_caller_main:
+        conn.close()
+        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak menghapus akun Administrator."}), 403
+
+    # Jika Admin Utama menghapus admin lain, pastikan masih ada minimal 1 admin tersisa di sistem
     if is_target_admin:
         c.execute("SELECT COUNT(*) FROM users WHERE LOWER(TRIM(role)) IN ('admin', 'administrator')")
         admin_count = c.fetchone()[0]
