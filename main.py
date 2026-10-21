@@ -8,12 +8,17 @@ import google.generativeai as genai
 import pymupdf
 from flask import Flask, jsonify, request, send_from_directory
 
+# --- LIBRARY MACHINE LEARNING LOKAL (TF-IDF) ---
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
 # ==========================================
-# PENGATURAN FOLDER
+# PENGATURAN FOLDER & FLASK
 # ==========================================
 BASE_DIR = Path(__file__).resolve().parent
 FOLDER_PDF = BASE_DIR / "data regulation finder"
-FOLDER_PDF.mkdir(parents=True, exist_ok=True) # Pastikan folder otomatis ada
+FOLDER_PDF.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
 
@@ -23,7 +28,6 @@ app = Flask(__name__)
 DB_NAME = BASE_DIR / "database.db"
 
 def init_db():
-    """Membuat tabel users jika belum ada, dan membuat 1 akun admin default."""
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users 
@@ -31,11 +35,17 @@ def init_db():
                   username TEXT UNIQUE NOT NULL, 
                   password TEXT NOT NULL)''')
     
-    # Cek apakah akun admin sudah ada
-    c.execute("SELECT * FROM users WHERE username='admin'")
-    if not c.fetchone():
-        hashed_pw = generate_password_hash('123')
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', hashed_pw))
+    c.execute("SELECT password FROM users WHERE username='admin'")
+    user_admin = c.fetchone()
+    if not user_admin:
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', generate_password_hash('123')))
+    else:
+        try:
+            if not check_password_hash(user_admin[0], '123') and not check_password_hash(user_admin[0], 'admin123'):
+                pass
+        except ValueError:
+            c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+        
     conn.commit()
     conn.close()
     print("[DB] Database SQLite 'database.db' siap dan terhubung!")
@@ -48,9 +58,7 @@ def api_register():
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
 
-    if not username or not password:
-        return jsonify({"error": "Username dan password wajib diisi."}), 400
-
+    if not username or not password: return jsonify({"error": "Username dan password wajib diisi."}), 400
     hashed_pw = generate_password_hash(password)
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -74,99 +82,195 @@ def api_login():
     user = c.fetchone()
     conn.close()
 
-    # Cek apakah user ada dan password cocok dengan data hash di database
-    if user and check_password_hash(user[0], password):
+    is_valid = False
+    if user:
+        try:
+            is_valid = check_password_hash(user[0], password)
+        except ValueError:
+            is_valid = (user[0] == password)
+
+    if user and is_valid:
+        if user[0] == password:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("UPDATE users SET password=? WHERE username=?", (generate_password_hash(password), username))
+            conn.commit()
+            conn.close()
         return jsonify({"message": "Login berhasil!"}), 200
     else:
         return jsonify({"error": "Username atau password salah!"}), 401
 
 
 # ==========================================
-# KONFIGURASI GEMINI AI & KNOWLEDGE BASE
+# KONFIGURASI GEMINI AI & TF-IDF RAG
 # ==========================================
 API_KEY = "AQ.Ab8RN6JRt0GJreirZW6gfBfJ6VaF856bd4k31oTjV2pqvwY18g"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-3.8-flash')
-KNOWLEDGE_BASE = ""
+
+MEMORY_DOKUMEN = []
+vectorizer = TfidfVectorizer()
+tfidf_matrix = None
+
+def bersihkan_teks(teks):
+    teks = re.sub(r"(\w+)-\s*\n\s*(\w+)", r"\1\2", teks)
+    teks = unicodedata.normalize("NFKC", teks)
+    return re.sub(r"\s+", " ", teks.replace("\u00ad", "").replace("\u00a0", " ")).strip()
+
+def chunk_text(teks, chunk_size=800, overlap=150):
+    """Memecah teks menjadi potongan paragraf agar TF-IDF lebih tajam."""
+    chunks = []
+    start = 0
+    teks_len = len(teks)
+    while start < teks_len:
+        end = start + chunk_size
+        chunks.append(teks[start:end])
+        start += chunk_size - overlap
+    return chunks
 
 def load_knowledge_base():
-    """Mengekstrak teks dari semua PDF dan menyuntikkannya ke otak AI."""
-    global KNOWLEDGE_BASE
-    KNOWLEDGE_BASE = "" # KOSONGKAN INGATAN LAMA AGAR BISA DI-UPDATE REAL-TIME
+    """Fase TRAINING: Membaca PDF dan melatih model matematika TF-IDF secara lokal."""
+    global MEMORY_DOKUMEN, vectorizer, tfidf_matrix
+    MEMORY_DOKUMEN = []
     
-    if not FOLDER_PDF.is_dir():
-        return
+    if not FOLDER_PDF.is_dir(): return
     
-    print("\n[AI] Mengekstrak teks dari PDF untuk diserap AI...")
-    daftar_pdf = sorted(file for file in FOLDER_PDF.iterdir() if file.is_file() and file.suffix.lower() == ".pdf")
-    
+    print("\n[ML] Membaca PDF dan melatih model TF-IDF...")
+    daftar_pdf = sorted(f for f in FOLDER_PDF.iterdir() if f.is_file() and f.suffix.lower() == ".pdf")
+
     for file_pdf in daftar_pdf:
         try:
             with pymupdf.open(file_pdf) as dokumen:
-                teks_dokumen = ""
-                for halaman in dokumen:
-                    teks_dokumen += halaman.get_text("text") + "\n"
-                
-                # Bersihkan spasi ganda agar rapi saat dibaca AI
-                teks_dokumen = re.sub(r"\s+", " ", teks_dokumen).strip()
-                KNOWLEDGE_BASE += f"\n\n--- DOKUMEN REFERENSI: {file_pdf.name} ---\n{teks_dokumen}"
+                for nomor_halaman, halaman in enumerate(dokumen, start=1):
+                    teks_asli = bersihkan_teks(halaman.get_text("text"))
+                    if len(teks_asli) > 50:
+                        potongan = chunk_text(teks_asli)
+                        for p in potongan:
+                            MEMORY_DOKUMEN.append({
+                                "file": file_pdf.name,
+                                "halaman": nomor_halaman,
+                                "teks": p
+                            })
         except Exception as e:
-            print(f"[AI] Gagal membaca {file_pdf.name} untuk AI: {e}")
-            
-    print(f"[AI] Selesai! {len(daftar_pdf)} file PDF berhasil diserap. Chatbot AI siap digunakan.\n")
+            print(f"[ML] Gagal membaca {file_pdf.name}: {e}")
 
-# Panggil fungsi ini agar AI menghafal PDF saat server Flask pertama kali menyala
+    if MEMORY_DOKUMEN:
+        # PROSES PELATIHAN TF-IDF
+        tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
+        print(f"[ML] Selesai! Model TF-IDF dilatih dengan {len(MEMORY_DOKUMEN)} potongan paragraf. Siap digunakan!\n")
+
 load_knowledge_base()
 
 # ==========================================
-# API CHATBOT (RAG)
+# API CHATBOT (RETRIEVAL TF-IDF + GENERATION GEMINI)
 # ==========================================
 @app.post("/api/chat")
 def api_chat():
     data = request.get_json(silent=True) or {}
     pertanyaan = data.get("pesan", "").strip()
 
-    if not pertanyaan:
-        return jsonify({"error": "Pesan tidak boleh kosong"}), 400
+    if not pertanyaan: return jsonify({"error": "Pesan tidak boleh kosong"}), 400
+    if tfidf_matrix is None or len(MEMORY_DOKUMEN) == 0: 
+        return jsonify({"error": "Database dokumen kosong. Upload PDF dulu."}), 400
 
-    prompt = f"""
+    try:
+        # 1. FASE RETRIEVAL (PENCARIAN LOKAL DENGAN TF-IDF)
+        query_vec = vectorizer.transform([pertanyaan])
+        similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+        
+        # Ambil 5 paragraf dengan skor kecocokan tertinggi
+        best_indices = similarities.argsort()[-5:][::-1]
+        
+        kumpulan_cuplikan = []
+        for idx in best_indices:
+            if similarities[idx] > 0.01: # Toleransi kemiripan
+                chunk = MEMORY_DOKUMEN[idx]
+                kumpulan_cuplikan.append(f"- SUMBER: {chunk['file']} (Halaman {chunk['halaman']})\n  ISI: {chunk['teks']}")
+
+        konteks_dokumen = "\n\n".join(kumpulan_cuplikan) if kumpulan_cuplikan else "Tidak ada teks relevan yang ditemukan."
+
+        # 2. FASE GENERATION (MERANGKAI JAWABAN DENGAN GEMINI)
+        prompt = f"""
 Kamu adalah Asisten AI profesional untuk Portal Pengadaan PT Semen Indonesia (Persero) Tbk (SIG).
-Tugasmu adalah menjawab pertanyaan pengguna HANYA berdasarkan isi dokumen pengadaan berikut ini.
+Tugasmu adalah menjawab pertanyaan pengguna HANYA berdasarkan potongan dokumen di bawah ini.
 Gunakan bahasa Indonesia yang ramah, sopan, jelas, dan profesional.
-Jika kamu mengutip aturan, sebutkan dari mana nama "DOKUMEN REFERENSI" tersebut berasal.
-Jika jawaban tidak ada di dalam dokumen referensi, katakan dengan sopan bahwa informasi tersebut tidak tersedia di pedoman pengadaan.
+WAJIB menyebutkan nama SUMBER dan Halaman di akhir penjelasanmu.
+Jika informasi tidak ada di dalam dokumen referensi, katakan dengan sopan bahwa informasi tidak tersedia di pedoman pengadaan.
 
-ISI DOKUMEN PENGADAAN SIG (JADIKAN INI SUMBER KEBENARAN MUTLAK):
-{KNOWLEDGE_BASE}
+SUMBER DOKUMEN PENGADAAN SIG:
+{konteks_dokumen}
 
 Pertanyaan Pengguna: "{pertanyaan}"
 """
-    try:
         response = model.generate_content(prompt)
         return jsonify({"jawaban": response.text})
+        
     except Exception as e:
-        app.logger.exception("Gagal memanggil Gemini API")
+        app.logger.exception("Gagal memproses RAG")
         return jsonify({"error": f"Server AI error: {str(e)}"}), 500
+
+# ==========================================
+# PENCARIAN EXACT-MATCH (UNTUK REGULATION FINDER)
+# ==========================================
+def normalisasi_teks(teks):
+    return bersihkan_teks(teks).casefold()
+
+def ekstrak_cuplikan(teks_asli, teks_cari, kata_cari, panjang_sebelum=500, panjang_sesudah=800):
+    posisi = teks_cari.find(kata_cari)
+    if posisi == -1: return ""
+    panjang_kata = len(kata_cari)
+    awal = max(0, posisi - panjang_sebelum)
+    akhir = min(len(teks_asli), posisi + panjang_kata + panjang_sesudah)
+    
+    if awal > 0:
+        spasi_awal = teks_asli.find(" ", awal)
+        if spasi_awal != -1 and spasi_awal < posisi: awal = spasi_awal + 1
+    if akhir < len(teks_asli):
+        spasi_akhir = teks_asli.rfind(" ", posisi + panjang_kata, akhir)
+        if spasi_akhir != -1 and spasi_akhir > posisi + panjang_kata: akhir = spasi_akhir
+        
+    cuplikan = teks_asli[awal:akhir].strip()
+    return f"... {cuplikan} ..." if awal > 0 else f"{cuplikan} ..."
+
+def cari_kata_cepat(kata):
+    hasil = []
+    kata = kata.strip()
+    if not kata: return hasil
+    kata_normal = normalisasi_teks(kata)
+    
+    for doc in MEMORY_DOKUMEN:
+        teks_cari = doc["teks"].casefold()
+        if kata_normal in teks_cari:
+            cuplikan = ekstrak_cuplikan(doc["teks"], teks_cari, kata_normal)
+            hasil.append({
+                "file": doc["file"],
+                "halaman": doc["halaman"],
+                "cuplikan": cuplikan
+            })
+    return hasil
+
+@app.post("/api/search")
+def api_search():
+    kata = (request.get_json(silent=True) or {}).get("kata", "").strip()
+    if not kata: return jsonify({"kata": "", "jumlah": 0, "hasil": []})
+    hasil = cari_kata_cepat(kata)
+    return jsonify({"kata": kata, "jumlah": len(hasil), "hasil": hasil})
 
 # ==========================================
 # API PENGELOLAAN DOKUMEN (UPLOAD & DELETE)
 # ==========================================
 @app.post("/api/upload")
 def api_upload():
-    if 'file' not in request.files:
-        return jsonify({"error": "Tidak ada file"}), 400
+    if 'file' not in request.files: return jsonify({"error": "Tidak ada file"}), 400
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "Nama file kosong"}), 400
+    if file.filename == '': return jsonify({"error": "Nama file kosong"}), 400
     
     if file and file.filename.lower().endswith('.pdf'):
         safe_filename = file.filename.replace("/", "-").replace("\\", "-")
         filepath = FOLDER_PDF / safe_filename
         file.save(filepath)
-        
-        # SINKRONISASI AI: Langsung suruh AI baca PDF baru tanpa perlu restart server!
-        load_knowledge_base()
-        return jsonify({"message": "Berhasil upload dan AI telah mempelajarinya!"}), 200
+        load_knowledge_base() # Training ulang TF-IDF secara otomatis
+        return jsonify({"message": "Berhasil upload dan model TF-IDF telah dilatih ulang!"}), 200
     return jsonify({"error": "Hanya menerima PDF."}), 400
 
 @app.delete("/api/documents/<path:nama_file>")
@@ -174,211 +278,39 @@ def api_delete(nama_file):
     safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     filepath = FOLDER_PDF / safe_filename
     if filepath.exists() and filepath.is_file():
-        filepath.unlink() # Hapus file fisik
-        
-        # SINKRONISASI AI: Langsung hapus file dari ingatan AI!
-        load_knowledge_base()
+        filepath.unlink() 
+        load_knowledge_base() # Training ulang TF-IDF secara otomatis
         return jsonify({"message": "Dihapus"}), 200
     return jsonify({"error": "File tidak ditemukan"}), 404
 
 # ==========================================
-# NORMALISASI TEKS
-# ==========================================
-def normalisasi_teks(teks):
-    teks = unicodedata.normalize("NFKC", teks)
-    teks = teks.replace("\u00ad", "")
-    teks = teks.replace("\u00a0", " ")
-    teks = re.sub(r"\s+", " ", teks)
-    return teks.casefold().strip()
-
-# ==========================================
-# MENCARI KATA DALAM SELURUH PDF
-# ==========================================
-def cari_kata(kata):
-    hasil = []
-    kata = kata.strip()
-    if not kata:
-        return hasil
-
-    kata_normal = normalisasi_teks(kata)
-    if not FOLDER_PDF.is_dir():
-        app.logger.error("Folder PDF tidak ditemukan: %s", FOLDER_PDF)
-        return hasil
-
-    daftar_pdf = sorted(file for file in FOLDER_PDF.iterdir() if file.is_file() and file.suffix.lower() == ".pdf")
-
-    for file_pdf in daftar_pdf:
-        try:
-            with pymupdf.open(file_pdf) as dokumen:
-                for nomor_halaman, halaman in enumerate(dokumen, start=1):
-                    teks = halaman.get_text("text")
-                    if not teks.strip():
-                        continue
-
-                    teks_normal = normalisasi_teks(teks)
-                    posisi = teks_normal.find(kata_normal)
-
-                    if posisi == -1:
-                        continue
-
-                    awal = max(0, posisi - 100)
-                    akhir = min(len(teks_normal), posisi + len(kata_normal) + 150)
-                    cuplikan = teks_normal[awal:akhir]
-
-                    hasil.append({
-                        "file": file_pdf.name,
-                        "halaman": nomor_halaman,
-                        "cuplikan": cuplikan
-                    })
-        except Exception:
-            app.logger.exception("Gagal membaca PDF: %s", file_pdf.name)
-
-    return hasil
-
-# ==========================================
-# HALAMAN WEBSITE
+# HALAMAN WEBSITE & LAINNYA
 # ==========================================
 @app.get("/")
-def beranda():
-    return send_from_directory(BASE_DIR, "index.html")
+def beranda(): return send_from_directory(BASE_DIR, "index.html")
 
-@app.get("/login.html")
-def halaman_login():
-    return send_from_directory(BASE_DIR, "login.html")
+@app.get("/<path:page>")
+def serve_pages(page):
+    if not page.endswith(".html"): return "Not Found", 404
+    return send_from_directory(BASE_DIR, page)
 
-@app.get("/index.html")
-def dashboard():
-    return send_from_directory(BASE_DIR, "index.html")
-
-@app.get("/procurement-template.html")
-def procurementtemplate():
-    return send_from_directory(BASE_DIR, "procurement-template.html")
-
-@app.get("/addendum-skd-panitia.html")
-def addskdpanitia():
-    return send_from_directory(BASE_DIR, "addendum-skd-panitia.html")
-
-@app.get("/addsurat-pembentukan-panitia.html")
-def pembentukanpanitia():
-    return send_from_directory(BASE_DIR, "addsurat-pembentukan-panitia.html")
-
-@app.get("/ba-pembukaan-dokumen.html")
-def pembukaandokumen():
-    return send_from_directory(BASE_DIR, "ba-pembukaan-dokumen.html")
-
-@app.get("/ba-serah-terima.html")
-def serahterima():
-    return send_from_directory(BASE_DIR, "ba-serah-terima.html")
-
-@app.get("/hps.html")
-def hps():
-    return send_from_directory(BASE_DIR, "hps.html")
-
-@app.get("/ikpp.html")
-def ikpp():
-    return send_from_directory(BASE_DIR, "ikpp.html")
-
-@app.get("/lhpp.html")
-def lhpp():
-    return send_from_directory(BASE_DIR, "lhpp.html")
-
-@app.get("/pakta-integritas.html")
-def pakta():
-    return send_from_directory(BASE_DIR, "pakta-integritas.html")
-
-@app.get("/pengumuman-hasil-pemilihan.html")
-def hasilpemilihan():
-    return send_from_directory(BASE_DIR, "pengumuman-hasil-pemilihan.html")
-
-@app.get("/skd-panitia.html")
-def skdpanita():
-    return send_from_directory(BASE_DIR, "skd-panitia.html")
-
-@app.get("/surat-panitia.html")
-def suratpanita():
-    return send_from_directory(BASE_DIR, "surat-panitia.html")
-
-@app.get("/procurement-document.html")
-def procurementdocument():
-    return send_from_directory(BASE_DIR, "procurement-document.html")
-
-@app.get("/regulation-finder.html")
-def regulation_finder():
-    return send_from_directory(BASE_DIR, "regulation-finder.html")
-
-# ==========================================
-# FILE JAVASCRIPT & LOGO
-# ==========================================
 @app.get("/js/<path:nama_file>")
-def file_javascript(nama_file):
-    return send_from_directory(BASE_DIR / "js", nama_file)
+def file_javascript(nama_file): return send_from_directory(BASE_DIR / "js", nama_file)
 
 @app.get("/logo/<path:nama_file>")
-def file_logo(nama_file):
-    return send_from_directory(BASE_DIR / "logo", nama_file)
+def file_logo(nama_file): return send_from_directory(BASE_DIR / "logo", nama_file)
 
 @app.get("/data regulation finder/<path:nama_file>")
-def buka_pdf(nama_file):
-    return send_from_directory(FOLDER_PDF, nama_file)
+def buka_pdf(nama_file): return send_from_directory(FOLDER_PDF, nama_file)
 
-# ==========================================
-# API DAFTAR SEMUA DOKUMEN & PENCARIAN
-# ==========================================
 @app.get("/api/documents")
 def api_documents():
-    if not FOLDER_PDF.is_dir():
-        return jsonify({
-            "documents": [],
-            "jumlah": 0,
-            "error": "Folder PDF tidak ditemukan."
-        }), 404
+    if not FOLDER_PDF.is_dir(): return jsonify({"documents": [], "jumlah": 0})
+    daftar_pdf = sorted(f.name for f in FOLDER_PDF.iterdir() if f.is_file() and f.suffix.lower() == ".pdf")
+    return jsonify({"documents": daftar_pdf, "jumlah": len(daftar_pdf)})
 
-    daftar_pdf = sorted(
-        file.name
-        for file in FOLDER_PDF.iterdir()
-        if file.is_file()
-        and file.suffix.lower() == ".pdf"
-    )
-
-    return jsonify({
-        "documents": daftar_pdf,
-        "jumlah": len(daftar_pdf)
-    })
-
-@app.post("/api/search")
-def api_search():
-    data = request.get_json(silent=True) or {}
-    kata = data.get("kata", "")
-
-    if not isinstance(kata, str):
-        return jsonify({"error": "Kata pencarian harus berupa teks."}), 400
-
-    kata = kata.strip()
-    if len(kata) > 200:
-        return jsonify({"error": "Kata pencarian maksimal 200 karakter."}), 400
-
-    if not kata:
-        return jsonify({"kata": "", "jumlah": 0, "hasil": []})
-
-    if not FOLDER_PDF.is_dir():
-        return jsonify({"kata": kata, "jumlah": 0, "hasil": [], "pesan": "Folder PDF tidak ditemukan."}), 404
-
-    hasil = cari_kata(kata)
-    return jsonify({"kata": kata, "jumlah": len(hasil), "hasil": hasil})
-
-# ==========================================
-# MENJALANKAN SERVER FLASK
-# ==========================================
 if __name__ == "__main__":
     print("=" * 45)
-    print("SERVER REGULATION FINDER")
+    print("SERVER REGULATION FINDER & HYBRID RAG")
     print("=" * 45)
-    print("Lokasi proyek :", BASE_DIR)
-    print("Folder PDF    :", FOLDER_PDF)
-    print("Folder tersedia:", FOLDER_PDF.is_dir())
-
-    if FOLDER_PDF.is_dir():
-        jumlah_pdf = sum(1 for file in FOLDER_PDF.iterdir() if file.is_file() and file.suffix.lower() == ".pdf")
-        print("Jumlah file PDF:", jumlah_pdf)
-
     app.run(host="127.0.0.1", port=5000, debug=True)
