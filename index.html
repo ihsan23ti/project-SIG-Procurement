@@ -41,6 +41,9 @@ a{color:inherit;text-decoration:none}
 .who{display:flex;align-items:center;gap:.6rem}
 .btn-logout{display:inline-flex;align-items:center;gap:.4rem;background:none;border:1px solid var(--line);color:var(--ink);padding:.45rem .9rem;border-radius:6px;font:inherit;font-size:.85rem;font-weight:500;cursor:pointer;transition:.2s}
 .btn-logout:hover{border-color:var(--red);color:var(--red);background:#FFF5F5}
+.hidden{display:none !important}
+.btn-admin-nav{display:none;align-items:center;gap:.4rem;border:1px solid #FED7D7;background:#FFF5F5;color:var(--red);padding:.45rem .9rem;border-radius:6px;font-size:.85rem;font-weight:600;text-decoration:none;transition:.2s}
+.btn-admin-nav:hover{background:var(--red);color:#fff;border-color:var(--red)}
 
 /* Hero */
 .hero{background:var(--navy);color:#fff;position:relative;overflow:hidden}
@@ -155,6 +158,10 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
         <div class="avatar" id="avatar">U</div>
         <span class="label">Selamat datang, <strong id="displayUsername">User</strong></span>
       </div>
+      <!-- Tombol Khusus Admin -->
+      <a href="manajemen-password.html" class="btn-admin-nav" id="btnAdminNav" style="display: none;">
+        <i class="ph-bold ph-key"></i> <span>Manajemen Password</span>
+      </a>
       <button class="btn-logout" id="btnLogout"><i class="ph ph-sign-out"></i> Keluar</button>
     </div>
   </div>
@@ -182,6 +189,23 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
 </header>
 
 <main class="wrap">
+  <!-- Banner Khusus Role Admin -->
+  <div id="adminPanelBanner" style="display: none;" class="mb-6 bg-gradient-to-r from-red-50 to-white border border-red-200 p-5 rounded-xl items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-[#D7192A] text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+        <i class="ph-bold ph-shield-check"></i>
+      </div>
+      <div>
+        <span class="inline-block px-2.5 py-0.5 bg-red-100 text-[#D7192A] text-[11px] font-bold rounded-full mb-1">Akses Khusus Administrator</span>
+        <h3 class="text-lg font-bold text-gray-900 m-0">Manajemen Pengguna & Password</h3>
+        <p class="text-sm text-gray-600 m-0">Tambah pengguna baru, edit data, reset password dengan enkripsi hash, atau hapus akun.</p>
+      </div>
+    </div>
+    <a href="manajemen-password.html" class="inline-flex items-center gap-2 bg-[#D7192A] hover:bg-[#B01220] text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-md hover:shadow-lg no-underline shrink-0">
+      <i class="ph-bold ph-key"></i> Buka Manajemen Password
+    </a>
+  </div>
+
   <div class="panel">
     <a href="regulation-finder.html" class="item">
       <div class="icon"><i class="ph ph-magnifying-glass"></i></div>
@@ -263,10 +287,24 @@ document.addEventListener("DOMContentLoaded", function () {
   if (username) {
     document.getElementById('displayUsername').innerText = username;
     document.getElementById('avatar').innerText = username.charAt(0).toUpperCase();
+
+    // Tampilkan tombol dan banner Manajemen Password HANYA jika role adalah admin
+    const userRole = (sessionStorage.getItem('role') || '').toLowerCase();
+    const adminNav = document.getElementById('btnAdminNav');
+    const adminBanner = document.getElementById('adminPanelBanner');
+
+    if (userRole === 'admin') {
+      if (adminNav) adminNav.style.display = 'inline-flex';
+      if (adminBanner) adminBanner.style.display = 'flex';
+    } else {
+      if (adminNav) adminNav.style.display = 'none';
+      if (adminBanner) adminBanner.style.display = 'none';
+    }
   }
   document.getElementById('btnLogout').addEventListener('click', function () {
     sessionStorage.removeItem('isLoggedIn');
     sessionStorage.removeItem('username');
+    sessionStorage.removeItem('role');
     window.location.href = "login.html";
   });
 });

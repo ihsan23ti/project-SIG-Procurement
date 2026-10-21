@@ -180,7 +180,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) {
                 if (isLoginMode) {
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('username', usernameVal);
+                    sessionStorage.setItem('username', data.username || usernameVal);
+                    sessionStorage.setItem('role', (data.role || 'user').toLowerCase());
                     window.location.href = "index.html";
                 } else {
                     // Pendaftaran berhasil
