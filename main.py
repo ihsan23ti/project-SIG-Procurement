@@ -40,18 +40,21 @@ def init_db():
                   role TEXT NOT NULL DEFAULT 'user')''')
     
     # Cek apakah akun admin sudah ada
-    c.execute("SELECT password FROM users WHERE username='admin'")
+    c.execute("SELECT password, role FROM users WHERE LOWER(username)='admin'")
     user_admin = c.fetchone()
     if not user_admin:
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", ('admin', generate_password_hash('123')))
+        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')", ('admin', generate_password_hash('123'), 'admin'))
     else:
+        # Pastikan akun admin memiliki role admin
+        if len(user_admin) > 1 and (not user_admin[1] or user_admin[1].lower() != 'admin'):
+            c.execute("UPDATE users SET role='admin' WHERE LOWER(username)='admin'")
         # Pastikan password admin selalu ter-hash secara aman
         try:
             if not check_password_hash(user_admin[0], '123') and not check_password_hash(user_admin[0], 'admin123'):
-                c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+                c.execute("UPDATE users SET password=? WHERE LOWER(username)='admin'", (generate_password_hash('123'),))
         except ValueError:
             # Jika sebelumnya tersimpan sebagai plain text '123'
-            c.execute("UPDATE users SET password=? WHERE username='admin'", (generate_password_hash('123'),))
+            c.execute("UPDATE users SET password=? WHERE LOWER(username)='admin'", (generate_password_hash('123'),))
         
     conn.commit()
     conn.close()
@@ -104,18 +107,37 @@ def api_register():
     data = request.get_json(silent=True) or {}
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
+    role = "user"  # Saat daftar akun sendiri, tidak ada pilihan role (default 'user'). Role ditentukan oleh Admin.
 
-    if not username or not password: return jsonify({"error": "Username dan password wajib diisi."}), 400
-    hashed_pw = generate_password_hash(password)
+    if not username or not password:
+        return jsonify({"error": "Username dan password wajib diisi."}), 400
+
+    if len(password) < 4:
+        return jsonify({"error": "Password minimal 4 karakter."}), 400
+
     try:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')", (username, hashed_pw))
+        # Cek duplikasi username secara case-insensitive
+        c.execute("SELECT id FROM users WHERE LOWER(TRIM(username))=LOWER(TRIM(?))", (username,))
+        if c.fetchone():
+            conn.close()
+            return jsonify({"error": f"Username '{username}' sudah terdaftar. Silakan pilih username lain."}), 400
+
+        hashed_pw = generate_password_hash(password)
+        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, hashed_pw, role))
         conn.commit()
         conn.close()
-        return jsonify({"message": "Akun berhasil didaftarkan!"}), 200
+
+        return jsonify({
+            "message": f"Akun '{username}' berhasil didaftarkan!",
+            "username": username,
+            "role": role
+        }), 200
     except sqlite3.IntegrityError:
-        return jsonify({"error": "Username ini sudah terdaftar. Silakan pilih yang lain."}), 400
+        return jsonify({"error": f"Username '{username}' sudah terdaftar. Silakan pilih username lain."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Gagal mendaftarkan akun: {str(e)}"}), 500
 
 @app.post("/api/login")
 def api_login():
@@ -243,7 +265,7 @@ def api_user_profile():
     }), 200
 
 # ==========================================
-# API MANAJEMEN PASSWORD & PENGGUNA (KHUSUS ROLE ADMIN)
+# API MANAJEMEN PASSWORD & PENGGUNA (ROLE ADMIN)
 # ==========================================
 @app.get("/api/admin/users")
 def api_admin_get_users():
@@ -278,7 +300,7 @@ def api_admin_get_users():
 
 @app.post("/api/admin/add-user")
 def api_admin_add_user():
-    """Menambahkan akun pengguna baru secara manual oleh admin dengan pilihan role."""
+    """Menambahkan akun pengguna baru secara manual oleh admin dengan pilihan role (ditentukan oleh admin utama atau admin biasa)."""
     data = request.get_json(silent=True) or {}
     admin_user = (data.get("admin_user", "") or request.headers.get("X-Admin-User", "")).strip()
     username = data.get("username", "").strip()
@@ -294,10 +316,6 @@ def api_admin_add_user():
     if role not in ["admin", "user"]:
         role = "user"
 
-    is_caller_main = is_main_admin_user(admin_user)
-    if role == "admin" and not is_caller_main:
-        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak menambahkan akun Administrator baru."}), 403
-
     hashed_pw = generate_password_hash(password)
     try:
         conn = sqlite3.connect(DB_NAME)
@@ -312,7 +330,7 @@ def api_admin_add_user():
 
 @app.post("/api/admin/edit-user")
 def api_admin_edit_user():
-    """Mengedit username, role, dan/atau password pengguna oleh admin."""
+    """Mengedit username, role, dan/atau password pengguna oleh admin utama atau admin biasa."""
     data = request.get_json(silent=True) or {}
     admin_user = (data.get("admin_user", "") or request.headers.get("X-Admin-User", "")).strip()
     user_id = data.get("user_id")
@@ -346,10 +364,6 @@ def api_admin_edit_user():
     old_username = target[1]
     old_role = target[2]
     is_self = (old_username.strip().lower() == admin_user.strip().lower())
-
-    if old_role == "admin" and target_id_int != 1 and not is_caller_main and not is_self:
-        conn.close()
-        return jsonify({"error": "Akses ditolak! Hanya Admin Utama yang berhak mengubah atau mereset akun Administrator lain."}), 403
 
     if target_id_int == 1:
         new_role = "admin"
