@@ -35,62 +35,63 @@ a{color:inherit;text-decoration:none}
 .brand{display:flex;align-items:center;gap:.75rem;font-weight:600;font-size:.95rem}
 .brand img{height:36px;width:auto}
 .brand small{display:block;font-weight:400;color:var(--slate);font-size:.75rem;line-height:1.2}
-.user{display:flex;align-items:center;gap:.75rem;font-size:.9rem;color:var(--slate)}
+/* Navbar User & Account Controls (Compact) */
+.user{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--slate)}
 .user strong{color:var(--ink);font-weight:600}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.85rem}
-.who{display:flex;align-items:center;gap:.6rem}
-.who-clickable{cursor:pointer;padding:.3rem .55rem;border-radius:8px;transition:.2s}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:600;font-size:.78rem}
+.who{display:flex;align-items:center;gap:.45rem}
+.who-clickable{cursor:pointer;padding:.2rem .45rem;border-radius:6px;transition:.2s}
 .who-clickable:hover{background:#F1F5F9}
-.btn-account-nav{display:inline-flex;align-items:center;gap:.4rem;background:#F8FAFC;border:1px solid var(--line);color:var(--ink);padding:.45rem .85rem;border-radius:6px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}
+.btn-account-nav{display:inline-flex;align-items:center;gap:.35rem;background:#F8FAFC;border:1px solid var(--line);color:var(--ink);padding:.35rem .7rem;border-radius:6px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s}
 .btn-account-nav:hover{border-color:var(--slate);color:var(--red);background:#FFF}
-.btn-logout{display:inline-flex;align-items:center;gap:.4rem;background:none;border:1px solid var(--line);color:var(--ink);padding:.45rem .9rem;border-radius:6px;font:inherit;font-size:.85rem;font-weight:500;cursor:pointer;transition:.2s}
+.btn-logout{display:inline-flex;align-items:center;gap:.35rem;background:none;border:1px solid var(--line);color:var(--ink);padding:.35rem .75rem;border-radius:6px;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:.2s}
 .btn-logout:hover{border-color:var(--red);color:var(--red);background:#FFF5F5}
 .hidden{display:none !important}
-.btn-admin-nav{display:none;align-items:center;gap:.4rem;border:1px solid #FED7D7;background:#FFF5F5;color:var(--red);padding:.45rem .9rem;border-radius:6px;font-size:.85rem;font-weight:600;text-decoration:none;transition:.2s}
+.btn-admin-nav{display:none;align-items:center;gap:.35rem;border:1px solid #FED7D7;background:#FFF5F5;color:var(--red);padding:.35rem .75rem;border-radius:6px;font-size:.8rem;font-weight:600;text-decoration:none;transition:.2s}
 .btn-admin-nav:hover{background:var(--red);color:#fff;border-color:var(--red)}
 
-/* Modals */
-.modal-overlay { position: fixed; inset: 0; background: rgba(22, 32, 44, 0.65); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1.5rem; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+/* Modals (Compact & Sleek) */
+.modal-overlay { position: fixed; inset: 0; background: rgba(22, 32, 44, 0.6); backdrop-filter: blur(3px); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 .modal-overlay.show { opacity: 1; pointer-events: auto; }
-.modal-box { background: #fff; border-radius: 14px; width: 100%; max-width: 480px; box-shadow: 0 20px 40px -10px rgba(0,0,0,.3); overflow: hidden; transform: scale(.95); transition: transform .25s ease; }
+.modal-box { background: #fff; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 16px 36px -8px rgba(0,0,0,.25); overflow: hidden; transform: scale(.96); transition: transform .2s ease; }
 .modal-overlay.show .modal-box { transform: scale(1); }
-.modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-.modal-header h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: .5rem; margin: 0; }
-.modal-close { background: none; border: none; font-size: 1.25rem; color: var(--slate); cursor: pointer; padding: .25rem; border-radius: 6px; display: grid; place-items: center; }
+.modal-header { padding: .85rem 1.15rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 1rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: .45rem; margin: 0; }
+.modal-close { background: none; border: none; font-size: 1.15rem; color: var(--slate); cursor: pointer; padding: .2rem; border-radius: 6px; display: grid; place-items: center; }
 .modal-close:hover { color: var(--red); background: #FFF5F5; }
-.modal-body { padding: 1.5rem; }
-.modal-footer { padding: 1rem 1.5rem; background: #F8FAFC; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: flex-end; gap: .75rem; }
+.modal-body { padding: 1.15rem; }
+.modal-footer { padding: .75rem 1.15rem; background: #F8FAFC; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: flex-end; gap: .5rem; margin: 1rem -1.15rem -1.15rem; }
 
-/* Profile Card */
-.profile-card { background: #F8FAFC; border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-.profile-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1.25rem; flex-shrink: 0; }
+/* Profile Card (Compact) */
+.profile-card { background: #F8FAFC; border: 1px solid var(--line); border-radius: 10px; padding: .75rem 1rem; display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1.05rem; flex-shrink: 0; }
 .profile-details { flex: 1; min-width: 0; }
-.profile-name { font-size: 1.05rem; font-weight: 700; color: var(--ink); line-height: 1.2; word-break: break-all; }
-.profile-badges { display: flex; align-items: center; gap: .4rem; margin-top: .35rem; flex-wrap: wrap; }
-.badge-admin { background: #FDEDEE; color: var(--red); border: 1px solid #FED7D7; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700; display: inline-flex; align-items: center; gap: .3rem; }
-.badge-user { background: #EDF2F7; color: #4A5568; border: 1px solid #E2E8F0; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; display: inline-flex; align-items: center; gap: .3rem; }
-.badge-active { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; display: inline-flex; align-items: center; gap: .3rem; }
+.profile-name { font-size: .92rem; font-weight: 700; color: var(--ink); line-height: 1.2; word-break: break-all; }
+.profile-badges { display: flex; align-items: center; gap: .35rem; margin-top: .25rem; flex-wrap: wrap; }
+.badge-admin { background: #FDEDEE; color: var(--red); border: 1px solid #FED7D7; padding: .15rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 700; display: inline-flex; align-items: center; gap: .25rem; }
+.badge-user { background: #EDF2F7; color: #4A5568; border: 1px solid #E2E8F0; padding: .15rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 600; display: inline-flex; align-items: center; gap: .25rem; }
+.badge-active { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; padding: .15rem .5rem; border-radius: 999px; font-size: .7rem; font-weight: 600; display: inline-flex; align-items: center; gap: .25rem; }
 
-/* Form Controls */
-.form-title-wrap { margin-bottom: 1rem; }
-.form-section-title { font-size: .95rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: .4rem; margin: 0; }
-.form-section-desc { font-size: .8rem; color: var(--slate); margin-top: .2rem; }
-.form-group { margin-bottom: 1rem; }
-.form-group label { display: block; font-size: .85rem; font-weight: 600; color: var(--ink); margin-bottom: .35rem; }
+/* Form Controls (Compact) */
+.form-title-wrap { margin-bottom: .85rem; }
+.form-section-title { font-size: .88rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: .35rem; margin: 0; }
+.form-section-desc { font-size: .76rem; color: var(--slate); margin-top: .15rem; }
+.form-group { margin-bottom: .75rem; }
+.form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--ink); margin-bottom: .25rem; }
 .input-with-eye { position: relative; }
-.input-with-eye input { width: 100%; padding: .6rem 2.5rem .6rem .85rem; border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; font-family: inherit; }
+.input-with-eye input { width: 100%; padding: .45rem 2.2rem .45rem .75rem; border: 1px solid var(--line); border-radius: 6px; font-size: .82rem; font-family: inherit; }
 .input-with-eye input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(215,25,42,.12); }
-.input-with-eye button { position: absolute; right: .6rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--slate); font-size: 1.1rem; cursor: pointer; padding: .2rem; }
+.input-with-eye button { position: absolute; right: .5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--slate); font-size: 1rem; cursor: pointer; padding: .2rem; }
 .input-with-eye button:hover { color: var(--ink); }
 
-.btn-secondary { background: #fff; border: 1px solid var(--line); color: var(--ink); padding: .55rem 1.1rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; }
+.btn-secondary { background: #fff; border: 1px solid var(--line); color: var(--ink); padding: .42rem .9rem; border-radius: 6px; font-size: .82rem; font-weight: 600; cursor: pointer; }
 .btn-secondary:hover { background: #F8FAFC; border-color: #CBD5E0; }
-.btn-primary { background: var(--red); color: #fff; border: none; padding: .55rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: .88rem; display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; transition: background .2s; }
+.btn-primary { background: var(--red); color: #fff; border: none; padding: .42rem 1rem; border-radius: 6px; font-weight: 600; font-size: .82rem; display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; transition: background .2s; }
 .btn-primary:hover { background: var(--red-dark); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Alert Box */
-.alert-box { padding: .75rem 1rem; border-radius: 8px; font-size: .85rem; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-weight: 500; }
+.alert-box { padding: .6rem .85rem; border-radius: 6px; font-size: .8rem; margin-bottom: .85rem; display: flex; align-items: center; gap: .4rem; font-weight: 500; }
 .alert-box.error { background: #FFF5F5; border: 1px solid #FEB2B2; color: #C53030; }
 .alert-box.success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #16A34A; }
 
@@ -216,7 +217,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
       </div>
       <!-- Tombol Akun Saya (Untuk Semua Pengguna) -->
       <button class="btn-account-nav" id="btnOpenAccountModal" title="Profil Akun & Ubah Password">
-        <i class="ph-bold ph-user-circle text-lg text-red-600"></i> <span>Akun Saya</span>
+        <i class="ph-bold ph-user-circle text-base text-red-600"></i> <span>Akun Saya</span>
       </button>
       <!-- Tombol Khusus Admin -->
       <a href="manajemen-password.html" class="btn-admin-nav" id="btnAdminNav" style="display: none;">
@@ -275,7 +276,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
 <div id="modalUserAccount" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-header">
-      <h3><i class="ph-bold ph-user-circle text-[#D7192A] text-2xl"></i> Profil Akun & Keamanan</h3>
+      <h3><i class="ph-bold ph-user-circle text-[#D7192A] text-xl"></i> Profil Akun & Keamanan</h3>
       <button class="modal-close" id="btnCloseAccountModal"><i class="ph ph-x"></i></button>
     </div>
     
@@ -330,7 +331,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:var(--white);
           <p class="text-xs text-gray-400 mt-1">Password baru akan otomatis di-enkripsi menggunakan hash yang aman.</p>
         </div>
 
-        <div class="modal-footer -mx-6 -mb-6 mt-6">
+        <div class="modal-footer">
           <button type="button" class="btn-secondary" id="btnCancelAccountModal">Batal</button>
           <button type="submit" class="btn-primary" id="btnSubmitChangePassword">
             <i class="ph-bold ph-check"></i> Simpan Password Baru

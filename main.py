@@ -19,6 +19,8 @@ import numpy as np
 BASE_DIR = Path(__file__).resolve().parent
 FOLDER_PDF = BASE_DIR / "data regulation finder"
 FOLDER_PDF.mkdir(parents=True, exist_ok=True)
+FOLDER_PROCUREMENT = BASE_DIR / "data procurement document"
+FOLDER_PROCUREMENT.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
 
@@ -678,34 +680,54 @@ def api_search():
     return jsonify({"kata": kata, "jumlah": len(hasil), "hasil": hasil})
 
 # ==========================================
-# API PENGELOLAAN DOKUMEN (UPLOAD & DELETE)
+# API PENGELOLAAN DOKUMEN REGULASI (UPLOAD, DELETE, LIST)
 # ==========================================
+def get_auth_admin_user():
+    """Mengambil username pemanggil dari Header HTTP, Form Data, atau Query Parameter."""
+    user = (request.headers.get("X-Admin-User", "") or 
+            request.form.get("admin_user", "") or 
+            request.args.get("admin_user", "")).strip()
+    if not user and request.is_json:
+        user = (request.get_json(silent=True) or {}).get("admin_user", "").strip()
+    return user
+
 @app.post("/api/upload")
+@app.post("/api/regulations/upload")
 def api_upload():
-    if 'file' not in request.files: return jsonify({"error": "Tidak ada file"}), 400
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menambahkan dokumen regulasi."}), 403
+
+    if 'file' not in request.files: return jsonify({"error": "Tidak ada file yang dipilih"}), 400
     file = request.files['file']
     if file.filename == '': return jsonify({"error": "Nama file kosong"}), 400
     
     if file and file.filename.lower().endswith('.pdf'):
-        safe_filename = file.filename.replace("/", "-").replace ("/", "-")
+        safe_filename = file.filename.replace("/", "-").replace("\\", "-")
 
         filepath = FOLDER_PDF / safe_filename
         file.save(filepath)
         load_knowledge_base() 
-        return jsonify({"message": "Berhasil upload dan model TF-IDF telah dilatih ulang!"}), 200
-    return jsonify({"error": "Hanya menerima PDF."}), 400
+        return jsonify({"message": f"Dokumen regulasi '{safe_filename}' berhasil diunggah dan model AI telah diperbarui!"}), 200
+    return jsonify({"error": "Hanya menerima file berformat PDF (.pdf)."}), 400
 
 @app.delete("/api/documents/<path:nama_file>")
+@app.delete("/api/regulations/<path:nama_file>")
 def api_delete(nama_file):
-    safe_filename = nama_file.replace("/", "-").replace("/", "-")
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menghapus dokumen regulasi."}), 403
+
+    safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     filepath = FOLDER_PDF / safe_filename
     if filepath.exists() and filepath.is_file():
         filepath.unlink() 
         load_knowledge_base() 
-        return jsonify({"message": "Dihapus"}), 200
+        return jsonify({"message": f"Dokumen regulasi '{safe_filename}' berhasil dihapus!"}), 200
     return jsonify({"error": "File tidak ditemukan"}), 404
 
 @app.get("/api/documents")
+@app.get("/api/regulations")
 def api_documents():
     if not FOLDER_PDF.is_dir(): 
         return jsonify({"documents": [], "jumlah": 0})
@@ -714,6 +736,51 @@ def api_documents():
         "documents": daftar_pdf,
         "jumlah": len(daftar_pdf)
     })
+
+# ==========================================
+# API PENGELOLAAN DOKUMEN PROCUREMENT (TERPISAH DARI REGULASI)
+# ==========================================
+@app.get("/api/procurement-documents")
+def api_procurement_documents():
+    if not FOLDER_PROCUREMENT.is_dir():
+        return jsonify({"documents": [], "jumlah": 0})
+    daftar_pdf = sorted(file.name for file in FOLDER_PROCUREMENT.iterdir() if file.is_file() and file.suffix.lower() == ".pdf")
+    return jsonify({
+        "documents": daftar_pdf,
+        "jumlah": len(daftar_pdf)
+    })
+
+@app.post("/api/procurement-documents/upload")
+def api_procurement_upload():
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menambahkan dokumen procurement."}), 403
+
+    if 'file' not in request.files:
+        return jsonify({"error": "Tidak ada file yang dipilih"}), 400
+    file = request.files['file']
+    if not file or file.filename == '':
+        return jsonify({"error": "Nama file kosong"}), 400
+    
+    if file and file.filename.lower().endswith('.pdf'):
+        safe_filename = file.filename.replace("/", "-").replace("\\", "-")
+        filepath = FOLDER_PROCUREMENT / safe_filename
+        file.save(filepath)
+        return jsonify({"message": f"Dokumen procurement '{safe_filename}' berhasil diunggah!"}), 200
+    return jsonify({"error": "Hanya menerima file berformat PDF (.pdf)."}), 400
+
+@app.delete("/api/procurement-documents/<path:nama_file>")
+def api_procurement_delete(nama_file):
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menghapus dokumen procurement."}), 403
+
+    safe_filename = nama_file.replace("/", "-").replace("\\", "-")
+    filepath = FOLDER_PROCUREMENT / safe_filename
+    if filepath.exists() and filepath.is_file():
+        filepath.unlink()
+        return jsonify({"message": f"Dokumen procurement '{safe_filename}' berhasil dihapus!"}), 200
+    return jsonify({"error": "Dokumen tidak ditemukan"}), 404
 
 # ==========================================
 # HALAMAN WEBSITE & ROUTING LAINNYA
@@ -782,6 +849,9 @@ def file_logo(nama_file): return send_from_directory(BASE_DIR / "logo", nama_fil
 
 @app.get("/data regulation finder/<path:nama_file>")
 def buka_pdf(nama_file): return send_from_directory(FOLDER_PDF, nama_file)
+
+@app.get("/data procurement document/<path:nama_file>")
+def buka_procurement_pdf(nama_file): return send_from_directory(FOLDER_PROCUREMENT, nama_file)
 
 # ==========================================
 # MENJALANKAN SERVER FLASK
