@@ -102,8 +102,8 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
     <h1>Pusat Dokumen Procurement</h1>
     <p>Kelola dan telusuri dokumen hasil pengadaan untuk kebutuhan arsip dan audit pengadaan SIG.</p>
     
-    <!-- Fitur Upload Dokumen -->
-    <div class="mt-6 flex flex-col sm:flex-row items-center gap-3">
+    <!-- Fitur Upload Dokumen (Khusus Admin) -->
+    <div id="uploadSection" style="display: none;" class="mt-6 flex flex-col sm:flex-row items-center gap-3">
         <label class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2.5 rounded-lg font-medium cursor-pointer transition-colors flex items-center gap-2 w-full sm:w-max justify-center">
             <i class="ph ph-upload-simple text-lg"></i> Pilih File PDF Baru
             <input type="file" id="fileInput" accept=".pdf" class="hidden">
@@ -157,10 +157,19 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const username = sessionStorage.getItem('username');
+    const username = sessionStorage.getItem('username') || '';
+    const userRole = (sessionStorage.getItem('role') || 'user').toLowerCase();
+    const isAdmin = (userRole === 'admin' || userRole === 'administrator');
+
     if (username) {
       document.getElementById('displayUsername').textContent = username;
       document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
+    }
+
+    // Tampilkan fitur upload HANYA jika akun yang login adalah Admin
+    const uploadSection = document.getElementById('uploadSection');
+    if (uploadSection && isAdmin) {
+      uploadSection.style.display = 'flex';
     }
 
     // --- LOGIKA MENGAMBIL DAN MENAMPILKAN DOKUMEN PROCUREMENT ---
@@ -193,7 +202,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
                             <i class="ph ph-folder-dashed"></i>
                         </div>
                         <h4 class="text-base font-bold text-gray-800 mb-1">Belum Ada Dokumen Procurement</h4>
-                        <p class="text-sm text-gray-500 max-w-md">Belum ada file dokumen pengadaan yang diunggah. Silakan klik tombol "Pilih File PDF Baru" di atas untuk menambahkan dokumen.</p>
+                        <p class="text-sm text-gray-500 max-w-md">${isAdmin ? 'Belum ada file dokumen pengadaan yang diunggah. Silakan klik tombol "Pilih File PDF Baru" di atas untuk menambahkan dokumen.' : 'Belum ada file dokumen hasil pengadaan yang tersedia saat ini.'}</p>
                     </div>
                 `;
                 resultCount.textContent = `Menampilkan semua dokumen (0)`;
@@ -209,6 +218,13 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 
                 const card = document.createElement('div');
                 card.className = "result-card";
+                
+                const btnHapusHtml = isAdmin ? `
+                    <button onclick="hapusDokumen('${namaFile}')" class="w-full sm:w-10 h-10 border border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 rounded-lg text-xl transition-colors flex items-center justify-center shrink-0 cursor-pointer" title="Hapus Dokumen">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                ` : '';
+
                 card.innerHTML = `
                     <div class="flex-1">
                         <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-full mb-3">${info.badge}</span>
@@ -216,10 +232,8 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
                         <p class="text-sm text-gray-500 leading-relaxed font-mono text-[11px]">${namaFile}</p>
                     </div>
                     <div class="flex flex-col sm:flex-row items-center gap-2 shrink-0">
-                        <button onclick="hapusDokumen('${namaFile}')" class="w-full sm:w-10 h-10 border border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 rounded-lg text-xl transition-colors flex items-center justify-center shrink-0" title="Hapus Dokumen">
-                            <i class="ph ph-trash"></i>
-                        </button>
-                        <button onclick="openPreview('${fileUrl}', '${info.judul}')" class="w-full sm:w-auto border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0">
+                        ${btnHapusHtml}
+                        <button onclick="openPreview('${fileUrl}', '${info.judul}')" class="w-full sm:w-auto border border-[#D7192A] text-[#D7192A] hover:bg-red-50 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                             <i class="ph ph-file-text text-lg"></i> Buka Dokumen
                         </button>
                     </div>
@@ -233,7 +247,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 
     muatDokumen(); // Panggil saat halaman pertama kali load
 
-    // --- LOGIKA UPLOAD ---
+    // --- LOGIKA UPLOAD (KHUSUS ADMIN) ---
     const fileInput = document.getElementById('fileInput');
     const fileNameDisplay = document.getElementById('fileName');
     const btnUpload = document.getElementById('btnUpload');
@@ -251,6 +265,11 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
     });
 
     btnUpload.addEventListener('click', async function() {
+        if (!isAdmin) {
+            alert("Akses ditolak. Hanya Administrator yang berhak mengunggah dokumen!");
+            return;
+        }
+
         const file = fileInput.files[0];
         if (!file) return;
 
@@ -259,9 +278,16 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('admin_user', username);
 
         try {
-            const res = await fetch('/api/procurement-documents/upload', { method: 'POST', body: formData });
+            const res = await fetch('/api/procurement-documents/upload', { 
+                method: 'POST', 
+                headers: {
+                    'X-Admin-User': username
+                },
+                body: formData 
+            });
             const data = await res.json();
             
             if (res.ok) {
@@ -272,7 +298,7 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
                 btnUpload.classList.remove('flex');
                 muatDokumen(); // Reload daftar UI
             } else {
-                alert("Error: " + data.error);
+                alert("Error: " + (data.error || "Gagal mengunggah dokumen."));
             }
         } catch (error) {
             alert("Gagal mengunggah file. Pastikan server Flask menyala.");
@@ -282,18 +308,28 @@ footer{margin-top:auto;border-top:1px solid var(--line);background:#fff;text-ali
         }
     });
 
-    // --- LOGIKA HAPUS DOKUMEN ---
+    // --- LOGIKA HAPUS DOKUMEN (KHUSUS ADMIN) ---
     window.hapusDokumen = async function(namaFile) {
+        if (!isAdmin) {
+            alert("Akses ditolak. Hanya Administrator yang berhak menghapus dokumen!");
+            return;
+        }
+
         if (!confirm(`Yakin ingin menghapus dokumen procurement "${namaFile}" secara permanen?`)) return;
 
         try {
-            const res = await fetch('/api/procurement-documents/' + encodeURIComponent(namaFile), { method: 'DELETE' });
+            const res = await fetch('/api/procurement-documents/' + encodeURIComponent(namaFile), { 
+                method: 'DELETE',
+                headers: {
+                    'X-Admin-User': username
+                }
+            });
             if (res.ok) {
                 alert("Dokumen procurement berhasil dihapus!");
                 muatDokumen(); // Reload daftar UI
             } else {
                 const data = await res.json();
-                alert("Gagal: " + data.error);
+                alert("Gagal: " + (data.error || "Gagal menghapus dokumen."));
             }
         } catch (error) {
             alert("Gagal menghapus. Pastikan server Flask menyala.");

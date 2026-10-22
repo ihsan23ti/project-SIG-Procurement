@@ -122,8 +122,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultCount = document.getElementById("resultCount");
     const username = document.getElementById("displayUsername");
 
+    const currentUsername = sessionStorage.getItem("username") || "";
+    const userRole = (sessionStorage.getItem("role") || "user").toLowerCase();
+    const isAdmin = (userRole === "admin" || userRole === "administrator");
+
     if (username) {
-        username.textContent = sessionStorage.getItem("username") || "Admin";
+        username.textContent = currentUsername || "User";
+    }
+
+    const btnOpenUploadModal = document.getElementById("btnOpenUploadModal");
+    if (btnOpenUploadModal && isAdmin) {
+        btnOpenUploadModal.style.display = "inline-flex";
     }
 
     if (!searchInput || !clearBtn || !resultsContainer || !resultCount) {
@@ -230,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const aksiContainer = document.createElement("div");
         aksiContainer.className = "flex flex-col sm:flex-row items-center gap-2 shrink-0";
 
-        if (!halaman && !cuplikan) {
+        if (!halaman && !cuplikan && isAdmin) {
             const btnHapus = document.createElement("button");
             btnHapus.type = "button";
             btnHapus.className = "w-full sm:w-10 h-10 border border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-600 rounded-lg text-xl transition-colors flex items-center justify-center shrink-0 cursor-pointer";
@@ -408,13 +417,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // ------------------------------------------
-    // HAPUS DOKUMEN REGULASI
+    // HAPUS DOKUMEN REGULASI (KHUSUS ADMIN)
     // ------------------------------------------
     window.hapusDokumenRegulasi = async function (namaFile) {
+        if (!isAdmin) {
+            alert("Akses ditolak. Hanya Administrator yang berhak menghapus dokumen regulasi!");
+            return;
+        }
+
         if (!confirm(`Yakin ingin menghapus dokumen regulasi "${namaFile}" secara permanen? \n\n(Dokumen ini juga akan dihapus dari ingatan AI Chatbot dan mesin Regulation Finder)`)) return;
 
         try {
-            const res = await fetch("/api/documents/" + encodeURIComponent(namaFile), { method: "DELETE" });
+            const res = await fetch("/api/documents/" + encodeURIComponent(namaFile), { 
+                method: "DELETE",
+                headers: {
+                    "X-Admin-User": currentUsername
+                }
+            });
             if (res.ok) {
                 alert("Dokumen regulasi berhasil dihapus dan model AI telah diperbarui!");
                 if (searchInput.value.trim()) {
@@ -435,7 +454,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // LOGIKA MODAL TAMBAH DATA REGULASI
     // ------------------------------------------
     const uploadModal = document.getElementById("uploadModal");
-    const btnOpenUploadModal = document.getElementById("btnOpenUploadModal");
     const btnCloseUploadModal = document.getElementById("btnCloseUploadModal");
     const btnBatalUploadModal = document.getElementById("btnBatalUploadModal");
     const uploadDropzone = document.getElementById("uploadDropzone");
@@ -566,6 +584,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (btnSubmitUploadModal) {
         btnSubmitUploadModal.addEventListener("click", async function () {
+            if (!isAdmin) {
+                alert("Akses ditolak. Hanya Administrator yang berhak menambahkan dokumen regulasi!");
+                return;
+            }
+
             if (!fileRegulasiTerpilih) return;
 
             btnSubmitUploadModal.disabled = true;
@@ -574,10 +597,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const formData = new FormData();
             formData.append("file", fileRegulasiTerpilih);
+            formData.append("admin_user", currentUsername);
 
             try {
                 const response = await fetch("/api/upload", {
                     method: "POST",
+                    headers: {
+                        "X-Admin-User": currentUsername
+                    },
                     body: formData
                 });
                 const data = await response.json();

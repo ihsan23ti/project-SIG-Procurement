@@ -682,9 +682,22 @@ def api_search():
 # ==========================================
 # API PENGELOLAAN DOKUMEN REGULASI (UPLOAD, DELETE, LIST)
 # ==========================================
+def get_auth_admin_user():
+    """Mengambil username pemanggil dari Header HTTP, Form Data, atau Query Parameter."""
+    user = (request.headers.get("X-Admin-User", "") or 
+            request.form.get("admin_user", "") or 
+            request.args.get("admin_user", "")).strip()
+    if not user and request.is_json:
+        user = (request.get_json(silent=True) or {}).get("admin_user", "").strip()
+    return user
+
 @app.post("/api/upload")
 @app.post("/api/regulations/upload")
 def api_upload():
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menambahkan dokumen regulasi."}), 403
+
     if 'file' not in request.files: return jsonify({"error": "Tidak ada file yang dipilih"}), 400
     file = request.files['file']
     if file.filename == '': return jsonify({"error": "Nama file kosong"}), 400
@@ -701,6 +714,10 @@ def api_upload():
 @app.delete("/api/documents/<path:nama_file>")
 @app.delete("/api/regulations/<path:nama_file>")
 def api_delete(nama_file):
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menghapus dokumen regulasi."}), 403
+
     safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     filepath = FOLDER_PDF / safe_filename
     if filepath.exists() and filepath.is_file():
@@ -735,6 +752,10 @@ def api_procurement_documents():
 
 @app.post("/api/procurement-documents/upload")
 def api_procurement_upload():
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menambahkan dokumen procurement."}), 403
+
     if 'file' not in request.files:
         return jsonify({"error": "Tidak ada file yang dipilih"}), 400
     file = request.files['file']
@@ -750,6 +771,10 @@ def api_procurement_upload():
 
 @app.delete("/api/procurement-documents/<path:nama_file>")
 def api_procurement_delete(nama_file):
+    admin_user = get_auth_admin_user()
+    if not is_admin(admin_user):
+        return jsonify({"error": "Akses ditolak. Hanya Administrator yang berhak menghapus dokumen procurement."}), 403
+
     safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     filepath = FOLDER_PROCUREMENT / safe_filename
     if filepath.exists() and filepath.is_file():
