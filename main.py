@@ -8,11 +8,15 @@ import pymupdf
 from flask import Flask, jsonify, request, send_from_directory, redirect
 from supabase import create_client, Client
 
+
 # --- LIBRARY MACHINE LEARNING LOKAL (TF-IDF) ---
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from dotenv import load_dotenv
 
+# Muat variabel dari file .env untuk penggunaan lokal
+load_dotenv()
 # ==========================================
 # PENGATURAN FLASK & SUPABASE
 # ==========================================
