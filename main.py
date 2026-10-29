@@ -319,7 +319,7 @@ def api_admin_delete_user():
 # ==========================================
 # KONFIGURASI GEMINI AI & TF-IDF RAG (VIA SUPABASE STORAGE)
 # ==========================================
-API_KEY = "AQ.Ab8RN6JRt0GJreirZW6gfBfJ6VaF856bd4k31oTjV2pqvwY18g"
+API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-3.8-flash')
 
