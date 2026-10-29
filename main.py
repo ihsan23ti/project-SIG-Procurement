@@ -15,7 +15,7 @@ import numpy as np
 from dotenv import load_dotenv
 
 # Muat variabel dari file .env untuk penggunaan lokal
-load_dotenv()
+#load_dotenv()
 
 # ==========================================
 # PENGATURAN FLASK & SUPABASE
