@@ -8,7 +8,6 @@ import pymupdf
 from flask import Flask, jsonify, request, send_from_directory, redirect
 from supabase import create_client, Client
 
-
 # --- LIBRARY MACHINE LEARNING LOKAL (TF-IDF) ---
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -17,6 +16,7 @@ from dotenv import load_dotenv
 
 # Muat variabel dari file .env untuk penggunaan lokal
 load_dotenv()
+
 # ==========================================
 # PENGATURAN FLASK & SUPABASE
 # ==========================================
@@ -382,8 +382,8 @@ def load_knowledge_base():
         tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
         print(f"[ML] Selesai! Model TF-IDF dilatih dengan {len(MEMORY_DOKUMEN)} potongan paragraf.\n")
 
-# Load saat server pertama kali menyala (opsional, bisa memperlambat start Vercel, tapi diperlukan untuk in-memory search)
-load_knowledge_base()
+# Load saat server pertama kali menyala (DIBUAT NONAKTIF AGAR TIDAK TIMEOUT DI VERCEL)
+# load_knowledge_base()
 
 @app.post("/api/chat")
 def api_chat():
@@ -391,8 +391,14 @@ def api_chat():
     pertanyaan = data.get("pesan", "").strip()
 
     if not pertanyaan: return jsonify({"error": "Pesan tidak boleh kosong"}), 400
+    
+    # === PERUBAHAN BARU: Memuat model AI di dalam route, hanya ketika diperlukan ===
     if tfidf_matrix is None or len(MEMORY_DOKUMEN) == 0: 
-        return jsonify({"error": "Database dokumen kosong. Upload PDF dulu."}), 400
+        load_knowledge_base()
+        
+        if tfidf_matrix is None or len(MEMORY_DOKUMEN) == 0:
+            return jsonify({"error": "Database dokumen kosong. Upload PDF dulu."}), 400
+    # ===============================================================================
 
     try:
         query_vec = vectorizer.transform([pertanyaan])
@@ -510,7 +516,10 @@ def api_upload():
             file=file.read(),
             file_options={"content-type": "application/pdf"}
         )
-        load_knowledge_base() 
+        # Hapus memori lama agar data diperbarui pada request selanjutnya
+        global tfidf_matrix, MEMORY_DOKUMEN
+        tfidf_matrix = None
+        MEMORY_DOKUMEN = []
         return jsonify({"message": f"Dokumen '{safe_filename}' berhasil diunggah ke Cloud!"}), 200
     return jsonify({"error": "Hanya menerima PDF."}), 400
 
@@ -522,7 +531,11 @@ def api_delete(nama_file):
 
     safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     supabase.storage.from_(BUCKET_NAME).remove([f"regulasi/{safe_filename}"])
-    load_knowledge_base() 
+    
+    # Hapus memori lama agar data diperbarui pada request selanjutnya
+    global tfidf_matrix, MEMORY_DOKUMEN
+    tfidf_matrix = None
+    MEMORY_DOKUMEN = []
     return jsonify({"message": f"Dokumen '{safe_filename}' berhasil dihapus!"}), 200
 
 @app.get("/api/documents")

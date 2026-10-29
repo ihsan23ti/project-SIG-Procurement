@@ -1,0 +1,8 @@
+Flask
+Werkzeug
+google-generativeai
+PyMuPDF
+scikit-learn
+numpy
+supabase
+python-dotenv
