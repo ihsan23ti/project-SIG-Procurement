@@ -24,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent
 app = Flask(__name__)
 
 # Mengambil kredensial dari Environment Variables Vercel
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "GANTI_DENGAN_URL_SUPABASE_KAMU_JIKA_LOKAL")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "ANTI_DENGAGN_URL_SUPABASE_KAMU_JIKA_LOKAL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "GANTI_DENGAN_KEY_SUPABASE_KAMU_JIKA_LOKAL")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Nama Bucket Storage di Supabase
-BUCKET_NAME = "pdf-dokumen" 
+BUCKET_NAME = "data-regulation-finder" 
 
 # ==========================================
 # DATABASE SUPABASE (SISTEM LOGIN)
