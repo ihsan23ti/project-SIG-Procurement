@@ -5,3 +5,4 @@ PyMuPDF
 scikit-learn
 numpy
 supabase
+gunicorn
