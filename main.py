@@ -29,7 +29,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "GANTI_DENGAN_KEY_SUPABASE_KAMU_JI
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Nama Bucket Storage di Supabase
-BUCKET_NAME = "data-regulation-finder" 
+BUCKET_NAME = "data-procurement"
 
 # ==========================================
 # DATABASE SUPABASE (SISTEM LOGIN)
