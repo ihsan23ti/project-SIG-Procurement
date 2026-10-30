@@ -322,7 +322,7 @@ def api_admin_delete_user():
 # ==========================================
 API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-pro') # <--- TELAH DIPERBAIKI
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 MEMORY_DOKUMEN = []
 vectorizer = TfidfVectorizer()
