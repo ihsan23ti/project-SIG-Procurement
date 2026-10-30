@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import unicodedata
 import os
+import json  # <--- Ditambahkan untuk fitur Caching
 from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 import pymupdf
@@ -321,11 +322,14 @@ def api_admin_delete_user():
 # ==========================================
 API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-3.8-flash')
+model = genai.GenerativeModel('gemini-1.5-flash') # <--- TELAH DIPERBAIKI
 
 MEMORY_DOKUMEN = []
 vectorizer = TfidfVectorizer()
 tfidf_matrix = None
+
+# Siapkan file cache lokal di PythonAnywhere
+CACHE_FILE = BASE_DIR / "cache_dokumen.json"
 
 def bersihkan_teks(teks):
     teks = re.sub(r"(\w+)-\s*\s*(\w+)", r"  ", teks)
@@ -347,10 +351,24 @@ def chunk_text(teks, chunk_size=800, overlap=150):
     return chunks
 
 def load_knowledge_base():
-    """Mengunduh PDF dari Supabase Storage ke memori untuk melatih TF-IDF."""
+    """Mengunduh PDF dari Supabase, atau memuat cepat dari file JSON lokal."""
     global MEMORY_DOKUMEN, vectorizer, tfidf_matrix
     MEMORY_DOKUMEN = []
     
+    # 1. Coba baca dari Cache Lokal dulu (Sangat Cepat, Anti-Timeout!)
+    if CACHE_FILE.exists():
+        print("\n[ML] Memuat dokumen dari cache lokal...")
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                MEMORY_DOKUMEN = json.load(f)
+            if MEMORY_DOKUMEN:
+                tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
+                print(f"[ML] Berhasil memuat {len(MEMORY_DOKUMEN)} paragraf dari cache! Cepat!")
+                return
+        except Exception as e:
+            print(f"[ML] Gagal membaca cache: {e}, mengunduh ulang...")
+
+    # 2. Jika tidak ada cache, baru unduh dari Supabase
     print("\n[ML] Membaca PDF dari Supabase Storage dan melatih model TF-IDF...")
     try:
         files = supabase.storage.from_(BUCKET_NAME).list("regulasi")
@@ -378,12 +396,15 @@ def load_knowledge_base():
         except Exception as e:
             print(f"[ML] Gagal memproses {file_name}: {e}")
 
+    # 3. Simpan hasil ekstrak ke Cache Lokal agar besok tidak perlu unduh lagi
     if MEMORY_DOKUMEN:
         tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
         print(f"[ML] Selesai! Model TF-IDF dilatih dengan {len(MEMORY_DOKUMEN)} potongan paragraf.\n")
-
-# Load saat server pertama kali menyala (DIBUAT NONAKTIF AGAR TIDAK TIMEOUT DI VERCEL)
-# load_knowledge_base()
+        try:
+            with open(CACHE_FILE, "w", encoding="utf-8") as f:
+                json.dump(MEMORY_DOKUMEN, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[ML] Gagal menyimpan file cache: {e}")
 
 @app.post("/api/chat")
 def api_chat():
@@ -520,6 +541,8 @@ def api_upload():
         global tfidf_matrix, MEMORY_DOKUMEN
         tfidf_matrix = None
         MEMORY_DOKUMEN = []
+        if CACHE_FILE.exists():           # <--- Fitur hapus cache ditambahkan
+            os.remove(CACHE_FILE)
         return jsonify({"message": f"Dokumen '{safe_filename}' berhasil diunggah ke Cloud!"}), 200
     return jsonify({"error": "Hanya menerima PDF."}), 400
 
@@ -536,6 +559,8 @@ def api_delete(nama_file):
     global tfidf_matrix, MEMORY_DOKUMEN
     tfidf_matrix = None
     MEMORY_DOKUMEN = []
+    if CACHE_FILE.exists():               # <--- Fitur hapus cache ditambahkan
+        os.remove(CACHE_FILE)
     return jsonify({"message": f"Dokumen '{safe_filename}' berhasil dihapus!"}), 200
 
 @app.get("/api/documents")
