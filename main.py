@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import unicodedata
 import os
+import json
 from werkzeug.security import generate_password_hash, check_password_hash
 import google.generativeai as genai
 import pymupdf
@@ -35,13 +36,11 @@ BUCKET_NAME = "data-procurement"
 # DATABASE SUPABASE (SISTEM LOGIN)
 # ==========================================
 def is_admin(username):
-    """Memeriksa apakah username yang diberikan memiliki role admin di Supabase."""
     if not username: return False
     try:
         res = supabase.table("users").select("role").ilike("username", username.strip()).execute()
         if res.data and res.data[0].get("role", "").strip().lower() in ["admin", "administrator"]:
             return True
-        # Cek apakah dia akun ID 1 (Admin Utama)
         res_main = supabase.table("users").select("username, role").eq("id", 1).execute()
         if res_main.data:
             main_user = res_main.data[0]
@@ -53,7 +52,6 @@ def is_admin(username):
         return False
 
 def is_main_admin_user(username):
-    """Memeriksa apakah username yang diberikan adalah akun Admin Utama (ID == 1)."""
     if not username: return False
     try:
         res = supabase.table("users").select("username").eq("id", 1).execute()
@@ -76,7 +74,6 @@ def api_register():
         return jsonify({"error": "Password minimal 4 karakter."}), 400
 
     try:
-        # Cek duplikasi
         cek = supabase.table("users").select("id").ilike("username", username).execute()
         if cek.data:
             return jsonify({"error": f"Username '{username}' sudah terdaftar. Silakan pilih username lain."}), 400
@@ -321,11 +318,16 @@ def api_admin_delete_user():
 # ==========================================
 API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-3.8-flash')
+
+# MODEL DIPERBAIKI (TIDAK LAGI PAKAI 3.8-flash)
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 MEMORY_DOKUMEN = []
 vectorizer = TfidfVectorizer()
 tfidf_matrix = None
+
+# MENDEKLARASIKAN LOKASI FILE CACHE
+CACHE_FILE = BASE_DIR / "cache_dokumen.json"
 
 def bersihkan_teks(teks):
     teks = re.sub(r"(\w+)-\s*\s*(\w+)", r"  ", teks)
@@ -347,10 +349,22 @@ def chunk_text(teks, chunk_size=800, overlap=150):
     return chunks
 
 def load_knowledge_base():
-    """Mengunduh PDF dari Supabase Storage ke memori untuk melatih TF-IDF."""
+    """Mengunduh PDF dari Supabase, atau memuat cepat dari file JSON lokal."""
     global MEMORY_DOKUMEN, vectorizer, tfidf_matrix
     MEMORY_DOKUMEN = []
     
+    if CACHE_FILE.exists():
+        print("\n[ML] Memuat dokumen dari cache lokal...")
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                MEMORY_DOKUMEN = json.load(f)
+            if MEMORY_DOKUMEN:
+                tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
+                print(f"[ML] Berhasil memuat {len(MEMORY_DOKUMEN)} paragraf dari cache! Cepat!")
+                return
+        except Exception as e:
+            print(f"[ML] Gagal membaca cache: {e}, mengunduh ulang...")
+
     print("\n[ML] Membaca PDF dari Supabase Storage dan melatih model TF-IDF...")
     try:
         files = supabase.storage.from_(BUCKET_NAME).list("regulasi")
@@ -381,9 +395,11 @@ def load_knowledge_base():
     if MEMORY_DOKUMEN:
         tfidf_matrix = vectorizer.fit_transform([doc["teks"] for doc in MEMORY_DOKUMEN])
         print(f"[ML] Selesai! Model TF-IDF dilatih dengan {len(MEMORY_DOKUMEN)} potongan paragraf.\n")
-
-# Load saat server pertama kali menyala (DIBUAT NONAKTIF AGAR TIDAK TIMEOUT DI VERCEL)
-# load_knowledge_base()
+        try:
+            with open(CACHE_FILE, "w", encoding="utf-8") as f:
+                json.dump(MEMORY_DOKUMEN, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[ML] Gagal menyimpan file cache: {e}")
 
 @app.post("/api/chat")
 def api_chat():
@@ -392,13 +408,11 @@ def api_chat():
 
     if not pertanyaan: return jsonify({"error": "Pesan tidak boleh kosong"}), 400
     
-    # === PERUBAHAN BARU: Memuat model AI di dalam route, hanya ketika diperlukan ===
     if tfidf_matrix is None or len(MEMORY_DOKUMEN) == 0: 
         load_knowledge_base()
         
         if tfidf_matrix is None or len(MEMORY_DOKUMEN) == 0:
             return jsonify({"error": "Database dokumen kosong. Upload PDF dulu."}), 400
-    # ===============================================================================
 
     try:
         query_vec = vectorizer.transform([pertanyaan])
@@ -512,13 +526,12 @@ def api_upload():
     if file and file.filename.lower().endswith('.pdf'):
         safe_filename = file.filename.replace("/", "-").replace("\\", "-")
         
-        try: # <--- TAMBAHKAN PENGAMAN INI
+        try:
             supabase.storage.from_(BUCKET_NAME).upload(
                 path=f"regulasi/{safe_filename}",
                 file=file.read(),
                 file_options={"content-type": "application/pdf"}
             )
-            # Hapus memori lama agar data diperbarui pada request selanjutnya
             global tfidf_matrix, MEMORY_DOKUMEN
             tfidf_matrix = None
             MEMORY_DOKUMEN = []
@@ -526,7 +539,7 @@ def api_upload():
                 os.remove(CACHE_FILE)
             return jsonify({"message": f"Dokumen '{safe_filename}' berhasil diunggah ke Cloud!"}), 200
             
-        except Exception as e: # <--- TANGKAP ERROR DARI SUPABASE
+        except Exception as e:
             return jsonify({"error": f"Gagal upload ke Supabase: {str(e)}"}), 500
             
     return jsonify({"error": "Hanya menerima PDF."}), 400
@@ -540,10 +553,13 @@ def api_delete(nama_file):
     safe_filename = nama_file.replace("/", "-").replace("\\", "-")
     supabase.storage.from_(BUCKET_NAME).remove([f"regulasi/{safe_filename}"])
     
-    # Hapus memori lama agar data diperbarui pada request selanjutnya
     global tfidf_matrix, MEMORY_DOKUMEN
     tfidf_matrix = None
     MEMORY_DOKUMEN = []
+    
+    if CACHE_FILE.exists():
+        os.remove(CACHE_FILE)
+        
     return jsonify({"message": f"Dokumen '{safe_filename}' berhasil dihapus!"}), 200
 
 @app.get("/api/documents")
@@ -612,7 +628,6 @@ def file_javascript(nama_file): return send_from_directory(BASE_DIR / "js", nama
 @app.get("/logo/<path:nama_file>")
 def file_logo(nama_file): return send_from_directory(BASE_DIR / "logo", nama_file)
 
-# Redirect untuk membaca PDF langsung dari Cloud Storage Supabase
 @app.get("/data regulation finder/<path:nama_file>")
 def buka_pdf(nama_file):
     url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"regulasi/{nama_file}")
