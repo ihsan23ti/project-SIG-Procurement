@@ -511,16 +511,24 @@ def api_upload():
     
     if file and file.filename.lower().endswith('.pdf'):
         safe_filename = file.filename.replace("/", "-").replace("\\", "-")
-        supabase.storage.from_(BUCKET_NAME).upload(
-            path=f"regulasi/{safe_filename}",
-            file=file.read(),
-            file_options={"content-type": "application/pdf"}
-        )
-        # Hapus memori lama agar data diperbarui pada request selanjutnya
-        global tfidf_matrix, MEMORY_DOKUMEN
-        tfidf_matrix = None
-        MEMORY_DOKUMEN = []
-        return jsonify({"message": f"Dokumen '{safe_filename}' berhasil diunggah ke Cloud!"}), 200
+        
+        try: # <--- TAMBAHKAN PENGAMAN INI
+            supabase.storage.from_(BUCKET_NAME).upload(
+                path=f"regulasi/{safe_filename}",
+                file=file.read(),
+                file_options={"content-type": "application/pdf"}
+            )
+            # Hapus memori lama agar data diperbarui pada request selanjutnya
+            global tfidf_matrix, MEMORY_DOKUMEN
+            tfidf_matrix = None
+            MEMORY_DOKUMEN = []
+            if CACHE_FILE.exists():
+                os.remove(CACHE_FILE)
+            return jsonify({"message": f"Dokumen '{safe_filename}' berhasil diunggah ke Cloud!"}), 200
+            
+        except Exception as e: # <--- TANGKAP ERROR DARI SUPABASE
+            return jsonify({"error": f"Gagal upload ke Supabase: {str(e)}"}), 500
+            
     return jsonify({"error": "Hanya menerima PDF."}), 400
 
 @app.delete("/api/documents/<path:nama_file>")
