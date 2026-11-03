@@ -4,7 +4,7 @@ import unicodedata
 import os
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
-import google.generativeai as genai
+from groq import Groq
 import pymupdf
 from flask import Flask, jsonify, request, send_from_directory, redirect
 from supabase import create_client, Client
@@ -314,13 +314,10 @@ def api_admin_delete_user():
     return jsonify({"message": f"Akun '{target['username']}' berhasil dihapus!"}), 200
 
 # ==========================================
-# KONFIGURASI GEMINI AI & TF-IDF RAG (VIA SUPABASE STORAGE)
+# KONFIGURASI GROQ AI & TF-IDF RAG
 # ==========================================
-API_KEY = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=API_KEY)
-
-# MODEL DIPERBAIKI (TIDAK LAGI PAKAI 3.8-flash)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+client = Groq(api_key=GROQ_API_KEY)
 
 MEMORY_DOKUMEN = []
 vectorizer = TfidfVectorizer()
@@ -428,20 +425,34 @@ def api_chat():
         konteks_dokumen = "\n\n".join(kumpulan_cuplikan) if kumpulan_cuplikan else "Tidak ada teks relevan yang ditemukan."
 
         prompt = f"""
-Kamu adalah Asisten AI profesional untuk Portal Pengadaan PT Semen Indonesia (Persero) Tbk (SIG).
-Tugasmu adalah menjawab pertanyaan pengguna HANYA berdasarkan potongan dokumen di bawah ini.
-Gunakan bahasa Indonesia yang ramah, sopan, jelas, dan profesional.
-WAJIB menyebutkan nama SUMBER dan Halaman di akhir penjelasanmu.
-Jika informasi tidak ada di dalam dokumen referensi, katakan dengan sopan bahwa informasi tidak tersedia di pedoman pengadaan.
+Kamu adalah Asisten AI profesional untuk Portal Pengadaan PT Semen Indonesia (SIG).
+Tugasmu adalah menjawab pertanyaan pengguna HANYA berdasarkan dokumen referensi di bawah.
 
-SUMBER DOKUMEN PENGADAAN SIG:
+ATURAN MENJAWAB:
+1. Gunakan bahasa Indonesia yang baku, jelas, dan profesional.
+2. Susun jawaban menggunakan poin-poin (bullet points) singkat agar visualnya rapi dan mudah dibaca.
+3. Jangan meng-copy-paste mentah-mentah. Rangkum inti poinnya saja.
+4. Jika jawaban dari pertanyaan pengguna TIDAK ADA di teks referensi dokumen, kamu HANYA boleh menjawab persis dengan kalimat ini: "Maaf, informasi tersebut tidak ditemukan dalam dokumen regulasi saat ini." (JANGAN tambahkan tulisan sumber apapun).
+5. JIKA kamu berhasil menemukan jawabannya, WAJIB cantumkan nama SUMBER dan Halaman di baris paling bawah.
+
+REFERENSI DOKUMEN:
 {konteks_dokumen}
 
 Pertanyaan Pengguna: "{pertanyaan}"
 """
-        response = model.generate_content(prompt)
-        return jsonify({"jawaban": response.text})
-    except Exception as e:
+        # Minta jawaban ke Groq API
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            model="openai/gpt-oss-20b",
+            temperature=0.3,
+        )
+        
+        jawaban_ai = chat_completion.choices[0].message.content
+        return jsonify({"jawaban": jawaban_ai})
+
+    except Exception as e: 
         return jsonify({"error": f"Server AI error: {str(e)}"}), 500
 
 # ==========================================
