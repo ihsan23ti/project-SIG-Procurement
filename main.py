@@ -630,8 +630,10 @@ def beranda(): return send_from_directory(BASE_DIR, "index.html")
 
 @app.get("/<path:page>")
 def serve_pages(page):
-    if not page.endswith(".html"): return "Not Found", 404
-    return send_from_directory(BASE_DIR, page)
+    # Mengizinkan file .html dan config.js agar bisa dibaca browser
+    if page.endswith(".html") or page == "config.js": 
+        return send_from_directory(BASE_DIR, page)
+    return "Not Found", 404
 
 @app.get("/js/<path:nama_file>")
 def file_javascript(nama_file): return send_from_directory(BASE_DIR / "js", nama_file)
@@ -647,9 +649,9 @@ def buka_pdf(nama_file):
 # ==========================================
 # RUTE YANG SUDAH DIPERBAIKI UNTUK FOLDER 'TEMPLATE'
 # ==========================================
-@app.get("/data procurement template/<path:nama_file>")
+@app.get("/data procurement document/<path:nama_file>")
 def buka_procurement_pdf(nama_file):
-    # Mengambil file dari folder "template" di dalam Supabase
+    # Rute URL menggunakan 'document', tapi file tetap diambil dari folder 'template' di Supabase
     url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"template/{nama_file}")
     return redirect(url)
 
