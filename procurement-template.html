@@ -377,40 +377,65 @@
 
   <footer>&copy; 2026 PT Semen Indonesia (Persero) Tbk. All rights reserved.</footer>
 
+  <!-- 1. Load library Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- 2. Load file config kamu -->
+  <script src="config.js"></script>
+
+  <!-- 3. Script utama yang sudah dirapikan -->
   <script>
-    // Daftar menu. Isi href dengan nama file; jika href "#", kartu tampil sebagai "Segera tersedia".
-    const items = [
-      { t: "Pedoman Pengadaan Barang dan/atau Jasa", i: "book-open", href: "data procurement template/1.4 Pedoman Pengadaan Barang dan Jasa_Rev 2_M_SIG_PRO_002_published (1).pdf" },
-      { t: "Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia", i: "clipboard-text", href: "data procurement template/3.2 Revisi 02 Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia (6).pdf" },
-      { t: "BA Serah Terima Dokumen Permintaan Pemilihan", i: "handshake", href: "ba-serah-terima.html" },
-      { t: "SKD Pembentukan Panitia Pengadaan", i: "users-three", href: "skd-panitia.html" },
-      { t: "Add. SKD Pembentukan Panitia Pengadaan", i: "user-plus", href: "addendum-skd-panitia.html" },
-      { t: "Surat Pembentukan Panitia Pengadaan", i: "envelope-open", href: "surat-panitia.html" },
-      { t: "Add. Surat Pembentukan Panitia Pengadaan", i: "envelope-simple", href: "addsurat-pembentukan-panitia.html" },
-      { t: "Pakta Integritas Panitia Pengadaan", i: "shield-check", href: "pakta-integritas.html" },
-      { t: "Harga Perkiraan Sendiri (HPS)", i: "calculator", href: "hps.html" },
-      { t: "IKPP", i: "file-search", href: "ikpp.html" },
-      { t: "BA Pembukaan Dokumen Penawaran", i: "folder-open", href: "ba-pembukaan-dokumen.html" },
-      { t: "LHPP", i: "chart-bar", href: "lhpp.html" },
-      { t: "Pengumuman Hasil Pemilihan Penyedia", i: "megaphone", href: "pengumuman-hasil-pemilihan.html" },
-      { t: "Panduan Bravo", i: "compass", href: "data procurement template/Panduan Pengguna Bravo untuk Peserta Pemilihan Penyedia-1.pdf" }
-    ];
-
-    document.getElementById('grid').innerHTML = items.map(function (it) {
-      const soon = it.href === "#";
-      const tag = soon ? 'div' : 'a';
-      const attrs = soon ? 'class="card soon"' : 'class="card" href="' + it.href + '"';
-      const end = soon ? '<span class="badge">Segera tersedia</span>' : '<i class="ph ph-arrow-right arrow"></i>';
-      return '<' + tag + ' ' + attrs + '>' +
-        '<div class="icon"><i class="ph ph-' + it.i + '"></i></div>' +
-        '<span class="t">' + it.t + '</span>' + end +
-        '</' + tag + '>';
-    }).join('');
-
     document.addEventListener("DOMContentLoaded", function () {
+      // 1. Setup Profile/Avatar user
       const username = sessionStorage.getItem('username') || 'User';
       document.getElementById('displayUsername').textContent = username;
       document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
+
+      // 2. Cek apakah variabel dari config.js terbaca untuk mencegah crash
+      if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
+        document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--red); padding: 1rem; border: 1px solid var(--red); border-radius: 8px;"><b>Error:</b> config.js gagal dimuat atau variabel SUPABASE tidak ditemukan.</p>';
+        return;
+      }
+
+      // 3. Inisialisasi Supabase
+      const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // 4. Fungsi ambil dokumen
+      async function fetchDocuments() {
+        try {
+          const { data: items, error } = await _supabase
+            .from('procurement_documents')
+            .select('*')
+            .order('id', { ascending: true });
+
+          if (error) throw error;
+
+          // Cegah blank putih jika tabel Supabase berhasil diakses tapi belum ada isinya
+          if (!items || items.length === 0) {
+            document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--slate);">Belum ada dokumen di database Supabase (tabel procurement_documents kosong).</p>';
+            return;
+          }
+
+          // Render data dari Supabase
+          document.getElementById('grid').innerHTML = items.map(function (it) {
+            const soon = it.href === "#" || !it.href;
+            const tag = soon ? 'div' : 'a';
+            const attrs = soon ? 'class="card soon"' : 'class="card" href="' + it.href + '"';
+            const end = soon ? '<span class="badge">Segera tersedia</span>' : '<i class="ph ph-arrow-right arrow"></i>';
+
+            return '<' + tag + ' ' + attrs + '>' +
+              '<div class="icon"><i class="ph ph-' + it.i + '"></i></div>' +
+              '<span class="t">' + it.t + '</span>' + end +
+              '</' + tag + '>';
+          }).join('');
+
+        } catch (err) {
+          console.error('Gagal mengambil data:', err);
+          document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--red);">Gagal memuat dokumen dari server. Periksa console browser (F12) untuk detail error.</p>';
+        }
+      }
+
+      fetchDocuments();
     });
   </script>
 </body>
