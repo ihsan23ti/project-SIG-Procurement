@@ -141,6 +141,156 @@ def api_user_change_password():
         
         user = res.data[0]
         try:
+            is_valid = check_passwordTentu, ini adalah **kode *full* yang sudah diperbaiki 100%** untuk file Python kamu. 
+
+Aku sudah menyesuaikan rutenya menjadi `@app.get("/data procurement template/<path:nama_file>")` agar persis dengan URL yang diklik di website kamu (seperti yang terlihat di *screenshot* "Not Found" sebelumnya)[cite: 7]. 
+
+Silakan **Copy semua kode di bawah ini**, lalu **Paste (timpa semua)** ke dalam file kodingan utama kamu di PythonAnywhere:
+
+```python
+from pathlib import Path
+import re
+import unicodedata
+import os
+import json
+from werkzeug.security import generate_password_hash, check_password_hash
+from groq import Groq
+import pymupdf
+from flask import Flask, jsonify, request, send_from_directory, redirect
+from supabase import create_client, Client
+
+# --- LIBRARY MACHINE LEARNING LOKAL (TF-IDF) ---
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+from dotenv import load_dotenv
+
+# Muat variabel dari file .env untuk penggunaan lokal
+load_dotenv()
+
+# ==========================================
+# PENGATURAN FLASK & SUPABASE
+# ==========================================
+BASE_DIR = Path(__file__).resolve().parent
+app = Flask(__name__)
+
+# Mengambil kredensial dari Environment Variables Vercel
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "ANTI_DENGAGN_URL_SUPABASE_KAMU_JIKA_LOKAL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "GANTI_DENGAN_KEY_SUPABASE_KAMU_JIKA_LOKAL")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Nama Bucket Storage di Supabase
+BUCKET_NAME = "data-procurement"
+
+# ==========================================
+# DATABASE SUPABASE (SISTEM LOGIN)
+# ==========================================
+def is_admin(username):
+    if not username: return False
+    try:
+        res = supabase.table("users").select("role").ilike("username", username.strip()).execute()
+        if res.data and res.data[0].get("role", "").strip().lower() in ["admin", "administrator"]:
+            return True
+        res_main = supabase.table("users").select("username, role").eq("id", 1).execute()
+        if res_main.data:
+            main_user = res_main.data[0]
+            if main_user.get("username", "").strip().lower() == username.strip().lower() and \
+               main_user.get("role", "").strip().lower() in ["admin", "administrator"]:
+                return True
+        return False
+    except Exception:
+        return False
+
+def is_main_admin_user(username):
+    if not username: return False
+    try:
+        res = supabase.table("users").select("username").eq("id", 1).execute()
+        if res.data and res.data[0].get("username", "").strip().lower() == username.strip().lower():
+            return True
+        return False
+    except Exception:
+        return False
+
+@app.post("/api/register")
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+    role = "user"
+
+    if not username or not password:
+        return jsonify({"error": "Username dan password wajib diisi."}), 400
+    if len(password) < 4:
+        return jsonify({"error": "Password minimal 4 karakter."}), 400
+
+    try:
+        cek = supabase.table("users").select("id").ilike("username", username).execute()
+        if cek.data:
+            return jsonify({"error": f"Username '{username}' sudah terdaftar. Silakan pilih username lain."}), 400
+
+        hashed_pw = generate_password_hash(password)
+        supabase.table("users").insert({"username": username, "password": hashed_pw, "role": role}).execute()
+
+        return jsonify({"message": f"Akun '{username}' berhasil didaftarkan!", "username": username, "role": role}), 200
+    except Exception as e:
+        return jsonify({"error": f"Gagal mendaftarkan akun: {str(e)}"}), 500
+
+@app.post("/api/login")
+def api_login():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    try:
+        res = supabase.table("users").select("*").ilike("username", username).execute()
+        if not res.data:
+            return jsonify({"error": "Username atau password salah!"}), 401
+        
+        user = res.data[0]
+        db_password = user.get("password")
+        db_role = user.get("role", "user")
+        canonical_username = user.get("username")
+
+        is_valid = False
+        try:
+            is_valid = check_password_hash(db_password, password)
+        except ValueError:
+            is_valid = (db_password == password)
+
+        if is_valid:
+            if db_password == password:
+                supabase.table("users").update({"password": generate_password_hash(password)}).eq("id", user["id"]).execute()
+            
+            return jsonify({"message": "Login berhasil!", "username": canonical_username, "role": db_role}), 200
+        else:
+            return jsonify({"error": "Username atau password salah!"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ==========================================
+# API PROFIL PENGGUNA & GANTI PASSWORD MANDIRI
+# ==========================================
+@app.post("/api/user/change-password")
+def api_user_change_password():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    old_password = data.get("old_password", "").strip()
+    new_password = data.get("new_password", "").strip()
+
+    if not username or not old_password or not new_password:
+        return jsonify({"error": "Semua kolom password wajib diisi."}), 400
+    if len(new_password) < 4:
+        return jsonify({"error": "Password baru minimal 4 karakter."}), 400
+    if old_password == new_password:
+        return jsonify({"error": "Password baru tidak boleh sama dengan password saat ini."}), 400
+
+    try:
+        res = supabase.table("users").select("id, password, username").ilike("username", username).execute()
+        if not res.data:
+            return jsonify({"error": f"Pengguna '{username}' tidak ditemukan."}), 404
+        
+        user = res.data[0]
+        try:
             is_valid = check_password_hash(user["password"], old_password)
         except ValueError:
             is_valid = (user["password"] == old_password)
@@ -644,9 +794,12 @@ def buka_pdf(nama_file):
     url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"regulasi/{nama_file}")
     return redirect(url)
 
-@app.get("/data procurement document/<path:nama_file>")
+# ==========================================
+# RUTE YANG SUDAH DIPERBAIKI UNTUK FOLDER 'TEMPLATE'
+# ==========================================
+@app.get("/data procurement template/<path:nama_file>")
 def buka_procurement_pdf(nama_file):
-    # Ubah tulisan procurement menjadi template di baris bawah ini
+    # Mengambil file dari folder "template" di dalam Supabase
     url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"template/{nama_file}")
     return redirect(url)
 
