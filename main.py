@@ -646,7 +646,8 @@ def buka_pdf(nama_file):
 
 @app.get("/data procurement document/<path:nama_file>")
 def buka_procurement_pdf(nama_file):
-    url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"procurement/{nama_file}")
+    # Ubah tulisan procurement menjadi template di baris bawah ini
+    url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"template/{nama_file}")
     return redirect(url)
 
 # ==========================================
