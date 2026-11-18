@@ -64,7 +64,7 @@
             font-size: 13px;
             outline: none;
             border-radius: 1px;
-            color: #000; /* Pastikan teks yang diketik hitam */
+            color: #000; 
         }
         .doc-input:focus {
             border-color: #000;
@@ -78,7 +78,7 @@
             box-shadow: none !important;
             text-align: center;
             font-size: 14px;
-            color: #000; /* Teks diketik hitam */
+            color: #000; 
             width: 250px;
             padding: 2px;
         }
@@ -88,14 +88,13 @@
 
         /* =========================================================
            EFEK KOTAK HANYA SAAT DIKLIK (Bagian Tanda Tangan)
-           SUDAH DIBUAT LEBIH LEGA JARAKNYA
            ========================================================= */
         .input-focus-effect {
             border: 1px solid transparent; 
             background-color: transparent;
             outline: none !important;
-            padding: 5px 8px; /* Jarak kotak diperlebar agar tidak mepet */
-            margin-left: -8px; /* Kompensasi kiri agar teks tetap lurus */
+            padding: 5px 8px; 
+            margin-left: -8px; 
             width: calc(100% + 16px);
             border-radius: 3px;
             transition: all 0.1s ease-in-out;
@@ -106,20 +105,6 @@
             border-color: #000;
             background-color: #fff;
             box-shadow: 0 0 0 1px #000; 
-        }
-
-        /* Input Tembusan */
-        .input-tembusan {
-            border-top: none !important;
-            border-left: none !important;
-            border-right: none !important;
-            border-bottom: 1px dotted #000;
-            background: transparent !important;
-            outline: none !important;
-            box-shadow: none !important;
-            padding: 0 0 2px 0;
-            width: 320px;
-            color: #000; /* Teks diketik hitam */
         }
 
         /* Styling Tombol Aksi Hitam (di dalam tabel) */
@@ -138,10 +123,9 @@
             background-color: #111111;
         }
 
-        /* Mode Cetak/Preview */
+        /* Mode Cetak/Preview - Menghilangkan border input form */
         .print-mode .doc-input:not(.keep-border),
         .print-mode .input-focus-effect,
-        .print-mode .input-tembusan,
         .print-mode .doc-hide-border {
             border: none !important;
             background: transparent !important;
@@ -153,7 +137,6 @@
             -webkit-appearance: none;
         }
 
-        /* Class khusus untuk menahan border di mode print (Tahap 3) */
         .print-mode .keep-border {
             border: 1px solid #000 !important;
             background: transparent !important;
@@ -172,6 +155,17 @@
         .print-mode input[type="checkbox"] {
             appearance: auto;
             -webkit-appearance: auto;
+        }
+
+        /* ================= KUNCI UKURAN PDF ================= */
+        /* Dipanggil 1 detik sebelum proses download agar tidak melar */
+        .pdf-mode-active {
+            width: 170mm !important; /* 210mm (A4) - 40mm (Margin) */
+            max-width: 170mm !important;
+            padding: 0 !important; /* CSS padding dihapus agar tidak terlipat ganda dengan margin jsPDF */
+            margin: 0 auto !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
         .section-title {
@@ -213,7 +207,9 @@
         
         <!-- Header -->
         <div class="relative w-full mb-2">
-            <img src="./logo/logosig.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Semen_Indonesia_logo.svg/512px-Semen_Indonesia_logo.svg.png'" alt="Logo SIG" class="h-10 absolute left-0 top-0 object-contain">
+            <div style="margin-bottom: 10px; margin-left: -5mm;">
+                    <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+                </div>
             
             <div class="w-full text-center">
                 <h1 class="text-[16px] font-bold uppercase tracking-wide pt-1">LAPORAN HASIL PEMILIHAN PENYEDIA (LHPP)</h1>
@@ -419,7 +415,7 @@
                 
                 <input type="date" class="border border-gray-300 rounded-md px-2 py-1 w-full mb-3 outline-none text-gray-800 doc-hide-border">
                 
-                <span class="block mb-0.5">Panitia Pengadaan</span>
+                <span class="block mb-0.5">Pengusul</span>
                 <input type="text" placeholder="(diisi nama panitia pengadaannya)" class="input-focus-effect italic text-black placeholder-gray-500 mb-12">
                 
                 <div class="w-full text-left">
@@ -429,51 +425,28 @@
             </div>
         </div>
 
-        <!-- Tabel Review & Disetujui -->
+        <!-- Tabel Mengetahui & Pemutus -->
         <table class="doc-table mb-1 text-[13px]">
             <tr>
-                <td class="w-1/2 p-2 h-28 relative td-top">
-                    <div class="font-bold">Direview oleh:</div>
+                <td class="w-1/2 p-2 h-28 relative td-top border-black">
+                    <div class="font-bold">Mengetahui:</div>
                     <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
                         <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
                         <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
                     </div>
                 </td>
-                <td class="w-1/2 p-2 relative td-top">
-                    <div class="font-bold mb-1">Catatan, jika diperlukan:</div>
-                    <textarea class="input-focus-effect resize-none w-full text-black" style="min-height: 50px;"></textarea>
-                </td>
-            </tr>
-            <tr>
-                <td class="w-1/2 p-2 h-28 relative td-top">
-                    <div class="font-bold">Disetujui oleh:</div>
+                <td class="w-1/2 p-2 h-28 relative td-top border-black">
+                    <div class="font-bold">Pemutus:</div>
                     <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
                         <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
                         <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
                     </div>
-                </td>
-                <td class="w-1/2 p-2 relative td-top">
-                    <div class="font-bold mb-1">Catatan, jika diperlukan:</div>
-                    <textarea class="input-focus-effect resize-none w-full text-black" style="min-height: 50px;"></textarea>
                 </td>
             </tr>
         </table>
-        <p class="text-[11px] text-gray-600 italic mb-4">*keterangan : Kolom persetujuan dapat diisi sesuai kebutuhan</p>
-
-        <!-- Tembusan -->
-        <div class="text-[13px] font-bold mb-1.5">Tembusan:</div>
-        <div id="containerTembusan" class="text-[13px] mb-4">
-            <div class="flex items-center gap-1.5 mb-1.5 row-tembusan">
-                <span class="row-number-tembusan">1.</span>
-                <input type="text" placeholder="Diisi nama pejabat dengan status Informed" class="input-tembusan px-1 placeholder-gray-500 text-black">
-                <div class="action-col">
-                    <button type="button" class="text-red-500 font-bold hover:text-red-700 btn-hapus-tembusan px-2">X</button>
-                </div>
-            </div>
-        </div>
         
         <!-- Tombol Toolbar -->
-        <div class="main-buttons flex justify-center gap-3 pt-4 border-t border-gray-100">
+        <div class="main-buttons flex justify-center gap-3 pt-4 border-t border-gray-100 mt-6">
             <button id="btnPreview" class="bg-[#28a745] hover:bg-green-600 text-white px-5 py-2.5 rounded shadow-sm flex items-center gap-2 font-semibold text-[13px] transition-colors">
                 <i class="ph-fill ph-magnifying-glass text-lg"></i> Preview Sebelum Cetak
             </button>
@@ -549,10 +522,6 @@
                 e.target.closest('tr').remove();
                 updateNumbers('row-ket', 'row-number-ket');
             }
-            if (e.target.classList.contains('btn-hapus-tembusan')) {
-                e.target.closest('.row-tembusan').remove();
-                updateNumbersTembusan();
-            }
         });
 
         function updateNumbers(rowClass, numClass) {
@@ -565,12 +534,6 @@
             const rows = document.querySelectorAll('.row-anggota');
             rows.forEach((row, index) => {
                 row.querySelector('.row-number-ang').innerText = (index + 1) + ".";
-            });
-        }
-        function updateNumbersTembusan() {
-            const rows = document.querySelectorAll('.row-tembusan');
-            rows.forEach((row, index) => {
-                row.querySelector('.row-number-tembusan').innerText = (index + 1) + ".";
             });
         }
 
@@ -605,6 +568,7 @@
             document.getElementById('btnCetakPDF').click();
         });
 
+        // JURUS ANTI MELAR & ANTI POTONG
         document.getElementById('btnCetakPDF').addEventListener('click', () => {
             const wasInPreview = !previewToolbar.classList.contains('hidden-mode');
             if(!wasInPreview) {
@@ -612,17 +576,28 @@
                 mainButtons.style.display = 'none';
             }
             
+            // Mengubah layout khusus untuk penangkapan PDF agar lebarnya terkunci
+            docWrapper.classList.add('pdf-mode-active');
+            
             const opt = {
-                margin:       [10, 5, 10, 5],
+                margin:       [15, 20], // Margin atas/bawah 15mm, margin kiri/kanan 20mm
                 filename:     'Laporan_Hasil_Pemilihan_Penyedia.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                image:        { type: 'jpeg', quality: 1 }, 
+                html2canvas:  { 
+                    scale: 2, // Skala 2 lebih tahan terhadap clipping
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'] }
             };
 
             window.scrollTo(0, 0); 
             html2pdf().set(opt).from(docWrapper).save().then(() => {
+                // Hapus penguncian ukuran agar web preview kembali normal
+                docWrapper.classList.remove('pdf-mode-active');
+                
                 if(!wasInPreview) {
                     docWrapper.classList.remove('print-mode');
                     mainButtons.style.display = 'flex';

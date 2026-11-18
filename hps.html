@@ -73,6 +73,13 @@
         }
 
         /* ==================== STYLING KERTAS PDF ==================== */
+        #previewScrollWrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Di-center hanya saat preview web */
+            width: 100%;
+        }
+
         .a4-paper {
             font-family: Arial, Helvetica, sans-serif;
             width: 210mm;
@@ -89,11 +96,25 @@
             page-break-after: always;
         }
 
+        /* KUNCI UKURAN PDF SAAT GENERATE (ANTI MELAR) */
+        .pdf-mode-active {
+            width: 170mm !important; /* Lebar 210mm - Margin Kiri/Kanan 40mm = 170mm */
+            max-width: 170mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            align-items: flex-start !important; /* Paksa rapat kiri */
+        }
+
         .pdf-mode-active .a4-paper {
+            width: 170mm !important;
+            max-width: 170mm !important;
+            min-height: auto !important;
+            padding: 0 !important; /* Padding CSS dihapus murni serahkan margin ke jsPDF */
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 0 !important;
+            page-break-after: always;
         }
 
         .pdf-table {
@@ -108,6 +129,7 @@
             border: 1px solid #000;
             padding: 5px 4px;
             vertical-align: middle;
+            word-wrap: break-word;
         }
 
         .pdf-table th {
@@ -214,48 +236,67 @@
 
                 <!-- 3. DATA TANDA TANGAN -->
                 <div>
-                    <h2 class="text-[13px] font-bold text-gray-700 mb-3 uppercase">DATA TANDA TANGAN</h2>
+                    <h2 class="text-[13px] font-bold text-gray-700 mb-3 uppercase">DATA TANDA TANGAN (3 KOLOM)</h2>
                     <div class="border-t border-gray-200 pt-3 grid grid-cols-2 gap-4">
+                        
+                        <!-- Baris Atas: Tempat, Tanggal, Panitia -->
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tempat</label>
-                            <input type="text" id="ttd-tempat"
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Contoh: Padang">
+                            <input type="text" id="ttd-tempat" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Contoh: Padang">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Dokumen</label>
-                            <input type="text" id="ttd-tanggal"
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Contoh: ....................">
+                            <input type="text" id="ttd-tanggal" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Contoh: ....................">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Panitia
-                                Pengadaan</label>
-                            <input type="text" id="ttd-panitia"
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Contoh: ....................">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Panitia Pengadaan</label>
+                            <input type="text" id="ttd-panitia" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Contoh: ....................">
+                        </div>
+
+                        <!-- Kolom 1: Pengusul -->
+                        <div class="col-span-2 mt-2 pt-2 border-t border-gray-100">
+                            <span class="text-xs font-bold text-blue-600">Kolom 1: Pengusul</span>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Ketua Panitia
-                                Pengadaan</label>
-                            <input type="text" id="ttd-ketua"
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Nama Ketua Panitia">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Pejabat (Pengusul)</label>
+                            <input type="text" id="ttd-ketua" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Nama Ketua Panitia">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Pejabat (Disetujui
-                                oleh)</label>
-                            <input type="text" id="ttd-pejabat"
-                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Nama Pejabat">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jabatan (Pengusul)</label>
+                            <input type="text" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100 cursor-not-allowed text-gray-500" value="Ketua Panitia Pengadaan" disabled>
+                        </div>
+
+                        <!-- Kolom 2: Mengetahui -->
+                        <div class="col-span-2 mt-2 pt-2 border-t border-gray-100">
+                            <span class="text-xs font-bold text-blue-600">Kolom 2: Mengetahui</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Pejabat (Mengetahui)</label>
+                            <input type="text" id="ttd-mengetahui-nama" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Nama Pejabat">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jabatan (Mengetahui)</label>
+                            <input type="text" id="ttd-mengetahui-jabatan" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Contoh: Manager Procurement">
+                        </div>
+
+                        <!-- Kolom 3: Pemutus -->
+                        <div class="col-span-2 mt-2 pt-2 border-t border-gray-100">
+                            <span class="text-xs font-bold text-blue-600">Kolom 3: Pemutus</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Pejabat (Pemutus)</label>
+                            <input type="text" id="ttd-pemutus-nama" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Nama Pejabat">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jabatan (Pemutus)</label>
+                            <input type="text" id="ttd-pemutus-jabatan" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="Contoh: GH of Procurement" value="GH of Procurement">
                         </div>
                     </div>
                 </div>
 
                 <!-- Tombol Aksi -->
                 <div class="flex justify-end gap-3 mt-8 pt-5 border-t border-gray-100">
-                    <button type="button"
-                        class="bg-gray-500 hover:bg-gray-600 text-white rounded py-2 px-5 text-sm font-semibold transition-colors">
+                    <button type="button" onclick="window.location.href='procurement-template.html'" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium transition-colors">
                         Kembali
                     </button>
                     <button type="button" id="btnView"
@@ -289,113 +330,126 @@
             </button>
         </div>
 
-        <div id="dokumenA4Container">
-            <div class="a4-paper">
+        <div id="previewScrollWrapper" class="flex-1 overflow-y-auto w-full">
+            <div id="dokumenA4Container">
+                <div class="a4-paper">
 
-                <!-- Header Dokumen: Menggunakan Table agar aman dari tumpang tindih -->
-                <table style="width: 100%; border: none; margin-bottom: 0;">
-                    <tr>
-                        <td style="width: 30%; border: none; padding: 0; vertical-align: middle; text-align: left;">
-                            <!-- Batas tinggi gambar diamankan -->
-                            <img src="./logo/logosig.png" alt="Logo SIG"
-                                style="max-height: 65px; width: auto; display: block;">
-                        </td>
-                        <td style="width: 70%; border: none; padding: 0; vertical-align: middle;">
-                            <!-- Judul HPS diletakkan di tengah -->
-                            <div style="font-weight: bold; font-size: 11.5pt; text-align: center; margin-left: -80px;">
-                                HARGA PERKIRAAN SENDIRI (HPS)
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-
-                <!-- Spacer penurun paksa agar tulisan Info aman -->
-                <div style="height: 35px; width: 100%;"></div>
-
-                <!-- Info Fields -->
-                <table style="width: 100%; margin-bottom: 15px; font-size: 9.5pt; border: none; line-height: 1.5;">
-                    <tr>
-                        <td style="width: 260px; padding: 0; border: none; white-space: nowrap;">Nomor Permintaan
-                            Pemilihan Penyedia</td>
-                        <td style="width: 15px; padding: 0; border: none; text-align: center;">:</td>
-                        <td style="padding: 0; border: none;" id="out-nomor">
-                            ................................................</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 0; border: none; white-space: nowrap;">Nama Pengadaan</td>
-                        <td style="padding: 0; border: none; text-align: center;">:</td>
-                        <td style="padding: 0; border: none;" id="out-nama-pengadaan">
-                            ................................................</td>
-                    </tr>
-                </table>
-
-                <!-- Tabel Item HPS -->
-                <table class="pdf-table" id="out-tabel-hps">
-                    <thead>
+                    <!-- Header Dokumen: Menggunakan Table agar aman dari tumpang tindih -->
+                    <table style="width: 100%; border: none; margin-bottom: 0;">
                         <tr>
-                            <th rowspan="2" style="width: 5%;">NO</th>
-                            <th rowspan="2" style="width: 20%;">NAMA BARANG /<br>JASA</th>
-                            <th rowspan="2" style="width: 22%;">URAIAN</th>
-                            <th rowspan="2" style="width: 8%;">SATUAN</th>
-                            <th rowspan="2" style="width: 8%;">JUMLAH</th>
-                            <th colspan="2" style="width: 18.5%;">HPP</th>
-                            <th colspan="2" style="width: 18.5%;">HPS</th>
-                        </tr>
-                        <tr>
-                            <th>HARGA<br>SATUAN</th>
-                            <th>NILAI (RP)</th>
-                            <th>HARGA<br>SATUAN</th>
-                            <th>NILAI (RP)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Di-generate otomatis oleh JS -->
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="5" style="text-align: center; font-weight: bold; font-size: 8pt;">TOTAL</td>
-                            <td style="border: 1px solid #000;"></td>
-                            <td style="text-align: right; font-weight: bold; padding-right: 5px;" id="out-total-hpp">0
+                            <td style="width: 30%; border: none; padding: 0; vertical-align: middle; text-align: left;">
+                                <!-- Batas tinggi gambar diamankan -->
+                                <img src="./logo/logosig.png" alt="Logo SIG"
+                                    style="max-height: 65px; width: auto; display: block;">
                             </td>
-                            <td style="border: 1px solid #000;"></td>
-                            <td style="text-align: right; font-weight: bold; padding-right: 5px;" id="out-total-hps">0
+                            <td style="width: 70%; border: none; padding: 0; vertical-align: middle;">
+                                <!-- Judul HPS diletakkan di tengah -->
+                                <div style="font-weight: bold; font-size: 11.5pt; text-align: center; margin-left: -80px;">
+                                    HARGA PERKIRAAN SENDIRI (HPS)
+                                </div>
                             </td>
                         </tr>
-                    </tfoot>
-                </table>
+                    </table>
 
-                <!-- Keterangan -->
-                <div style="margin-top: 5px; font-size: 9pt;">
-                    Keterangan : (penjelasan jika terdapat perbedaan HPP dan HPS)
+                    <!-- Spacer penurun paksa agar tulisan Info aman -->
+                    <div style="height: 35px; width: 100%;"></div>
+
+                    <!-- Info Fields -->
+                    <table style="width: 100%; margin-bottom: 15px; font-size: 9.5pt; border: none; line-height: 1.5;">
+                        <tr>
+                            <td style="width: 260px; padding: 0; border: none; white-space: nowrap;">Nomor Permintaan
+                                Pemilihan Penyedia</td>
+                            <td style="width: 15px; padding: 0; border: none; text-align: center;">:</td>
+                            <td style="padding: 0; border: none;" id="out-nomor">
+                                ................................................</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0; border: none; white-space: nowrap;">Nama Pengadaan</td>
+                            <td style="padding: 0; border: none; text-align: center;">:</td>
+                            <td style="padding: 0; border: none;" id="out-nama-pengadaan">
+                                ................................................</td>
+                        </tr>
+                    </table>
+
+                    <!-- Tabel Item HPS -->
+                    <table class="pdf-table" id="out-tabel-hps">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 5%;">NO</th>
+                                <th rowspan="2" style="width: 20%;">NAMA BARANG /<br>JASA</th>
+                                <th rowspan="2" style="width: 22%;">URAIAN</th>
+                                <th rowspan="2" style="width: 8%;">SATUAN</th>
+                                <th rowspan="2" style="width: 8%;">JUMLAH</th>
+                                <th colspan="2" style="width: 18.5%;">HPP</th>
+                                <th colspan="2" style="width: 18.5%;">HPS</th>
+                            </tr>
+                            <tr>
+                                <th>HARGA<br>SATUAN</th>
+                                <th>NILAI (RP)</th>
+                                <th>HARGA<br>SATUAN</th>
+                                <th>NILAI (RP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Di-generate otomatis oleh JS -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="text-align: center; font-weight: bold; font-size: 8pt;">TOTAL</td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="text-align: right; font-weight: bold; padding-right: 5px;" id="out-total-hpp">0
+                                </td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="text-align: right; font-weight: bold; padding-right: 5px;" id="out-total-hps">0
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Keterangan -->
+                    <div style="margin-top: 5px; font-size: 9pt;">
+                        Keterangan : (penjelasan jika terdapat perbedaan HPP dan HPS)
+                    </div>
+
+                    <!-- Tanda Tangan Boxes (3 KOLOM) -->
+                    <table style="width: 100%; border: none; margin-top: 20px; font-size: 8.5pt; table-layout: fixed;">
+                        <tr>
+                            <!-- Kolom 1: Pengusul -->
+                            <td style="width: 32%; border: 1px solid #000; padding: 10px; vertical-align: top; height: 150px; box-sizing: border-box;">
+                                <span id="out-tempat">Padang</span>, <span id="out-tanggal">....................</span><br>
+                                Pengusul :<br>
+                                <b>Panitia Pengadaan <span id="out-panitia">....................</span></b>
+                                <br><br><br><br><br><br>
+                                (<span id="out-ketua">Nama Ketua Panitia</span>)
+                            </td>
+
+                            <!-- Jarak 1 -->
+                            <td style="width: 2%; border: none;"></td>
+
+                            <!-- Kolom 2: Mengetahui -->
+                            <td style="width: 32%; border: 1px solid #000; padding: 10px; vertical-align: top; height: 150px; box-sizing: border-box;">
+                                <br>
+                                Mengetahui :
+                                <br><br><br><br><br><br><br>
+                                (<span id="out-mengetahui-nama">Nama Pejabat</span>)<br>
+                                <span id="out-mengetahui-jabatan">Jabatan Pejabat</span>
+                            </td>
+
+                            <!-- Jarak 2 -->
+                            <td style="width: 2%; border: none;"></td>
+
+                            <!-- Kolom 3: Pemutus -->
+                            <td style="width: 32%; border: 1px solid #000; padding: 10px; vertical-align: top; height: 150px; box-sizing: border-box;">
+                                <br>
+                                Pemutus :
+                                <br><br><br><br><br><br><br>
+                                (<span id="out-pemutus-nama">Nama Pejabat</span>)<br>
+                                <span id="out-pemutus-jabatan">GH of Procurement</span>
+                            </td>
+                        </tr>
+                    </table>
+
                 </div>
-
-                <!-- Tanda Tangan Boxes (Sesuai Referensi Gambar) -->
-                <table style="width: 100%; border: none; margin-top: 20px; font-size: 9.5pt; table-layout: fixed;">
-                    <tr>
-                        <!-- Kotak Kiri -->
-                        <td
-                            style="width: 48.5%; border: 1px solid #000; padding: 12px; vertical-align: top; height: 160px; box-sizing: border-box;">
-                            <span id="out-tempat">Padang</span>, <span id="out-tanggal">....................</span><br>
-                            Disiapkan oleh :<br>
-                            <b>Panitia Pengadaan <span id="out-panitia">....................</span></b>
-                            <br><br><br><br><br><br>
-                            (<span id="out-ketua">Nama Ketua Panitia</span>)
-                        </td>
-
-                        <!-- Jarak Tengah -->
-                        <td style="width: 3%; border: none;"></td>
-
-                        <!-- Kotak Kanan -->
-                        <td
-                            style="width: 48.5%; border: 1px solid #000; padding: 12px; vertical-align: top; height: 160px; box-sizing: border-box;">
-                            Disetujui oleh :
-                            <br><br><br><br><br><br><br>
-                            (<span id="out-pejabat">Nama Pejabat</span>)<br>
-                            GH of Procurement
-                        </td>
-                    </tr>
-                </table>
-
             </div>
         </div>
     </div>
@@ -523,12 +577,19 @@
             document.getElementById('out-total-hpp').innerText = formatRp(grandTotalHpp);
             document.getElementById('out-total-hps').innerText = formatRp(grandTotalHps);
 
-            // Box Tanda Tangan
+            // Box Tanda Tangan (3 Kolom)
             document.getElementById('out-tempat').innerText = val('ttd-tempat', 'Padang');
             document.getElementById('out-tanggal').innerText = val('ttd-tanggal', '....................');
             document.getElementById('out-panitia').innerText = val('ttd-panitia', '....................');
+            
+            // Kolom 1
             document.getElementById('out-ketua').innerText = val('ttd-ketua', 'Nama Ketua Panitia');
-            document.getElementById('out-pejabat').innerText = val('ttd-pejabat', 'Nama Pejabat');
+            // Kolom 2
+            document.getElementById('out-mengetahui-nama').innerText = val('ttd-mengetahui-nama', 'Nama Pejabat');
+            document.getElementById('out-mengetahui-jabatan').innerText = val('ttd-mengetahui-jabatan', 'Jabatan Pejabat');
+            // Kolom 3
+            document.getElementById('out-pemutus-nama').innerText = val('ttd-pemutus-nama', 'Nama Pejabat');
+            document.getElementById('out-pemutus-jabatan').innerText = val('ttd-pemutus-jabatan', 'GH of Procurement');
         }
 
         document.getElementById('btnView').addEventListener('click', () => {
@@ -546,20 +607,46 @@
             document.body.style.backgroundColor = '#f3f4f6';
         });
 
+        // ================= KUNCI UTAMA ANTI-MELAR & ANTI-POTONG =================
         function unduhPDF() {
-            const elemen = document.getElementById('dokumenA4Container');
-            elemen.classList.add('pdf-mode-active');
+            const elemenContainer = document.getElementById('dokumenA4Container');
+            const previewScroll = document.getElementById('previewScrollWrapper');
 
-            const opsi = {
-                margin: 0,
-                filename: 'Dokumen_HPS.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            // 1. Reset posisi scroll ke atas agar html2canvas tidak terpotong (blank page)
+            if(previewScroll) {
+                previewScroll.scrollTop = 0;
+                previewScroll.scrollLeft = 0;
+                // Hilangkan centering flexbox yang sering membuat html2canvas meleset koordinatnya
+                previewScroll.classList.remove('items-center');
+            }
+            elemenContainer.classList.remove('items-center');
+
+            // 2. Aktifkan Mode Cetak (Mengunci kertas A4 menjadi 170mm murni & melepas CSS padding)
+            elemenContainer.classList.add('pdf-mode-active');
+            
+            // 3. Konfigurasi jsPDF yang murni mengatur margin di luar kontainer HTML
+            const opsiPDF = {
+                margin:       15, // Gunakan margin 15mm yang diterapkan otomatis oleh jsPDF
+                filename:     'Dokumen_HPS.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0, 
+                    windowWidth: document.documentElement.offsetWidth // Menahan agar tidak terbawa ukuran layar besar
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
             };
 
-            html2pdf().set(opsi).from(elemen).save().then(() => {
-                elemen.classList.remove('pdf-mode-active');
+            // Memanggil proses render
+            html2pdf().set(opsiPDF).from(elemenContainer).save().then(() => {
+                // 4. Setelah selesai diunduh, kembalikan tampilan web seperti semula
+                elemenContainer.classList.remove('pdf-mode-active');
+                elemenContainer.classList.add('items-center');
+                if(previewScroll) {
+                    previewScroll.classList.add('items-center');
+                }
             });
         }
 

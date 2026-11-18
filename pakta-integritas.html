@@ -59,12 +59,19 @@
             margin-bottom: 16px;
         }
 
-        /* ==================== STYLING KERTAS PDF ==================== */
+        /* ==================== STYLING KERTAS A4 UNTUK PREVIEW ==================== */
+        #dokumenA4Container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Di-center hanya saat preview web */
+        }
+
         .a4-paper {
             font-family: 'Times New Roman', Times, serif;
             width: 210mm;
             min-height: 297mm;
-            padding: 13mm 20mm 25mm 20mm;
+            padding: 15mm 20mm 25mm 20mm;
             margin: 20px auto 24px auto;
             background: white;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -76,27 +83,61 @@
             page-break-after: always;
         }
 
+        /* ==================== KUNCI UKURAN PDF SAAT GENERATE ==================== */
+        .pdf-mode-active {
+            width: 170mm !important; /* 210mm (A4) - 40mm (Margin Kiri Kanan) = 170mm */
+            max-width: 170mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            align-items: flex-start !important; /* Paksa rata kiri agar koordinat screenshot pas */
+        }
+
         .pdf-mode-active .a4-paper {
+            width: 170mm !important;
+            max-width: 170mm !important;
+            min-height: auto !important;
+            padding: 0 !important; /* Padding diserahkan ke margin opsi jsPDF */
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            border-radius: 0 !important;
         }
 
-        .pdf-list {
-            padding-left: 20px;
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 10px;
-            margin-bottom: 10px;
+            font-size: 11pt;
+            table-layout: fixed;
         }
 
-        .pdf-list li {
-            margin-bottom: 8px;
-            text-align: justify;
-            padding-left: 8px;
+        .signature-table th, .signature-table td {
+            border: 1px solid black;
+            padding: 8px 12px;
+            word-wrap: break-word;
+        }
+
+        /* Mencegah baris tabel terpotong di tengah saat pindah halaman PDF */
+        .signature-table tr {
+            page-break-inside: avoid !important;
         }
 
         .hidden-mode {
             display: none !important;
+        }
+
+        /* STYLING KHUSUS UNTUK TANDA TANGAN ZIG-ZAG (RAPAT BAWAH) */
+        .ttd-ganjil {
+            text-align: left;
+            vertical-align: bottom !important; 
+            padding-bottom: 5px !important;
+            padding-left: 10px !important;     
+        }
+
+        .ttd-genap {
+            text-align: right;
+            vertical-align: bottom !important; 
+            padding-bottom: 5px !important;
+            padding-right: 10px !important;    
         }
     </style>
 </head>
@@ -149,7 +190,7 @@
                         <!-- Area Anggota Dinamis -->
                         <div id="anggota-container" class="space-y-3">
                             <div class="anggota-row">
-                                <label class="input-label">Anggota Panitia Pengadaan</label>
+                                <label class="input-label">Anggota Panitia Pengadaan (Maksimal 15)</label>
                                 <div class="flex gap-2">
                                     <input type="text" class="input-field inp-anggota" placeholder="Nama Anggota Panitia">
                                     <button type="button" class="bg-[#ef4444] hover:bg-red-600 text-white px-3 rounded-md transition-colors btn-hapus" disabled style="opacity: 0.5; cursor: not-allowed;">
@@ -168,7 +209,7 @@
 
                 <!-- ACTION BUTTONS -->
                 <div class="flex gap-3 pt-4">
-                    <button type="button" class="bg-[#e2e8f0] hover:bg-gray-300 text-[#334155] font-semibold py-2.5 px-4 rounded-md flex-1 text-[13px] transition-colors">
+                    <button type="button" onclick="window.location.href='procurement-template.html'" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium transition-colors">
                         Kembali
                     </button>
                     <button type="button" onclick="exportToWord()" class="bg-[#3b82f6] hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-md flex-1 flex justify-center items-center gap-2 text-[13px] transition-colors">
@@ -202,59 +243,69 @@
             </button>
         </div>
 
-        <!-- Area Kertas A4 -->
-        <div id="dokumenA4Container">
-            <div class="a4-paper">
+        <div id="previewScrollWrapper" class="w-full flex-1 overflow-y-auto">
+            <!-- Area Kertas A4 -->
+            <div id="dokumenA4Container">
+                <div class="a4-paper">
 
-                <!-- Logo SIG -->
-                <div style="margin-bottom: 10px; margin-left: -5mm;">
-                    <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
-                </div>
-
-                <!-- Judul -->
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div style="font-weight: bold; font-size: 12pt; text-decoration: underline;">
-                        PAKTA INTEGRITAS
+                    <!-- Logo SIG -->
+                    <div style="margin-bottom: 10px; margin-left: -5mm;">
+                        <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
                     </div>
+
+                    <!-- Judul -->
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-weight: bold; font-size: 12pt; text-decoration: underline;">
+                            PAKTA INTEGRITAS
+                        </div>
+                    </div>
+
+                    <!-- Paragraf Pembuka -->
+                    <div style="text-align: justify; margin-bottom: 10px;">
+                        Kami yang bertanda tangan di bawah ini, dalam rangka Pengadaan <span id="out-pengadaan">......................................................</span>, dengan ini menyatakan bahwa:
+                    </div>
+
+                    <!-- List Pernyataan -->
+                    <table style="width: 100%; border: none; margin-top: 10px; margin-bottom: 10px; line-height: 1.6; table-layout: fixed;">
+                        <tr>
+                            <td style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">1.</td>
+                            <td style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">Tidak akan melakukan praktek Korupsi, Kolusi, dan Nepotisme (KKN)</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">2.</td>
+                            <td style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">Akan melaporkan kepada pihak yang berwajib/berwenang apabila mengetahui ada indikasi KKN di dalam proses pengadaan ini</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">3.</td>
+                            <td style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">Dalam proses pengadaan ini, berjanji akan melaksanakan tugas secara bersih, transparan, dan professional dalam arti akan mengarahkan segala kemampuan dan sumber daya secara optimal untuk memberikan hasil kerja terbaik mulai dari penyiapan penawaran, pelaksanaan dan penyelesaian pekerjaan/kegiatan ini.</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">4.</td>
+                            <td style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">Apabila saya melanggar hal-hal yang telah saya nyatakan dalam PAKTA INTEGRITAS ini, saya bersedia dikenakan sanksi moral, sanksi administrasi serta dituntut ganti rugi dan pidana sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.</td>
+                        </tr>
+                    </table>
+
+                    <!-- Tanggal & Tanda Tangan -->
+                    <div style="margin-top: 30px; margin-bottom: 15px;">
+                        <span id="out-tempat">.......................</span>, <span id="out-tanggal">dd/mm/yy</span>
+                    </div>
+
+                    <!-- Tabel Tanda Tangan Dinamis (Kolom Resmi) -->
+                    <table class="signature-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%; text-align: center; background-color: #f8fafc;">No</th>
+                                <th style="width: 42%; text-align: center; background-color: #f8fafc;">Nama Lengkap</th>
+                                <th style="width: 25%; text-align: center; background-color: #f8fafc;">Jabatan Panitia</th>
+                                <th style="width: 25%; text-align: center; background-color: #f8fafc;">Tanda Tangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="out-signature-list">
+                            <!-- Akan diisi otomatis oleh JS -->
+                        </tbody>
+                    </table>
+
                 </div>
-
-                <!-- Paragraf Pembuka -->
-                <div style="text-align: justify; margin-bottom: 10px;">
-                    Kami yang bertanda tangan di bawah ini, dalam rangka Pengadaan <span id="out-pengadaan">......................................................</span>, dengan ini menyatakan bahwa:
-                </div>
-
-                <!-- List Pernyataan -->
-                <table style="width: 100%; border: none; margin-top: 10px; margin-bottom: 10px; line-height: 1.6;">
-                    <tr>
-                        <td style="width: 20px; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">1.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify;">Tidak akan melakukan praktek Korupsi, Kolusi, dan Nepotisme (KKN)</td>
-                    </tr>
-                    <tr>
-                        <td style="width: 20px; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">2.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify;">Akan melaporkan kepada pihak yang berwajib/berwenang apabila mengetahui ada indikasi KKN di dalam proses pengadaan ini</td>
-                    </tr>
-                    <tr>
-                        <td style="width: 20px; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">3.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify;">Dalam proses pengadaan ini, berjanji akan melaksanakan tugas secara bersih, transparan, dan professional dalam arti akan mengarahkan segala kemampuan dan sumber daya secara optimal untuk memberikan hasil kerja terbaik mulai dari penyiapan penawaran, pelaksanaan dan penyelesaian pekerjaan/kegiatan ini.</td>
-                    </tr>
-                    <tr>
-                        <td style="width: 20px; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">4.</td>
-                        <td style="vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify;">Apabila saya melanggar hal-hal yang telah saya nyatakan dalam PAKTA INTEGRITAS ini, saya bersedia dikenakan sanksi moral, sanksi administrasi serta dituntut ganti rugi dan pidana sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.</td>
-                    </tr>
-                </table>
-
-                <!-- Tanggal & Tanda Tangan -->
-                <div style="margin-top: 30px; margin-bottom: 20px;">
-                    <span id="out-tempat">.......................</span>, <span id="out-tanggal">dd/mm/yy</span>
-                </div>
-
-                <!-- Tabel Tanda Tangan Dinamis -->
-                <table style="width: 100%; font-size: 11pt; border: none; line-height: 1.5;">
-                    <tbody id="out-signature-list">
-                        <!-- Akan diisi otomatis oleh JS -->
-                    </tbody>
-                </table>
-
             </div>
         </div>
     </div>
@@ -283,6 +334,12 @@
         }
 
         function tambahAnggota() {
+            const rows = anggotaContainer.querySelectorAll('.anggota-row');
+            if (rows.length >= 15) {
+                alert("Maksimal jumlah anggota panitia adalah 15 orang.");
+                return;
+            }
+            
             const tr = document.createElement('div');
             tr.className = 'anggota-row';
             tr.innerHTML = `
@@ -308,7 +365,7 @@
 
         // Format Tanggal jadi dd/mm/yyyy
         function formatTanggalPendek(dateStr) {
-            if (!dateStr) return 'dd/mm/yyyy';
+            if (!dateStr) return '.......................';
             const d = new Date(dateStr);
             const tgl = String(d.getDate()).padStart(2, '0');
             const bln = String(d.getMonth() + 1).padStart(2, '0');
@@ -328,32 +385,42 @@
             setTxt('out-tempat', 'inp-tempat', '.......................');
             document.getElementById('out-tanggal').innerText = formatTanggalPendek(val('inp-tanggal'));
 
-            // Render Signatures
+            // Render Signatures dengan format zig-zag gambar referensi
             const sigList = document.getElementById('out-signature-list');
             sigList.innerHTML = '';
 
-            const ketua = val('inp-ketua');
+            const ketua = val('inp-ketua') || '.............................................';
             
-            // Baris Ketua (No. 1)
+            // Baris Ketua (No. 1 - Kiri Bawah)
             sigList.innerHTML += `
                 <tr>
-                    <td style="width: 3%; vertical-align: top; padding-bottom: 25px;">1.</td>
-                    <td style="width: 40%; vertical-align: top; padding-bottom: 25px;">Ketua Panitia Pengadaan</td>
-                    <td style="width: 2%; vertical-align: top; padding-bottom: 25px;">:</td>
-                    <td style="vertical-align: top; padding-bottom: 25px;">${ketua}</td>
+                    <td style="text-align: center; vertical-align: middle;">1</td>
+                    <td style="vertical-align: middle; padding-left: 15px;">${ketua}</td>
+                    <td style="text-align: center; vertical-align: middle;">Ketua</td>
+                    <td style="height: 60px;" class="ttd-ganjil">
+                        1. ..................
+                    </td>
                 </tr>
             `;
 
-            // Baris Anggota (No. 2 dst)
+            // Baris Anggota (No. 2 dst - Zig-zag Kiri Bawah / Kanan Bawah)
             const anggotaInputs = document.querySelectorAll('.inp-anggota');
             anggotaInputs.forEach((input, index) => {
-                const namaAnggota = input.value.trim();
+                const namaAnggota = input.value.trim() || '.............................................';
+                const num = index + 2;
+                
+                // Ganjil: Kiri Bawah, Genap: Kanan Bawah
+                const ttdClass = num % 2 !== 0 ? 'ttd-ganjil' : 'ttd-genap';
+                const ttdFormat = num % 2 !== 0 ? `${num}. ..................` : `${num}. ..................`;
+                
                 sigList.innerHTML += `
                     <tr>
-                        <td style="width: 3%; vertical-align: top; padding-bottom: 25px;">${index + 2}.</td>
-                        <td style="width: 40%; vertical-align: top; padding-bottom: 25px;">Anggota Panitia Pengadaan</td>
-                        <td style="width: 2%; vertical-align: top; padding-bottom: 25px;">:</td>
-                        <td style="vertical-align: top; padding-bottom: 25px;">${namaAnggota}</td>
+                        <td style="text-align: center; vertical-align: middle;">${num}</td>
+                        <td style="vertical-align: middle; padding-left: 15px;">${namaAnggota}</td>
+                        <td style="text-align: center; vertical-align: middle;">Anggota</td>
+                        <td style="height: 60px;" class="${ttdClass}">
+                            ${ttdFormat}
+                        </td>
                     </tr>
                 `;
             });
@@ -375,21 +442,41 @@
             document.body.style.backgroundColor = '#f1f5f9';
         });
 
-        // Unduh PDF
+        // Unduh PDF Kualitas HD & Anti Potong
         function unduhPDF() {
-            const elemen = document.getElementById('dokumenA4Container');
-            elemen.classList.add('pdf-mode-active');
+            const elemenContainer = document.getElementById('dokumenA4Container');
+            const previewScroll = document.getElementById('previewScrollWrapper');
+            
+            // JURUS ANTI TERPOTONG: Kita hapus class 'items-center' dari parentnya sesaat
+            // agar kertasnya menempel ke pojok kiri layar, sehingga html2canvas tidak salah baca koordinat.
+            if(previewScroll) {
+                previewScroll.scrollTop = 0;
+                previewScroll.scrollLeft = 0;
+            }
+            previewSection.classList.remove('items-center');
+            
+            // Aktifkan mode PDF (hapus padding CSS internal & set lebar 170mm murni)
+            elemenContainer.classList.add('pdf-mode-active');
 
             const opsi = {
-                margin: 0,
+                margin: [15, 20], // Margin asli kertas A4 (Atas/Bawah 15mm, Kiri/Kanan 20mm)
                 filename: 'Pakta_Integritas.pdf',
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { 
+                    scale: 3, // HD Resolution
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    windowWidth: document.documentElement.offsetWidth // Kunci ukuran virtual layar
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] } 
             };
 
-            html2pdf().set(opsi).from(elemen).save().then(() => {
-                elemen.classList.remove('pdf-mode-active');
+            html2pdf().set(opsi).from(elemenContainer).save().then(() => {
+                // Kembalikan ke mode Web View normal
+                elemenContainer.classList.remove('pdf-mode-active');
+                previewSection.classList.add('items-center'); 
             });
         }
 
@@ -399,7 +486,9 @@
             previewSection.classList.remove('hidden-mode');
             previewSection.classList.add('flex');
             document.body.style.backgroundColor = '#333';
-            setTimeout(unduhPDF, 500);
+            
+            // Beri waktu browser merender tabelnya sebelum di-screenshot
+            setTimeout(unduhPDF, 500); 
         });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', unduhPDF);

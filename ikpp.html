@@ -15,12 +15,19 @@
         ::-webkit-scrollbar-track { background: #e2e8f0; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
 
-        /* Styling Lembar A4 PDF */
+        /* ==================== STYLING KERTAS A4 UNTUK PREVIEW ==================== */
+        #dokumenA4Container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+
         .a4-paper {
             font-family: Arial, Helvetica, sans-serif;
             width: 210mm;
             min-height: 297mm;
-            padding: 20mm 20mm;
+            padding: 20mm; 
             margin: 0 auto 24px auto;
             background: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -28,27 +35,55 @@
             font-size: 10pt;
             line-height: 1.35;
             box-sizing: border-box;
-            page-break-after: always;
+            position: relative;
+            page-break-after: always; 
+        }
+
+        /* ==================== KUNCI UKURAN PDF SAAT GENERATE ==================== */
+        .pdf-mode-active {
+            width: 100% !important; 
+            align-items: flex-start !important; 
         }
 
         .pdf-mode-active .a4-paper {
             width: 100% !important;
+            max-width: 100% !important;
             min-height: auto !important;
+            padding: 0 !important; 
             margin: 0 !important;
-            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            page-break-after: always;
+            border-radius: 0 !important;
         }
-        .pdf-mode-active .a4-paper:last-child { page-break-after: auto; }
 
-        /* Mencegah tabel terpotong jelek di tengah baris saat ganti halaman */
-        .a4-table { width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 9.5pt; page-break-inside: auto; }
-        .a4-table tr { page-break-inside: avoid; page-break-after: auto; }
-        .a4-table th, .a4-table td { border: 1.5px solid black; padding: 6px 8px; text-align: left; vertical-align: top; }
+        /* ==================== SOLUSI TEKS TERPOTONG DI TENGAH ==================== */
+        .a4-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 5px 0; 
+            font-size: 9.5pt; 
+            table-layout: fixed; 
+        }
         
-        /* Baris panjang yang rentan terpotong, kita paksa break sebelum atau sesudahnya jika tidak muat */
-        .long-row { page-break-inside: avoid; }
+        /* Biarkan baris (tr) terbelah antar halaman secara alami */
+        .a4-table tr, .a4-table td { 
+            page-break-inside: auto !important; 
+            page-break-after: auto; 
+        }
+        
+        .a4-table th, .a4-table td { 
+            border: 1px solid black; 
+            padding: 6px 8px; 
+            text-align: left; 
+            vertical-align: top; 
+            word-wrap: break-word; 
+        }
+
+        /* CLASS PELINDUNG: Kalimat/Paragraf tidak boleh terpotong di tengah! */
+        .pb-avoid {
+            page-break-inside: avoid !important;
+            margin-bottom: 2px;
+        }
 
         /* Spesifik untuk Tabel Lembar Persetujuan (Halaman 1) */
         .table-persetujuan {
@@ -58,17 +93,16 @@
             border: 2px solid black;
         }
         .table-persetujuan td {
-            border: 1.5px solid black;
+            border: 1px solid black;
             padding: 5px;
             text-align: center;
         }
 
         /* Spesifik untuk Tabel Instruksi (Halaman 2 dsb) */
         .table-instruksi { border: 2px solid black; }
-        .table-instruksi td { border: 1.5px solid black; }
+        .table-instruksi td { border: 1px solid black; }
 
         .hidden-mode { display: none !important; }
-        
         .text-ikpp-merah { color: #dc2626; } 
         .text-ikpp-biru { color: #0284c7; font-style: italic; } 
     </style>
@@ -164,9 +198,6 @@
                     <button type="button" id="btnGeneratePDF" class="bg-[#16a34a] hover:bg-green-700 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center transition-colors">
                         Download PDF
                     </button>
-                    <button type="button" onclick="alert('Fitur Export to Word sedang dalam pengembangan.');" class="col-span-2 bg-[#8b5cf6] hover:bg-purple-600 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center gap-2 transition-colors">
-                        📝 Export to Word
-                    </button>
                 </div>
                 
             </form>
@@ -182,7 +213,8 @@
             <span class="bg-[#ef4444] text-white text-[10px] font-bold px-2.5 py-1 rounded-full">Ukuran A4</span>
         </div>
 
-        <div class="flex-1 overflow-y-auto py-8 flex flex-col items-center">
+        <div id="previewScrollWrapper" class="flex-1 overflow-y-auto py-8 flex flex-col items-center">
+            
             <div id="dokumenA4Container" class="w-full flex flex-col items-center">
 
                 <!-- HALAMAN 1: LEMBAR PERMOHONAN -->
@@ -190,7 +222,9 @@
                     <div>
                         <!-- Header -->
                         <div class="flex justify-between items-start mb-10">
-                            <img src="./logo/logosig.png" crossorigin="anonymous" alt="Logo SIG" style="height: 25px;">
+                            <div style="margin-bottom: 10px; margin-left: -5mm;">
+                                <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+                            </div>
                             <div class="text-right text-[10pt]">
                                 <p>No. <span id="outNoIkpp1">(Diisi no. IKPP)</span></p>
                                 <p>Tanggal: <span id="outTglPembuatan1">(Diisi tanggal pembuatan IKPP)</span></p>
@@ -255,7 +289,9 @@
                 <!-- HALAMAN 2+: INSTRUKSI -->
                 <div class="a4-paper">
                     <div class="flex justify-between items-start mb-6">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Semen_Indonesia_logo.svg/512px-Semen_Indonesia_logo.svg.png" crossorigin="anonymous" alt="Logo SIG" style="height: 25px;">
+                        <div style="margin-bottom: 10px; margin-left: -5mm;">
+                            <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+                        </div>
                         <div class="text-right text-[10pt]">
                             <p>No. <span id="outNoIkpp2">(Diisi no. IKPP)</span></p>
                             <p>Tanggal: <span id="outTglPembuatan2">(Diisi tanggal pembuatan IKPP)</span></p>
@@ -270,431 +306,450 @@
                                 <td style="width: 5%; text-align: center;">1</td>
                                 <td style="width: 25%;">Entitas peminta</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">PT Semen Padang</p>
-                                    <p class="text-ikpp-biru">Keterangan tata cara pengisian :<br>Diisi nama entitas penerbit Perjanjian/Order Pembelian (bukan entitas dari Panitia Pengadaan)</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">PT Semen Padang</div>
+                                    <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian :<br>Diisi nama entitas penerbit Perjanjian/Order Pembelian (bukan entitas dari Panitia Pengadaan)</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">2</td>
                                 <td>Panitia pengadaan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Panitia Pengadaan Barang XXXX</p>
-                                    <p class="mb-4">Alamat Panitia Pengadaan :<br>
-                                    <span class="text-ikpp-biru">(untuk pengiriman dokumen-dokumen yang diperlukan hardcopy-nya, seperti : jaminan penawaran, dll)</span></p>
-                                    <p class="mb-4">Keterangan :<br>
-                                    Seluruh dokumen penawaran dan dokumen lain dalam rangka proses pemilihan dari peserta pemilihan ditujukan kepada Panitia Pengadaan melalui tautan berikut : <span class="text-ikpp-merah">link bravo</span></p>
-                                    <p class="text-ikpp-biru">Keterangan tata cara pengisian :<br>Diisi Nama kategori Panitia Pengadaan berdasarkan SKD Panitia Pengadaan (bukan nama personil Panitia Pengadaan)</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">Panitia Pengadaan Barang XXXX</div>
+                                    <div class="pb-avoid mb-4">Alamat Panitia Pengadaan :<br>
+                                    <span class="text-ikpp-biru">(untuk pengiriman dokumen-dokumen yang diperlukan hardcopy-nya, seperti : jaminan penawaran, dll)</span></div>
+                                    <div class="pb-avoid mb-4">Keterangan :<br>
+                                    Seluruh dokumen penawaran dan dokumen lain dalam rangka proses pemilihan dari peserta pemilihan ditujukan kepada Panitia Pengadaan melalui tautan berikut : <span class="text-ikpp-merah">link bravo</span></div>
+                                    <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian :<br>Diisi Nama kategori Panitia Pengadaan berdasarkan SKD Panitia Pengadaan (bukan nama personil Panitia Pengadaan)</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">3</td>
                                 <td>Nama pengadaan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Barang: Pengadaan Circuit Breaker<br>Jasa: Pengadaan Jasa Pembersihan Area Packer PT Semen Padang</p>
-                                    <p class="text-ikpp-biru">Keterangan tata cara pengisian:<br>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">Barang: Pengadaan Circuit Breaker<br>Jasa: Pengadaan Jasa Pembersihan Area Packer PT Semen Padang</div>
+                                    <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian:<br>
                                     • Diisi sesuai dengan Nama Pengadaan di PPK<br>
                                     • Diisi secara ringkas dan jelas terkait barang/jasa yang akan dilakukan pengadaan tanpa menyebutkan kode atau penomoran atau identitas yang hanya diketahui secara internal<br>
-                                    • Sebaiknya ditentukan nama/judul pengadaan yang dapat merepresentasikan keseluruhan barang atau lingkup jasa yang diminta.</p>
+                                    • Sebaiknya ditentukan nama/judul pengadaan yang dapat merepresentasikan keseluruhan barang atau lingkup jasa yang diminta.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">4</td>
                                 <td>HPS (Harga Perkiraan Sendiri)</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Rp. 1.000.000.000,- (diluar PPN)<br>(Satu Milyar Rupiah)</p>
-                                    <p class="text-ikpp-biru">Keterangan tata cara pengisian:<br>Nilai HPS dituliskan hanya untuk pengadaan yang HPS-nya terbuka.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">Rp. 1.000.000.000,- (diluar PPN)<br>(Satu Milyar Rupiah)</div>
+                                    <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian:<br>Nilai HPS dituliskan hanya untuk pengadaan yang HPS-nya terbuka.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">5</td>
                                 <td>Kelengkapan Dokumen Pengadaan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Dokumen pengadaan antara lain:<br>
-                                    1) Instruksi Kepada Peserta Pemilihan (IKPP);<br>
-                                    2) Persyaratan Pemberi Kerja (PPK);<br>
-                                    3) Rancangan Perjanjian;<br>
-                                    4) Petunjuk penggunaan BRAVO/JAGGAER ONE;</p>
-                                    <p class="mb-4">Sebelum membuat dokumen penawaran, peserta pemilihan dapat memeriksa kelengkapan dokumen pengadaan yang sudah diterima, kemudian peserta pemilihan wajib mengacu pada segala ketentuan dan persyaratan yang telah diatur dalam dokumen pengadaan di atas.</p>
-                                    <p class="text-ikpp-biru">Keterangan tata cara pengisian:<br>
-                                    1. Diisi sesuai dengan dokumen-dokumen pengadaan yang telah ditandatangani;<br>
-                                    2. Apabila terdapat dokumen lain yang perlu disampaikan ke peserta pemilihan, dipastikan bahwa dokumen tersebut bersifat dokumen yang diperuntukkan pihak eksternal dan/atau dokumen yang sifatnya form yang standar yang fungsinya memandu peserta pemilihan dalam pengisian informasi seperti form pengalaman perusahaan, form curriculum vitae, dll.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">Dokumen pengadaan antara lain:</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) Instruksi Kepada Peserta Pemilihan (IKPP);</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) Persyaratan Pemberi Kerja (PPK);</div>
+                                    <div class="pb-avoid text-ikpp-merah">3) Rancangan Perjanjian;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">4) Petunjuk penggunaan BRAVO/JAGGAER ONE;</div>
+                                    
+                                    <div class="pb-avoid mb-4">Sebelum membuat dokumen penawaran, peserta pemilihan dapat memeriksa kelengkapan dokumen pengadaan yang sudah diterima, kemudian peserta pemilihan wajib mengacu pada segala ketentuan dan persyaratan yang telah diatur dalam dokumen pengadaan di atas.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. Diisi sesuai dengan dokumen-dokumen pengadaan yang telah ditandatangani;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. Apabila terdapat dokumen lain yang perlu disampaikan ke peserta pemilihan, dipastikan bahwa dokumen tersebut bersifat dokumen yang diperuntukkan pihak eksternal dan/atau dokumen yang sifatnya form yang standar yang fungsinya memandu peserta pemilihan dalam pengisian informasi seperti form pengalaman perusahaan, form curriculum vitae, dll.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">6</td>
                                 <td>Tahapan Proses Pemilihan Penyedia</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Tahapan proses pemilihan penyedia :<br>
-                                    1. Penyampaian undangan;<br>
-                                    2. Penjelasan dokumen pengadaan (aanwidzing);<br>
-                                    3. Penyampaian dokumen penawaran;<br>
-                                    4. Evaluasi penawaran;<br>
-                                    5. Klarifikasi penawaran (jika diperlukan);<br>
-                                    6. Pembukaan dokumen penawaran harga beserta koreksi aritmatik, klarifikasi (jika diperlukan) dan negosiasi yang dilakukan dalam satu waktu;<br>
-                                    7. Pengumuman Hasil Pemilihan Penyedia;<br>
-                                    8. Penerbitan Perjanjian atau Order Pembelian.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">Tahapan proses pemilihan penyedia :</div>
+                                    <div class="pb-avoid text-ikpp-merah">1. Penyampaian undangan;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2. Penjelasan dokumen pengadaan (aanwidzing);</div>
+                                    <div class="pb-avoid text-ikpp-merah">3. Penyampaian dokumen penawaran;</div>
+                                    <div class="pb-avoid text-ikpp-merah">4. Evaluasi penawaran;</div>
+                                    <div class="pb-avoid text-ikpp-merah">5. Klarifikasi penawaran (jika diperlukan);</div>
+                                    <div class="pb-avoid text-ikpp-merah">6. Pembukaan dokumen penawaran harga beserta koreksi aritmatik, klarifikasi (jika diperlukan) dan negosiasi yang dilakukan dalam satu waktu;</div>
+                                    <div class="pb-avoid text-ikpp-merah">7. Pengumuman Hasil Pemilihan Penyedia;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">8. Penerbitan Perjanjian atau Order Pembelian.</div>
 
-                                    <p class="mb-4 font-bold">Keterangan:<br>
-                                    <span class="font-normal">Untuk jadwal pelaksanaan tahap penyampaian dokumen penawaran dan tahap negosiasi, akan disampaikan melalui email atau sistem Bravo Solution.</span></p>
+                                    <div class="pb-avoid mb-4 font-bold">Keterangan:<br>
+                                    <span class="font-normal">Untuk jadwal pelaksanaan tahap penyampaian dokumen penawaran dan tahap negosiasi, akan disampaikan melalui email atau sistem Bravo Solution.</span></div>
 
                                     <div class="border border-dashed border-gray-400 p-2 mt-2">
-                                        <p class="text-ikpp-biru">Keterangan tata cara pengisian:<br>
-                                        1. Selain Pengadaan Tender/Seleksi Umum, jadwal kualifikasi tidak perlu dicantumkan.<br>
-                                        2. Pada bab ini cukup menyampaikan tahapan Proses Pengadaan yang berkaitan langsung dengan Peserta Pemilihan, tahapan yang tidak diperlukan peserta pemilihan mengetahui seperti klarifikasi penawaran, penetapan pemenang, pengajuan LHPP, dan tahapan lainnya yang dirasa tidak perlu diketahui oleh peserta pemilihan.<br>
-                                        3. Penjelasan dokumen pengadaan (aanwijzing), tahapannya bisa dicantumkan untuk diketahui oleh seluruh peserta pemilihan.<br><br>
-                                        Keterangan penting:<br>
-                                        Jadwal masa sanggah tidak perlu dicantumkan, sudah diatur dalam ketentuan sanggahan dalam IKPP ini.</p>
+                                        <div class="pb-avoid text-ikpp-biru">Keterangan tata cara pengisian:</div>
+                                        <div class="pb-avoid text-ikpp-biru">1. Selain Pengadaan Tender/Seleksi Umum, jadwal kualifikasi tidak perlu dicantumkan.</div>
+                                        <div class="pb-avoid text-ikpp-biru">2. Pada bab ini cukup menyampaikan tahapan Proses Pengadaan yang berkaitan langsung dengan Peserta Pemilihan, tahapan yang tidak diperlukan peserta pemilihan mengetahui seperti klarifikasi penawaran, penetapan pemenang, pengajuan LHPP, dan tahapan lainnya yang dirasa tidak perlu diketahui oleh peserta pemilihan.</div>
+                                        <div class="pb-avoid text-ikpp-biru mb-4">3. Penjelasan dokumen pengadaan (aanwijzing), tahapannya bisa dicantumkan untuk diketahui oleh seluruh peserta pemilihan.</div>
+                                        <div class="pb-avoid text-ikpp-biru">Keterangan penting:<br>Jadwal masa sanggah tidak perlu dicantumkan, sudah diatur dalam ketentuan sanggahan dalam IKPP ini.</div>
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">7</td>
                                 <td>Persyaratan Dokumen Penawaran</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Dokumen Penawaran Administrasi :<br>
-                                    a. surat penunjukan sebagai distributor atau agen dari Manufacture/Prinsipal yang masih berlaku (jika diperlukan);<br>
-                                    b. jaminan penawaran (jika diperlukan)<br>
-                                    c. ijin usaha/NIB<br><br>
-                                    Dokumen Penawaran Teknis :<br>
-                                    a. sesuai dengan detail spesifikasi teknis dan total kuantitas barang uang disampaikan pada PPK;<br>
-                                    b. surat pernyataan garansi, dengan masa berlaku garansi selama 12 (dua belas) bulan sejak tanggal serah terima barang;<br>
-                                    c. drawing/ gambar teknis;<br>
-                                    d. technical/material data sheet;<br>
-                                    e. jangka waktu penyerahan barang selambat-lambatnya 60 (enam puluh) hari kalender setelah Perjanjian/Order Pembelian diterima;<br>
-                                    f. Ketentuan pengiriman (term delivery) dan lokasi serah terima barang, <strong>Franco Gudang PT Semen Padang</strong>, yang beralamat di Gudang PT Semen Padang Lantai 2 Jl. Raya Indarung – Padang– Sumatera Barat, Kode Pos: 25237.<br><br>
-                                    Dokumen Penawaran Harga :<br>
-                                    a. Surat penawaran harga;<br>
-                                    b. ketentuan pembayaran adalah pembayaran menggunakan TT (telegraphic transfer), Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan;<br>
-                                    c. Harga penawaran belum termasuk PPN;<br>
-                                    d. Harga penawaran sudah termasuk biaya seller pada aplikasi PADI UMKM yang menjadi beban Penyedia</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-merah font-bold">Dokumen Penawaran Administrasi :</div>
+                                    <div class="pb-avoid text-ikpp-merah">a. surat penunjukan sebagai distributor atau agen dari Manufacture/Prinsipal yang masih berlaku (jika diperlukan);</div>
+                                    <div class="pb-avoid text-ikpp-merah">b. jaminan penawaran (jika diperlukan)</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">c. ijin usaha/NIB</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-merah font-bold">Dokumen Penawaran Teknis :</div>
+                                    <div class="pb-avoid text-ikpp-merah">a. sesuai dengan detail spesifikasi teknis dan total kuantitas barang uang disampaikan pada PPK;</div>
+                                    <div class="pb-avoid text-ikpp-merah">b. surat pernyataan garansi, dengan masa berlaku garansi selama 12 (dua belas) bulan sejak tanggal serah terima barang;</div>
+                                    <div class="pb-avoid text-ikpp-merah">c. drawing/ gambar teknis;</div>
+                                    <div class="pb-avoid text-ikpp-merah">d. technical/material data sheet;</div>
+                                    <div class="pb-avoid text-ikpp-merah">e. jangka waktu penyerahan barang selambat-lambatnya 60 (enam puluh) hari kalender setelah Perjanjian/Order Pembelian diterima;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">f. Ketentuan pengiriman (term delivery) dan lokasi serah terima barang, <strong>Franco Gudang PT Semen Padang</strong>, yang beralamat di Gudang PT Semen Padang Lantai 2 Jl. Raya Indarung – Padang– Sumatera Barat, Kode Pos: 25237.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-merah font-bold">Dokumen Penawaran Harga :</div>
+                                    <div class="pb-avoid text-ikpp-merah">a. Surat penawaran harga;</div>
+                                    <div class="pb-avoid text-ikpp-merah">b. ketentuan pembayaran adalah pembayaran menggunakan TT (telegraphic transfer), Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan;</div>
+                                    <div class="pb-avoid text-ikpp-merah">c. Harga penawaran belum termasuk PPN;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">d. Harga penawaran sudah termasuk biaya seller pada aplikasi PADI UMKM yang menjadi beban Penyedia</div>
 
-                                    <p class="mb-4 font-bold">Keterangan:<br>
-                                    <span class="font-normal">a. Setiap dokumen penawaran yang disampaikan oleh Peserta Pemilihan, harus ditandatangani oleh Direktur Perusahaan atau Pejabat lain yang mendapatkan surat kuasa atas nama Direktur Perusahaan;<br>
-                                    b. Dalam hal terdapat Pejabat selain Direktur Perushaan yang bertandatangan, maka Peserta Pemilihan wajib menyertakan surat kuasa tersebut pada saat penyerahan dokumen penawaran</span></p>
+                                    <div class="pb-avoid mb-1 font-bold">Keterangan:</div>
+                                    <div class="pb-avoid font-normal">a. Setiap dokumen penawaran yang disampaikan oleh Peserta Pemilihan, harus ditandatangani oleh Direktur Perusahaan atau Pejabat lain yang mendapatkan surat kuasa atas nama Direktur Perusahaan;</div>
+                                    <div class="pb-avoid font-normal mb-4">b. Dalam hal terdapat Pejabat selain Direktur Perushaan yang bertandatangan, maka Peserta Pemilihan wajib menyertakan surat kuasa tersebut pada saat penyerahan dokumen penawaran</div>
 
                                     <div class="border border-dashed border-gray-400 p-2 mt-2">
-                                        <p class="text-ikpp-biru">Keterangan tata cara pengisian :<br>
-                                        Diisikan syarat dokumen administrasi, teknis dan komersil yang akan menjadi acuan dalam proses evaluasi penawaran.<br><br>
-                                        Keterangan penting:<br>
-                                        1. syarat penawaran mulai dari syarat administrasi, teknis, dan komersil akan menjadi rujukan Panitia Pengadaan dalam melakukan evaluasi penawaran. Sehingga perlu dipertimbangkan dan dipastikan dapat terukur dan mampu diverifikasi/divalidasi kebenarannya;<br>
-                                        2. dalam hal persyaratan dokumen penawaran telah diatur dalam PPK, sebaiknya persyaratan dokumen penawaran cukup diatur di salah satu dokumen antara PPK atau IKPP, untuk menghindari perbedaan informasi persyaratan dokumen penawaran;<br>
-                                        3. Dalam hal transaksi atas hasil pemilihan penyedia ini ditetapkan melalui aplikasi PADI UMKM, maka perlu disampaikan persyaratan terkait biaya seller pada aplikasi PADI UMKM menjadi beban dari Penyedia;<br>
-                                        4. Juga menyampaikan ketentuan terkait pejabat berwenang dari peserta pemilihan.</p>
+                                        <div class="pb-avoid text-ikpp-biru mb-2">Keterangan tata cara pengisian :<br>
+                                        Diisikan syarat dokumen administrasi, teknis dan komersil yang akan menjadi acuan dalam proses evaluasi penawaran.</div>
+                                        <div class="pb-avoid text-ikpp-biru font-bold">Keterangan penting:</div>
+                                        <div class="pb-avoid text-ikpp-biru">1. syarat penawaran mulai dari syarat administrasi, teknis, dan komersil akan menjadi rujukan Panitia Pengadaan dalam melakukan evaluasi penawaran. Sehingga perlu dipertimbangkan dan dipastikan dapat terukur dan mampu diverifikasi/divalidasi kebenarannya;</div>
+                                        <div class="pb-avoid text-ikpp-biru">2. dalam hal persyaratan dokumen penawaran telah diatur dalam PPK, sebaiknya persyaratan dokumen penawaran cukup diatur di salah satu dokumen antara PPK atau IKPP, untuk menghindari perbedaan informasi persyaratan dokumen penawaran;</div>
+                                        <div class="pb-avoid text-ikpp-biru">3. Dalam hal transaksi atas hasil pemilihan penyedia ini ditetapkan melalui aplikasi PADI UMKM, maka perlu disampaikan persyaratan terkait biaya seller pada aplikasi PADI UMKM menjadi beban dari Penyedia;</div>
+                                        <div class="pb-avoid text-ikpp-biru">4. Juga menyampaikan ketentuan terkait pejabat berwenang dari peserta pemilihan.</div>
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">8</td>
                                 <td>Preferensi harga pengguna produksi dalam negeri</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="mb-4">Untuk meningkatkan penggunaan produk dalam negeri, Panitia Pengadaan memberikan preferensi harga produk dalam negeri, dengan ketentuan sebagai berikut:<br>
-                                    1) preferensi harga diberikan atas produk dalam negeri yang memiliki nilai TKDN lebih besar atau sama dengan 25% (dua puluh lima persen);<br>
-                                    2) preferensi harga penggunaan produk dalam negeri untuk barang dan/atau jasa sesuai tabel di bawah ini :<br>
-                                    [Tabel TKDN]<br>
-                                    3) nilai TKDN sebagaimana dimaksud pada poin (1) di atas, harus dibuktikan dengan dokumen tertulis dari pihak yang berwenang sesuai dengan peraturan dan perundang-undangan yang berlaku;<br>
-                                    4) preferensi harga diperhitungkan dalam evaluasi harga penawaran/negosiasi akhir, yang telah memenuhi persyaratan administrasi dan teknis;<br>
-                                    5) penetapan penawaran dengan harga terbaik berdasarkan urutan harga terendah Hasil Evaluasi Akhir (HEA);<br>
-                                    6) HEA dihitung dengan rumus HEA = (1 – KP) × HP dengan:<br>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid mb-2">Untuk meningkatkan penggunaan produk dalam negeri, Panitia Pengadaan memberikan preferensi harga produk dalam negeri, dengan ketentuan sebagai berikut:</div>
+                                    <div class="pb-avoid">1) preferensi harga diberikan atas produk dalam negeri yang memiliki nilai TKDN lebih besar atau sama dengan 25% (dua puluh lima persen);</div>
+                                    <div class="pb-avoid">2) preferensi harga penggunaan produk dalam negeri untuk barang dan/atau jasa sesuai tabel di bawah ini :<br>[Tabel TKDN]</div>
+                                    <div class="pb-avoid">3) nilai TKDN sebagaimana dimaksud pada poin (1) di atas, harus dibuktikan dengan dokumen tertulis dari pihak yang berwenang sesuai dengan peraturan dan perundang-undangan yang berlaku;</div>
+                                    <div class="pb-avoid">4) preferensi harga diperhitungkan dalam evaluasi harga penawaran/negosiasi akhir, yang telah memenuhi persyaratan administrasi dan teknis;</div>
+                                    <div class="pb-avoid">5) penetapan penawaran dengan harga terbaik berdasarkan urutan harga terendah Hasil Evaluasi Akhir (HEA);</div>
+                                    <div class="pb-avoid">6) HEA dihitung dengan rumus HEA = (1 – KP) × HP dengan:<br>
                                     KP = TKDN (%) × Preferensi Harga (%)<br>
                                     KP adalah Koefisien Preferensi<br>
-                                    HP adalah Harga Penawaran/Negosiasi Akhir;<br>
-                                    7) dalam hal terdapat 2 (dua) atau lebih penawaran dengan HEA terendah yang sama, penawar dengan TKDN lebih besar ditetapkan sebagai HEA terbaik.</p>
+                                    HP adalah Harga Penawaran/Negosiasi Akhir;</div>
+                                    <div class="pb-avoid mb-4">7) dalam hal terdapat 2 (dua) atau lebih penawaran dengan HEA terendah yang sama, penawar dengan TKDN lebih besar ditetapkan sebagai HEA terbaik.</div>
 
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan besaran preferensi harga yang diberikan;<br>
-                                    2. menginformasikan syarat penyerahan Nilai TKDN beserta dokumen yang wajib disertakan;<br>
-                                    3. menyampaikan ketentuan dan rumusan perhitungan harga evaluasi setelah preferensi harga dari nilai TKDN digunakan;<br>
-                                    4. menyampaikan penentuan penetapan calon pemenang setelah perhitungan harga evaluasi akhir.</p>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan besaran preferensi harga yang diberikan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menginformasikan syarat penyerahan Nilai TKDN beserta dokumen yang wajib disertakan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. menyampaikan ketentuan dan rumusan perhitungan harga evaluasi setelah preferensi harga dari nilai TKDN digunakan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">4. menyampaikan penentuan penetapan calon pemenang setelah perhitungan harga evaluasi akhir.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">9</td>
                                 <td>Metode Penyampaian dan Sistem Penawaran</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Metode Penawaran : Satu Tahap Satu Sampul<br>
-                                    Sistem Penawaran : Itemize</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">Metode Penawaran : Satu Tahap Satu Sampul<br>
+                                    Sistem Penawaran : Itemize</div>
 
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    Pilih salah satu jenis metode penawaran sbb :<br>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-2">Pilih salah satu jenis metode penawaran sbb :<br>
                                     1. Metode Satu Tahap Satu Sampul<br>
                                     2. Metode Satu Tahap Dua Sampul<br>
-                                    3. Metode Dua Tahap Dua Sampul<br><br>
-                                    Pilih salah satu jenis sistem penawaran sbb :<br>
-                                    1. Item<br>
-                                    Dapat memberikan penawaran pada sebagian item barang dari total item barang sebagaimana dimaksud dalam PPK yang menjadi satu kesatuan dokumen dengan IKPP ini<br>
-                                    2. Paket<br>
-                                    Wajib memberikan penawaran pada seluruh item penawaran sesuai yang dipersyaratkan dalam PPK (Lampiran 1 IKPP ini)</p>
+                                    3. Metode Dua Tahap Dua Sampul</div>
+                                    <div class="pb-avoid text-ikpp-biru">Pilih salah satu jenis sistem penawaran sbb :</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. Item<br>
+                                    Dapat memberikan penawaran pada sebagian item barang dari total item barang sebagaimana dimaksud dalam PPK yang menjadi satu kesatuan dokumen dengan IKPP ini</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. Paket<br>
+                                    Wajib memberikan penawaran pada seluruh item penawaran sesuai yang dipersyaratkan dalam PPK (Lampiran 1 IKPP ini)</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">10</td>
                                 <td>Link tempat penawaran disampaikan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Penawaran dapat disampaikan melalui https://semenindonesia.bravosolution.com</p>
-                                    <p class="mb-4">Semua dokumen penawaran dan dokumen lain dalam rangka proses pemilihan dari peserta pemilihan ditujukan kepada link yang telah disediakan Panitia Pengadaan. Untuk dokumen penawaran yang ditujukan selain pada link di atas dianggap tidak sah.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    Diisikan link yang dapat diakses oleh Peserta Pemilihan untuk mengirimkan penawaran</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-2">Penawaran dapat disampaikan melalui https://semenindonesia.bravosolution.com</div>
+                                    <div class="pb-avoid mb-4">Semua dokumen penawaran dan dokumen lain dalam rangka proses pemilihan dari peserta pemilihan ditujukan kepada link yang telah disediakan Panitia Pengadaan. Untuk dokumen penawaran yang ditujukan selain pada link di atas dianggap tidak sah.</div>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:<br>
+                                    Diisikan link yang dapat diakses oleh Peserta Pemilihan untuk mengirimkan penawaran</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">11</td>
                                 <td>Masa berlaku Dokumen Penawaran</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">Masa berlaku penawaran atau validitas penawaran adalah 90 (sembilan puluh) hari kalender sejak batas waktu penyerahan penawaran yang ditentukan oleh Panitia Pengadaan.</p>
-                                    <p class="text-ikpp-biru">Teknis dan tata cara pengisian:<br>
-                                    1. Diisikan lama hari masa berlaku Dokumen Penawaran.<br>
-                                    2. Masa berlaku validitas penawaran terhitung sejak tanggal batas penyerahan penawaran yang ditentukan oleh Panitia Pengadaan.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">Masa berlaku penawaran atau validitas penawaran adalah 90 (sembilan puluh) hari kalender sejak batas waktu penyerahan penawaran yang ditentukan oleh Panitia Pengadaan.</div>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis dan tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. Diisikan lama hari masa berlaku Dokumen Penawaran.</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. Masa berlaku validitas penawaran terhitung sejak tanggal batas penyerahan penawaran yang ditentukan oleh Panitia Pengadaan.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">12</td>
                                 <td>Metode Evaluasi Penawaran dan Kriteria Penentuan Pemenang</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">a. Metode Evaluasi Penawaran<br>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">a. Metode Evaluasi Penawaran<br>
                                     Sistem Gugur<br>
-                                    Yaitu Dokumen Penawaran yang tidak memenuhi persyaratan dinyatakan gugur<br>
-                                    b. Kriteria Penentuan Pemenang<br>
-                                    Penetapan penawaran dengan harga terbaik berdasarkan urutan harga terendah Hasil Evaluasi Akhir (HEA) yang diperhitungkan dalam evaluasi harga penawaran/negosiasi akhir.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian :<br>
-                                    Diisi jenis metode evaluasi penawaran yang digunakan (beserta penjelasan dan kriteria metode evaluasi penawaran) dan Kriteria Penentuan Pemenang.</p>
+                                    Yaitu Dokumen Penawaran yang tidak memenuhi persyaratan dinyatakan gugur</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">b. Kriteria Penentuan Pemenang<br>
+                                    Penetapan penawaran dengan harga terbaik berdasarkan urutan harga terendah Hasil Evaluasi Akhir (HEA) yang diperhitungkan dalam evaluasi harga penawaran/negosiasi akhir.</div>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian :<br>
+                                    Diisi jenis metode evaluasi penawaran yang digunakan (beserta penjelasan dan kriteria metode evaluasi penawaran) dan Kriteria Penentuan Pemenang.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">13</td>
                                 <td>Klarifikasi dan Konfirmasi Penawaran</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="mb-4">Panitia Pengadaan berhak meminta klarifikasi kepada peserta pemilihan dan pihak lain yang terkait dengan dokumen penawaran, dengan ketentuan sebagai berikut:<br>
-                                    1) Pada tahap klarifikasi ini, peserta pemilihan tidak diperbolehkan menambah dan/atau mengubah Dokumen Penawaran; dan<br>
-                                    2) Tahap klarifikasi dilakukan hanya untuk memperjelas Dokumen Penawaran yang telah disampaikan.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    Menyampaikan mekanisme tahap klarifikasi penawaran dan batasan-batasan yang diperbolehkan dalam merespon klarifikasi penawaran.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid mb-2">Panitia Pengadaan berhak meminta klarifikasi kepada peserta pemilihan dan pihak lain yang terkait dengan dokumen penawaran, dengan ketentuan sebagai berikut:</div>
+                                    <div class="pb-avoid">1) Pada tahap klarifikasi ini, peserta pemilihan tidak diperbolehkan menambah dan/atau mengubah Dokumen Penawaran; dan</div>
+                                    <div class="pb-avoid mb-4">2) Tahap klarifikasi dilakukan hanya untuk memperjelas Dokumen Penawaran yang telah disampaikan.</div>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:<br>
+                                    Menyampaikan mekanisme tahap klarifikasi penawaran dan batasan-batasan yang diperbolehkan dalam merespon klarifikasi penawaran.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">14</td>
                                 <td>Ketentuan Negosiasi</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="mb-4">1) negosiasi hanya dilakukan kepada Peserta Pemilihan yang lulus evaluasi penawaran;<br>
-                                    2) negosiasi harga dilakukan kepada seluruh Peserta Pemilihan yang harga penawarannya maksimal 20% (dua puluh persen) di atas HPS. Penawaran harga yang melebihi 20% (dua puluh persen) di atas HPS dinyatakan gugur;<br>
-                                    3) jika penawaran harga awal seluruhnya sudah berada di bawah HPS maka tidak dilakukan negosiasi;<br>
-                                    4) jika terdapat lebih dari satu harga penawaran yang sama di bawah HPS, maka negosiasi lanjutan dilakukan terhadap seluruh harga penawaran yang sama di bawah HPS untuk mendapatkan penawaran harga terendah;</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. ketentuan negosiasi disesuaikan dengan metode pengadaan yang digunakan<br>
-                                    2. untuk metode penunjukkan lansgung, negosiasi hanya dilakukan jika peserta pemilihan lulus evaluasi penawaran, tidak berlaku ketentuan harga penawaran maksimal 20%.<br>
-                                    3. khusus Jasa Pekerjaan Konstruksi, dalam hal harga yang diperoleh setelah negosiasi lebih rendah dari 85% (delapan puluh lima persen) HPS, maka persentase nilai Jaminan Pelaksanaan harus ditambah sebesar 85% - (harga hasil negosiasi / HPS).</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid">1) negosiasi hanya dilakukan kepada Peserta Pemilihan yang lulus evaluasi penawaran;</div>
+                                    <div class="pb-avoid">2) negosiasi harga dilakukan kepada seluruh Peserta Pemilihan yang harga penawarannya maksimal 20% (dua puluh persen) di atas HPS. Penawaran harga yang melebihi 20% (dua puluh persen) di atas HPS dinyatakan gugur;</div>
+                                    <div class="pb-avoid">3) jika penawaran harga awal seluruhnya sudah berada di bawah HPS maka tidak dilakukan negosiasi;</div>
+                                    <div class="pb-avoid mb-4">4) jika terdapat lebih dari satu harga penawaran yang sama di bawah HPS, maka negosiasi lanjutan dilakukan terhadap seluruh harga penawaran yang sama di bawah HPS untuk mendapatkan penawaran harga terendah;</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. ketentuan negosiasi disesuaikan dengan metode pengadaan yang digunakan</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. untuk metode penunjukkan lansgung, negosiasi hanya dilakukan jika peserta pemilihan lulus evaluasi penawaran, tidak berlaku ketentuan harga penawaran maksimal 20%.</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. khusus Jasa Pekerjaan Konstruksi, dalam hal harga yang diperoleh setelah negosiasi lebih rendah dari 85% (delapan puluh lima persen) HPS, maka persentase nilai Jaminan Pelaksanaan harus ditambah sebesar 85% - (harga hasil negosiasi / HPS).</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">15</td>
                                 <td>Kriteria Batal dan Gagalnya Proses Pemilihan Penyedia dalam mendapatkan pemenang</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh:</p>
-                                    <p class="mb-4">Proses Pemilihan Penyedia ini dinyatakan <strong>batal</strong> apabila terpenuhi salah satu atau lebih kriteria di bawah ini:<br>
-                                    1) terjadi perubahan rencana kerja (diisikan nama entitas peminta, contoh : PT Semen Padang) dan mengakibatkan perubahan kebutuhan Barang dan/atau Jasa dan/atau spesifikasi Barang dan/atau Jasa;<br>
-                                    2) terdapat penetapan pengadilan yang menetapkan batalnya proses pemilihan; dan/atau<br>
-                                    3) terjadi Keadaan Memaksa.<br><br>
-                                    Proses Pemilihan Penyedia ini dinyatakan gagal mendapatkan pemenang apabila terpenuhi salah satu atau lebih kriteria dibawah ini:<br>
-                                    1) dalam proses peserta pemilihan terbukti adanya indikasi kuat telah terjadi penyuapan atau tindak korupsi kolusi dan nepotisme lainnya;<br>
-                                    2) sanggahan dari peserta pemilihan terbukti benar; dan/atau<br>
-                                    3) harga akhir yang ditawarkan Peserta Pemilihan masih lebih tinggi dari HPS setelah dilakukan negosiasi.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh:</div>
+                                    <div class="pb-avoid mb-2">Proses Pemilihan Penyedia ini dinyatakan <strong>batal</strong> apabila terpenuhi salah satu atau lebih kriteria di bawah ini:</div>
+                                    <div class="pb-avoid">1) terjadi perubahan rencana kerja (diisikan nama entitas peminta, contoh : PT Semen Padang) dan mengakibatkan perubahan kebutuhan Barang dan/atau Jasa dan/atau spesifikasi Barang dan/atau Jasa;</div>
+                                    <div class="pb-avoid">2) terdapat penetapan pengadilan yang menetapkan batalnya proses pemilihan; dan/atau</div>
+                                    <div class="pb-avoid mb-4">3) terjadi Keadaan Memaksa.</div>
+                                    
+                                    <div class="pb-avoid mb-2">Proses Pemilihan Penyedia ini dinyatakan gagal mendapatkan pemenang apabila terpenuhi salah satu atau lebih kriteria dibawah ini:</div>
+                                    <div class="pb-avoid">1) dalam proses peserta pemilihan terbukti adanya indikasi kuat telah terjadi penyuapan atau tindak korupsi kolusi dan nepotisme lainnya;</div>
+                                    <div class="pb-avoid">2) sanggahan dari peserta pemilihan terbukti benar; dan/atau</div>
+                                    <div class="pb-avoid">3) harga akhir yang ditawarkan Peserta Pemilihan masih lebih tinggi dari HPS setelah dilakukan negosiasi.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">16</td>
                                 <td>Pengumuman Hasil Pemilihan Penyedia</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="mb-4">1) Pengumuman hasil pemilihan penyedia yang sah/resmi hanya diberitahukan oleh Panitia Pengadaan secara tertulis dan ditandatangani oleh Ketua Panitia Pengadaan;<br>
-                                    2) jika ada informasi/pengumuman pemilihan penyedia yang diberitahukan selain oleh Panitia Pengadaan, maka Panitia pengadaan tidak bertanggungjawab atas validitas dan segala risiko yang timbul akibat informasi tersebut;<br>
-                                    3) pengumuman hasil pemilihan penyedia dilakukan secara tertulis kepada seluruh Peserta Pemilihan yang mengikuti proses pemilihan;<br>
-                                    4) pengumuman hasil pemilihan penyedia dari Panitia pengadaan diinformasikan secara resmi dan tertulis melalui email, dan dikirimkan ke alamat email masing-masing peserta pemilihan yang telah diregistrasikan saat registrasi penyedia barang/jasa.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    • Menyampaikan bahwa pengumuman hasil pemilihan penyedia yang sah hanya dilakukan oleh Panitia Pengadaan;<br>
-                                    • Menyampaikan bahwa pengumuman disampaikan kepada seluruh peserta pemilihan, baik yang terpilih maupun yang tidak terpilih sebagai pemenang;<br>
-                                    • Menyampaikan media dan teknis penyampaian pengumuman hasil pemilihan penyedia,</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid">1) Pengumuman hasil pemilihan penyedia yang sah/resmi hanya diberitahukan oleh Panitia Pengadaan secara tertulis dan ditandatangani oleh Ketua Panitia Pengadaan;</div>
+                                    <div class="pb-avoid">2) jika ada informasi/pengumuman pemilihan penyedia yang diberitahukan selain oleh Panitia Pengadaan, maka Panitia pengadaan tidak bertanggungjawab atas validitas dan segala risiko yang timbul akibat informasi tersebut;</div>
+                                    <div class="pb-avoid">3) pengumuman hasil pemilihan penyedia dilakukan secara tertulis kepada seluruh Peserta Pemilihan yang mengikuti proses pemilihan;</div>
+                                    <div class="pb-avoid mb-4">4) pengumuman hasil pemilihan penyedia dari Panitia pengadaan diinformasikan secara resmi dan tertulis melalui email, dan dikirimkan ke alamat email masing-masing peserta pemilihan yang telah diregistrasikan saat registrasi penyedia barang/jasa.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">• Menyampaikan bahwa pengumuman hasil pemilihan penyedia yang sah hanya dilakukan oleh Panitia Pengadaan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">• Menyampaikan bahwa pengumuman disampaikan kepada seluruh peserta pemilihan, baik yang terpilih maupun yang tidak terpilih sebagai pemenang;</div>
+                                    <div class="pb-avoid text-ikpp-biru">• Menyampaikan media dan teknis penyampaian pengumuman hasil pemilihan penyedia,</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">17</td>
                                 <td>Mekanisme Sanggahan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="mb-4">Peserta Pemilihan dapat melakukan Sanggahan, dengan ketentuan sebagai berikut :<br>
-                                    1) Sanggahan diajukan secara tertulis kepada Panitia Pengadaan dalam jangka waktu paling lambat 2 (dua) hari kerja setelah pengumuman Pemenang.<br>
-                                    2) Sanggahan dialamatkan kepada Panitia Pengadaan.<br>
-                                    3) Sanggahan harus disertai dengan jaminan sanggahan dan bukti-bukti terjadinya penyimpangan.<br><br>
-                                    Jika <strong>Sanggahan tidak terbukti</strong>, maka Panitia Pengadaan berhak mencairkan Jaminan Sanggahan.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan batas waktu penyampaian Sanggahan;<br>
-                                    2. menyampaikan syarat pengajuan Sanggahan : (i) batas waktu 2 hari sejak pengumuman pemenang; (ii) diajukan secara tertulis; dan (iii) disertai Jaminan Sanggahan dan bukti-bukti terjadinya penyimpangan;<br>
-                                    3. menyampaikan Sanggahan yang dialamatkan kepada Panitia Pengadaan.<br><br>
-                                    Keterangan penting:<br>
-                                    Mekanisme internal dalam hal merespon sanggahan yang mengatur tidak perlu disampaikan kepada peserta pemilihan.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid mb-2">Peserta Pemilihan dapat melakukan Sanggahan, dengan ketentuan sebagai berikut :</div>
+                                    <div class="pb-avoid">1) Sanggahan diajukan secara tertulis kepada Panitia Pengadaan dalam jangka waktu paling lambat 2 (dua) hari kerja setelah pengumuman Pemenang.</div>
+                                    <div class="pb-avoid">2) Sanggahan dialamatkan kepada Panitia Pengadaan.</div>
+                                    <div class="pb-avoid mb-4">3) Sanggahan harus disertai dengan jaminan sanggahan dan bukti-bukti terjadinya penyimpangan.</div>
+                                    <div class="pb-avoid mb-4">Jika <strong>Sanggahan tidak terbukti</strong>, maka Panitia Pengadaan berhak mencairkan Jaminan Sanggahan.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan batas waktu penyampaian Sanggahan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan syarat pengajuan Sanggahan : (i) batas waktu 2 hari sejak pengumuman pemenang; (ii) diajukan secara tertulis; dan (iii) disertai Jaminan Sanggahan dan bukti-bukti terjadinya penyimpangan;</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">3. menyampaikan Sanggahan yang dialamatkan kepada Panitia Pengadaan.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Keterangan penting:</div>
+                                    <div class="pb-avoid text-ikpp-biru">Mekanisme internal dalam hal merespon sanggahan yang mengatur tidak perlu disampaikan kepada peserta pemilihan.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">18</td>
                                 <td>Jaminan Sanggahan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">1) Nilai Jaminan Sanggahan adalah minimal 1% (satu persen) dari nilai total penawaran Peserta Proses Pemilihan yang melakukan sanggahan;<br>
-                                    2) Masa berlaku Jaminan Sanggahan adalah minimal 30 (tiga puluh) hari kalender sejak tanggal tanggal diterbitkan. Jaminan sanggahan hanya dapat diterbitkan pada masa sanggahan.<br>
-                                    3) Alamat penyerahan dokumen asli Jaminan sebagaimana dimaksud dalam alamat korespondensi pada poin 2 di atas (Panitia Pengadaan).</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan nilai jaminan yang dipersyaratkan, Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan sanggahan adalah sebesar 1% dari nilai total penawaran peserta pemilihan yang melakukan sanggahan. (Berdasarkan Pedoman Pengadaan Barang/Jasa Bab B. Ketentuan Umum Jaminan – halaman 39);<br>
-                                    2. menyampaikan masa berlaku jaminan. Masa berlaku jaminan sanggahan diatur berlaku 30 hari kalender sejak diterbitkan. Jaminan sanggahan hanya dapat diterbitkan pada masa sanggahan. (Berdasarkan Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia Pengadaan poin 7 (2) Jaminan Sanggahan – halaman 13);<br>
-                                    3. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) Nilai Jaminan Sanggahan adalah minimal 1% (satu persen) dari nilai total penawaran Peserta Proses Pemilihan yang melakukan sanggahan;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) Masa berlaku Jaminan Sanggahan adalah minimal 30 (tiga puluh) hari kalender sejak tanggal tanggal diterbitkan. Jaminan sanggahan hanya dapat diterbitkan pada masa sanggahan.</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">3) Alamat penyerahan dokumen asli Jaminan sebagaimana dimaksud dalam alamat korespondensi pada poin 2 di atas (Panitia Pengadaan).</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan nilai jaminan yang dipersyaratkan, Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan sanggahan adalah sebesar 1% dari nilai total penawaran peserta pemilihan yang melakukan sanggahan. (Berdasarkan Pedoman Pengadaan Barang/Jasa Bab B. Ketentuan Umum Jaminan – halaman 39);</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan masa berlaku jaminan. Masa berlaku jaminan sanggahan diatur berlaku 30 hari kalender sejak diterbitkan. Jaminan sanggahan hanya dapat diterbitkan pada masa sanggahan. (Berdasarkan Prosedur Persiapan dan Pelaksanaan Pemilihan Penyedia Pengadaan poin 7 (2) Jaminan Sanggahan – halaman 13);</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">19</td>
                                 <td>Jaminan Penawaran</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh : (jika dipersyaratkan)</p>
-                                    <p class="text-ikpp-merah mb-4">1. peserta pemilihan wajib menyampaikan <strong>Jaminan Penawaran</strong> dalam proses pemilihan penyedia ini bersamaan dengan penyerahan Penawaran Teknis dan Harga;<br>
-                                    2. nilai Jaminan Penawaran adalah sebesar Rp...<br>
-                                    3. masa berlaku jaminan penawaran adalah selama 120 (Seratus dua puluh) hari kalender terhitung sejak tanggal batas penyerahan penawaran;<br>
-                                    4. batas waktu penyerahan dokumen asli Jaminan Penawaran adalah sama dengan batas waktu penyerahan penawaran yang ditentukan oleh Panitia Pengadaan;<br>
-                                    5. Alamat penyerahan dokumen asli Jaminan sebagaimana dimaksud dalam alamat korespondensi pada poin 2 di atas (Panitia Pengadaan).</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;<br>
-                                    2. menyampaikan nilai jaminan yang dipersyaratkan, bisa dalam nilai absolute atau dalam persentase. Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan penawaran adalah 1-3% dari nilai total HPS;<br>
-                                    3. menyampaikan masa berlaku jaminan penawaran. Ketentuan masa berlaku jaminan penawaran adalah masa berlaku dokumen penawaran yang telah ditetapkan oleh Panitia Pengadaan ditambah minimal 30 (tiga puluh) hari kalender;<br>
-                                    4. menyampaikan batas waktu penerimaan dokumen aslinya Jaminan;<br>
-                                    5. menyampaikan alamat korespondensi penyerahan dokumen asli Jaminan<br><br>
-                                    Jika Jaminan Penawaran tidak dipersyaratkan, maka poin ini dihapus.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh : (jika dipersyaratkan)</div>
+                                    <div class="pb-avoid text-ikpp-merah">1. peserta pemilihan wajib menyampaikan <strong>Jaminan Penawaran</strong> dalam proses pemilihan penyedia ini bersamaan dengan penyerahan Penawaran Teknis dan Harga;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2. nilai Jaminan Penawaran adalah sebesar Rp...</div>
+                                    <div class="pb-avoid text-ikpp-merah">3. masa berlaku jaminan penawaran adalah selama 120 (Seratus dua puluh) hari kalender terhitung sejak tanggal batas penyerahan penawaran;</div>
+                                    <div class="pb-avoid text-ikpp-merah">4. batas waktu penyerahan dokumen asli Jaminan Penawaran adalah sama dengan batas waktu penyerahan penawaran yang ditentukan oleh Panitia Pengadaan;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">5. Alamat penyerahan dokumen asli Jaminan sebagaimana dimaksud dalam alamat korespondensi pada poin 2 di atas (Panitia Pengadaan).</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan nilai jaminan yang dipersyaratkan, bisa dalam nilai absolute atau dalam persentase. Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan penawaran adalah 1-3% dari nilai total HPS;</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. menyampaikan masa berlaku jaminan penawaran. Ketentuan masa berlaku jaminan penawaran adalah masa berlaku dokumen penawaran yang telah ditetapkan oleh Panitia Pengadaan ditambah minimal 30 (tiga puluh) hari kalender;</div>
+                                    <div class="pb-avoid text-ikpp-biru">4. menyampaikan batas waktu penerimaan dokumen aslinya Jaminan;</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">5. menyampaikan alamat korespondensi penyerahan dokumen asli Jaminan</div>
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Jika Jaminan Penawaran tidak dipersyaratkan, maka poin ini dihapus.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">20</td>
                                 <td>Jaminan Uang Muka</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh : (jika dipersyaratkan)</p>
-                                    <p class="text-ikpp-merah mb-4">1) Nilai Jaminan Uang Muka adalah sama dengan nilai uang muka yang disebutkan dalam Perjanjian/Order Pembelian;<br>
-                                    2) masa berlaku Jaminan Uang Muka adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;<br>
-                                    3) dokumen asli jaminan uang muka dapat diserahkan kepada PT Semen Padang setelah Perjanjian ditandatangani lengkap oleh Penyedia dan PT Semen Padang, bersamaan dengan kelengkapan dokumen penagihan uang muka;<br>
-                                    4) dokumen asli jaminan uang muka dapat diambil Kembali setelah terjadi serah terima barang/jasa;<br>
-                                    5) Alamat penyerahan dokumen asli Jaminan akan diinformasikan pada tahap Finalisasi Kontrak.</p>
-                                    <p class="text-ikpp-biru">Teknis dan tata cara pengisian:<br>
-                                    1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak;<br>
-                                    2. menyampaikan nilai atau presentase jaminan uang muka yang dipersyaratkan;<br>
-                                    3. berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan uang muka adalah sama dengan nilai uang muka yang akan disepakati;<br>
-                                    4. menyampaikan masa berlaku jaminan;<br>
-                                    5. menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;<br>
-                                    6. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan.<br><br>
-                                    Jika Jaminan Uang Muka tidak dipersyaratkan, maka poin ini dihapus.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh : (jika dipersyaratkan)</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) Nilai Jaminan Uang Muka adalah sama dengan nilai uang muka yang disebutkan dalam Perjanjian/Order Pembelian;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) masa berlaku Jaminan Uang Muka adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;</div>
+                                    <div class="pb-avoid text-ikpp-merah">3) dokumen asli jaminan uang muka dapat diserahkan kepada PT Semen Padang setelah Perjanjian ditandatangani lengkap oleh Penyedia dan PT Semen Padang, bersamaan dengan kelengkapan dokumen penagihan uang muka;</div>
+                                    <div class="pb-avoid text-ikpp-merah">4) dokumen asli jaminan uang muka dapat diambil Kembali setelah terjadi serah terima barang/jasa;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">5) Alamat penyerahan dokumen asli Jaminan akan diinformasikan pada tahap Finalisasi Kontrak.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis dan tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan nilai atau presentase jaminan uang muka yang dipersyaratkan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan uang muka adalah sama dengan nilai uang muka yang akan disepakati;</div>
+                                    <div class="pb-avoid text-ikpp-biru">4. menyampaikan masa berlaku jaminan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">5. menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">6. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan.</div>
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Jika Jaminan Uang Muka tidak dipersyaratkan, maka poin ini dihapus.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">21</td>
                                 <td>Jaminan Pelaksanaan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh : (Jika dipersyaratkan)</p>
-                                    <p class="text-ikpp-merah mb-4">1) nilai Jaminan Pelaksanaan adalah 5% (lima persen) dari nilai total yang disebutkan dalam Perjanjian/Order Pembelian;<br>
-                                    2) masa berlaku Pelaksanaan adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;<br>
-                                    3) dokumen asli jaminan pelaksanaan diserahkan kepada PT Semen Padang setelah Perjanjian ditandatangani lengkap oleh Penyedia dan PT Semen Padang, dan sebelum pekerjaan dimulai;<br>
-                                    4) dokumen asli jaminan pelaksanaan dapat diambil setelah terjadi serah terima barang/jasa;<br>
-                                    5) Alamat penyerahan dokumen asli Jaminan akan diinformasikan pada tahap Finalisasi Kontrak.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;<br>
-                                    2. menyampaikan nilai jaminan yang dipersyaratkan. Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan pelaksanaan adalah 5-10% dari nilai total Perjanjian/Order Pembelian;<br>
-                                    3. khusus untuk batu bara atau Perjanjian di atas 1 tahun (di luar Perjanjian Jasa Pekerjaan Konstruksi) dihitung dari nilai kewajiban suplai per bulan;<br>
-                                    4. menyampaikan masa berlaku jaminan;<br>
-                                    5. menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;<br>
-                                    6. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan (Fungsi Pelaksana).</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh : (Jika dipersyaratkan)</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) nilai Jaminan Pelaksanaan adalah 5% (lima persen) dari nilai total yang disebutkan dalam Perjanjian/Order Pembelian;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) masa berlaku Pelaksanaan adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;</div>
+                                    <div class="pb-avoid text-ikpp-merah">3) dokumen asli jaminan pelaksanaan diserahkan kepada PT Semen Padang setelah Perjanjian ditandatangani lengkap oleh Penyedia dan PT Semen Padang, dan sebelum pekerjaan dimulai;</div>
+                                    <div class="pb-avoid text-ikpp-merah">4) dokumen asli jaminan pelaksanaan dapat diambil setelah terjadi serah terima barang/jasa;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">5) Alamat penyerahan dokumen asli Jaminan akan diinformasikan pada tahap Finalisasi Kontrak.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan nilai jaminan yang dipersyaratkan. Berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan pelaksanaan adalah 5-10% dari nilai total Perjanjian/Order Pembelian;</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. khusus untuk batu bara atau Perjanjian di atas 1 tahun (di luar Perjanjian Jasa Pekerjaan Konstruksi) dihitung dari nilai kewajiban suplai per bulan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">4. menyampaikan masa berlaku jaminan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">5. menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;</div>
+                                    <div class="pb-avoid text-ikpp-biru">6. menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan (Fungsi Pelaksana).</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">22</td>
                                 <td>Jaminan Pemeliharaan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">1) nilai Jaminan Pemeliharaan adalah 5% (lima persen) dari nilai total yang disebutkan dalam Perjanjian/Order Pembelian;<br>
-                                    2) masa berlaku Pemeliharaan adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;<br>
-                                    3) dokumen asli Jaminan Pemeliharaan diserahkan kepada PT Semen Padang pada saat berita acara serah terima progress 100% ditandatangani oleh Penyedia dan PT Semen Padang, dan sebelum masa pemeliharaan dimulai;<br>
-                                    4) dokumen asli jaminan pemeliharaan dapat diambil setelah masa pemeliharaan selesai dan berita acara serah terima masa pemeliharaan ditandatangani;<br>
-                                    5) Alamat penyerahan dokumen asli Jaminan : akan diinformasikan pada tahap Finalisasi Kontrak.</p>
-                                    <p class="text-ikpp-biru">Teknis dan tata cara pengisian:<br>
-                                    1) menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;<br>
-                                    2) menyampaikan nilai jaminan yang dipersyaratkan.<br>
-                                    3) berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan pelaksanaan adalah sebesar 5% dari nilai Perjanjian / Order Pembelian;<br>
-                                    4) menyampaikan masa berlaku jaminan;<br>
-                                    5) menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;<br>
-                                    6) menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan (Fungsi Pelaksana)<br><br>
-                                    Jika Jaminan Pemeliharaan tidak dipersyaratkan, maka poin ini dihapus.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) nilai Jaminan Pemeliharaan adalah 5% (lima persen) dari nilai total yang disebutkan dalam Perjanjian/Order Pembelian;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) masa berlaku Pemeliharaan adalah masa berlaku Perjanjian/Order Pembelian ditambah 30 (tiga puluh) hari kalender;</div>
+                                    <div class="pb-avoid text-ikpp-merah">3) dokumen asli Jaminan Pemeliharaan diserahkan kepada PT Semen Padang pada saat berita acara serah terima progress 100% ditandatangani oleh Penyedia dan PT Semen Padang, dan sebelum masa pemeliharaan dimulai;</div>
+                                    <div class="pb-avoid text-ikpp-merah">4) dokumen asli jaminan pemeliharaan dapat diambil setelah masa pemeliharaan selesai dan berita acara serah terima masa pemeliharaan ditandatangani;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">5) Alamat penyerahan dokumen asli Jaminan akan diinformasikan pada tahap Finalisasi Kontrak.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis dan tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1) menyampaikan apakah Jaminan ini dipersyaratkan atau tidak, jika tidak persyaratkan, dapat disampaikan Jaminan ini tidak dipersyaratkan dalam Pengadaan ini;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2) menyampaikan nilai jaminan yang dipersyaratkan.</div>
+                                    <div class="pb-avoid text-ikpp-biru">3) berdasarkan ketentuan umum jaminan pada Pedoman Pengadaan Barang/jasa, nilai jaminan pelaksanaan adalah sebesar 5% dari nilai Perjanjian / Order Pembelian;</div>
+                                    <div class="pb-avoid text-ikpp-biru">4) menyampaikan masa berlaku jaminan;</div>
+                                    <div class="pb-avoid text-ikpp-biru">5) menyampaikan kapan Jaminan harus diserahkan dan kapan Jaminan bisa diambil;</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">6) menyampaikan alamat korespondensi penyerahan dan pengambilan dokumen asli Jaminan (Fungsi Pelaksana)</div>
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Jika Jaminan Pemeliharaan tidak dipersyaratkan, maka poin ini dihapus.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">23</td>
                                 <td>Ketentuan Penerbitan Jaminan</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh :</p>
-                                    <p class="text-ikpp-merah mb-4">1) Jaminan harus berupa bank garansi tanpa syarat dan tidak dapat ditarik kembali;<br>
-                                    2) Jaminan berupa Bank Garansi diterbitkan oleh Bank BUMN;<br>
-                                    3) Jenis mata uang jaminan harus sama dengan jenis mata uang yang digunakan dalam penawaran harga proses pemilihan ini;</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan bentuk Jaminan yang dipersyaratkan, apakah dalam bentuk bank garansi atau surety bond. Sifat bank garansi adalah tanpa syarat dan persetujuan dari pihak Penyedia;<br>
-                                    2. menyampaikan ketentuan Jaminan diterbitkan melalui lembaga keuangan seperti apa, dapat menyebutkan Bank BUMN, Bank Umum Swasta Nasional, dan lain-lain sesuai ketentuan Pedoman yang berlaku;<br>
-                                    3. menyampaikan mata uang Jaminan yang dipersyaratkan.<br><br>
-                                    Keterangan penting:<br>
-                                    Untuk pengadaan dengan nilai dan risiko besar dapat menggunakan opsional Jaminan selain Bank BUMN sesuai dengan diatur dalam Pedoman/Prosedur.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh :</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) Jaminan harus berupa bank garansi tanpa syarat dan tidak dapat ditarik kembali;</div>
+                                    <div class="pb-avoid text-ikpp-merah">2) Jaminan berupa Bank Garansi diterbitkan oleh Bank BUMN;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">3) Jenis mata uang jaminan harus sama dengan jenis mata uang yang digunakan dalam penawaran harga proses pemilihan ini;</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan bentuk Jaminan yang dipersyaratkan, apakah dalam bentuk bank garansi atau surety bond. Sifat bank garansi adalah tanpa syarat dan persetujuan dari pihak Penyedia;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. menyampaikan ketentuan Jaminan diterbitkan melalui lembaga keuangan seperti apa, dapat menyebutkan Bank BUMN, Bank Umum Swasta Nasional, dan lain-lain sesuai ketentuan Pedoman yang berlaku;</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">3. menyampaikan mata uang Jaminan yang dipersyaratkan.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Keterangan penting:</div>
+                                    <div class="pb-avoid text-ikpp-biru">Untuk pengadaan dengan nilai dan risiko besar dapat menggunakan opsional Jaminan selain Bank BUMN sesuai dengan diatur dalam Pedoman/Prosedur.</div>
                                 </td>
                             </tr>
-                            <tr class="long-row">
+                            <tr>
                                 <td style="text-align: center;">24</td>
                                 <td>Ketentuan Pembayaran (Term of Payment)</td>
                                 <td>
-                                    <p class="text-ikpp-merah underline mb-1">Contoh : (Pengadaan Barang)</p>
-                                    <p class="text-ikpp-merah mb-4">1) ketentuan pembayaran akan ditentukan dan disampaikan lebih detail pada Perjanjian yang akan ditandatangani Penyedia dan PT Semen Padang;<br>
-                                    2) pembayaran atas barang yang telah diterima dilakukan melalui TT (telegraphic transfer), Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan.</p>
-                                    <p class="mb-4">Informasi tambahan :<br>
-                                    Penyedia dapat menggunakan opsi pembayaran lebih awal dengan fasilitas Supply Chain Financing (SCF)/fasilitas sejenis dengan salah satu bank yang bekerjasama dengan PT Semen Padang.</p>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian:<br>
-                                    1. menyampaikan ketentuan termin pembayaran. Menetapkan ketentuan setiap tahapan termin pembayaran dan nilai/persentase pembayaran;<br>
-                                    2. jika ditentukan adanya uang muka, maka perlu disebutkan besaran nilai uang muka, untuk persyaratan uang muka diatur dalam poin Jaminan Uang Muka;<br>
-                                    3. menyampaikan metode pembayaran, menggunakan LC/SKBDN atau TT (Telegraphic Transfer);<br>
-                                    4. menyampaikan opsi penggunaan fasilitas supplier financing / SCF / sejenisnya SCF (jika diperlukan);<br>
-                                    5. menyampaikan tempo pembayaran beserta acuan perhitungan pembayaran dihitung sejak kapan. Contoh: Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan.<br><br>
-                                    Keterangan penting:<br>
-                                    Untuk kelengkapan dokumen penagihan dapat dicantumkan pada Rancangan Perjanjian.</p>
+                                    <div class="pb-avoid text-ikpp-merah underline mb-1">Contoh : (Pengadaan Barang)</div>
+                                    <div class="pb-avoid text-ikpp-merah">1) ketentuan pembayaran akan ditentukan dan disampaikan lebih detail pada Perjanjian yang akan ditandatangani Penyedia dan PT Semen Padang;</div>
+                                    <div class="pb-avoid text-ikpp-merah mb-4">2) pembayaran atas barang yang telah diterima dilakukan melalui TT (telegraphic transfer), Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan.</div>
+                                    
+                                    <div class="pb-avoid mb-2">Informasi tambahan :<br>
+                                    Penyedia dapat menggunakan opsi pembayaran lebih awal dengan fasilitas Supply Chain Financing (SCF)/fasilitas sejenis dengan salah satu bank yang bekerjasama dengan PT Semen Padang.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian:</div>
+                                    <div class="pb-avoid text-ikpp-biru">1. menyampaikan ketentuan termin pembayaran. Menetapkan ketentuan setiap tahapan termin pembayaran dan nilai/persentase pembayaran;</div>
+                                    <div class="pb-avoid text-ikpp-biru">2. jika ditentukan adanya uang muka, maka perlu disebutkan besaran nilai uang muka, untuk persyaratan uang muka diatur dalam poin Jaminan Uang Muka;</div>
+                                    <div class="pb-avoid text-ikpp-biru">3. menyampaikan metode pembayaran, menggunakan LC/SKBDN atau TT (Telegraphic Transfer);</div>
+                                    <div class="pb-avoid text-ikpp-biru">4. menyampaikan opsi penggunaan fasilitas supplier financing / SCF / sejenisnya SCF (jika diperlukan);</div>
+                                    <div class="pb-avoid text-ikpp-biru mb-4">5. menyampaikan tempo pembayaran beserta acuan perhitungan pembayaran dihitung sejak kapan. Contoh: Perusahaan akan membayar tagihan atas pekerjaan dalam jangka waktu paling lambat 90 (sembilan puluh) hari kalender sejak dokumen tagihan dinyatakan lengkap dan benar oleh Bagian Pembayaran Perusahaan.</div>
+                                    
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Keterangan penting:</div>
+                                    <div class="pb-avoid text-ikpp-biru">Untuk kelengkapan dokumen penagihan dapat dicantumkan pada Rancangan Perjanjian.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">25</td>
                                 <td>Biaya proses pengadaan</td>
                                 <td>
-                                    <p>Semua biaya yang dikeluarkan oleh peserta pemilihan untuk menyiapkan dokumen penawaran dan mengikuti proses pengadaan ditanggung oleh peserta pemilihan dan tidak mendapat penggantian dari Panitia Pengadaan.</p>
+                                    <div class="pb-avoid">Semua biaya yang dikeluarkan oleh peserta pemilihan untuk menyiapkan dokumen penawaran dan mengikuti proses pengadaan ditanggung oleh peserta pemilihan dan tidak mendapat penggantian dari Panitia Pengadaan.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">26</td>
                                 <td>Larangan Persengkongkolan</td>
                                 <td>
-                                    <p>Sesuai dengan Undang-Undang Nomor 5 Tahun 1999 tentang Larang Praktek Monopoli dan Persaingan Usaha Tidak Sehat.</p>
+                                    <div class="pb-avoid">Sesuai dengan Undang-Undang Nomor 5 Tahun 1999 tentang Larang Praktek Monopoli dan Persaingan Usaha Tidak Sehat.</div>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: center;">27</td>
                                 <td>Ketentuan lain-lain</td>
                                 <td>
-                                    <p class="text-ikpp-biru">Teknis tata cara pengisian :<br>
-                                    Diisi ketentuan dan persyaratan lain yang perlu diatur dalam proses pemilihan ini, seperti misalnya terkait transaksi akan dilakukan melalui aplikasi PADI UMKM atau ketentuan lainnya.<br><br>
-                                    Keterangan penting:<br>
-                                    Jika diperlukan ketentuan/persyaratan tambahan dengan menggunakan kolom ini, perlu dipastikan apakah persyaratan tersebut dapat dilakukan evaluasi secara terukur atau dapat divalidasi.</p>
+                                    <div class="pb-avoid text-ikpp-biru">Teknis tata cara pengisian :<br>
+                                    Diisi ketentuan dan persyaratan lain yang perlu diatur dalam proses pemilihan ini, seperti misalnya terkait transaksi akan dilakukan melalui aplikasi PADI UMKM atau ketentuan lainnya.</div>
+                                    <br>
+                                    <div class="pb-avoid text-ikpp-biru font-bold">Keterangan penting:</div>
+                                    <div class="pb-avoid text-ikpp-biru">Jika diperlukan ketentuan/persyaratan tambahan dengan menggunakan kolom ini, perlu dipastikan apakah persyaratan tersebut dapat dilakukan evaluasi secara terukur atau dapat divalidasi.</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -703,6 +758,7 @@
 
             </div>
         </div>
+    </div>
 
     <!-- SCRIPT LOGIC -->
     <script>
@@ -746,30 +802,54 @@
             updatePreviewData();
         });
 
+        // ================= KUNCI UTAMA ANTI-MELAR & AUTO PAGE-BREAK =================
         function executeDownloadPDF() {
             const elemenContainer = document.getElementById('dokumenA4Container');
+            const previewScroll = document.getElementById('previewScrollWrapper');
+
+            // 1. Reset posisi scroll ke atas agar html2canvas tidak mulai merender dari tengah halaman
+            if(previewScroll) {
+                previewScroll.scrollTop = 0;
+                previewScroll.scrollLeft = 0;
+                previewScroll.classList.remove('items-center');
+            }
+            elemenContainer.classList.remove('items-center');
+
+            // 2. Aktifkan Mode Cetak 
             elemenContainer.classList.add('pdf-mode-active');
             
             const nomorFile = document.getElementById('inNoIkpp').value ? document.getElementById('inNoIkpp').value.replace(/\//g, '_') : 'Draft';
             
+            // 3. Konfigurasi jsPDF
             const opsiPDF = {
-                margin:       [0, 0, 0, 0],
+                margin:       15, 
                 filename:     `Lembar_Persetujuan_IKPP_${nomorFile}.pdf`,
                 image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0, 
+                    windowWidth: document.documentElement.offsetWidth 
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'] }
             };
 
-            window.scrollTo(0, 0);
+            // Memanggil proses render PDF
             html2pdf().set(opsiPDF).from(elemenContainer).save().then(() => {
+                
+                // 4. Setelah selesai diunduh, kembalikan tampilan web seperti semula
                 elemenContainer.classList.remove('pdf-mode-active');
+                elemenContainer.classList.add('items-center');
+                if(previewScroll) {
+                    previewScroll.classList.add('items-center');
+                }
             });
         }
 
         document.getElementById('btnGeneratePDF').addEventListener('click', () => {
             updatePreviewData();
-            setTimeout(() => { executeDownloadPDF(); }, 500);
+            setTimeout(() => { executeDownloadPDF(); }, 500); 
         });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', () => {

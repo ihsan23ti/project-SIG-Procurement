@@ -115,6 +115,10 @@
             text-align: center;
             font-weight: bold;
         }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -167,8 +171,8 @@
                     <input type="date" id="inp-tanggal" class="input-field text-gray-600">
                 </div>
 
-                <!-- Hasil Pemilihan -->
-                <div>
+                <!-- Hasil Pemilihan (Dropdown) -->
+                <div class="pb-2 border-b border-gray-100">
                     <label class="input-label">Hasil Pemilihan</label>
                     <select id="inp-hasil" class="input-field bg-white cursor-pointer font-medium">
                         <option value="Ada Pemenang">Ada Pemenang</option>
@@ -176,38 +180,51 @@
                     </select>
                 </div>
 
-                <!-- Data Pemenang Title -->
-                <div class="pt-2">
-                    <h2 class="text-[15px] font-bold text-gray-900 title-serif">Data Pemenang</h2>
-                </div>
-
-                <div>
-                    <label class="input-label">Nama Pemenang</label>
-                    <input type="text" id="inp-pemenang" class="input-field" placeholder="Masukkan nama pemenang">
-                </div>
-
-                <!-- Peringkat Peserta -->
-                <div class="pt-2">
-                    <h2 class="text-[14px] font-bold text-gray-900 mb-2 title-serif">Peringkat Peserta Pemilihan</h2>
-
-                    <div id="peserta-container" class="space-y-2 mb-3">
-                        <!-- Baris Pertama Default -->
-                        <div class="flex gap-2 items-center row-peserta">
-                            <input type="number" class="input-field w-16 text-center inp-peringkat" value="1" min="1">
-                            <input type="text" class="input-field flex-1 inp-nama-peserta"
-                                placeholder="Nama peserta pemilihan">
-                            <button type="button"
-                                class="bg-[#e11d48] hover:bg-red-700 text-white p-2 rounded text-sm transition-colors btn-hapus"
-                                onclick="hapusPeserta(this)">
-                                <i class="ph ph-x font-bold"></i>
-                            </button>
-                        </div>
+                <!-- ================= WAPPER JIKA ADA PEMENANG ================= -->
+                <div id="section-ada-pemenang" class="space-y-4">
+                    <div class="pt-2">
+                        <h2 class="text-[15px] font-bold text-gray-900 title-serif">Data Pemenang</h2>
                     </div>
 
-                    <button type="button" onclick="tambahPeserta()"
-                        class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-semibold py-1.5 px-3 rounded flex items-center gap-1 transition-colors">
-                        <i class="ph ph-plus font-bold"></i> Tambah Peserta
-                    </button>
+                    <div>
+                        <label class="input-label">Nama Pemenang</label>
+                        <input type="text" id="inp-pemenang" class="input-field" placeholder="Masukkan nama pemenang">
+                    </div>
+
+                    <!-- Peringkat Peserta -->
+                    <div class="pt-2">
+                        <h2 class="text-[14px] font-bold text-gray-900 mb-2 title-serif">Peringkat Peserta Pemilihan</h2>
+
+                        <div id="peserta-container" class="space-y-2 mb-3">
+                            <!-- Baris Pertama Default -->
+                            <div class="flex gap-2 items-center row-peserta">
+                                <input type="number" class="input-field w-16 text-center inp-peringkat" value="1" min="1">
+                                <input type="text" class="input-field flex-1 inp-nama-peserta"
+                                    placeholder="Nama peserta pemilihan">
+                                <button type="button"
+                                    class="bg-[#e11d48] hover:bg-red-700 text-white p-2 rounded text-sm transition-colors btn-hapus"
+                                    onclick="hapusPeserta(this)">
+                                    <i class="ph ph-x font-bold"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="tambahPeserta()"
+                            class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-semibold py-1.5 px-3 rounded flex items-center gap-1 transition-colors">
+                            <i class="ph ph-plus font-bold"></i> Tambah Peserta
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ================= WAPPER JIKA TIDAK ADA PEMENANG ================= -->
+                <div id="section-tidak-ada-pemenang" class="space-y-4 hidden">
+                    <div class="pt-2">
+                        <h2 class="text-[15px] font-bold text-gray-900 title-serif">Penjelasan (Batal)</h2>
+                    </div>
+                    <div>
+                        <label class="input-label">Alasan Tidak Ada Pemenang</label>
+                        <textarea id="inp-penjelasan" class="input-field" rows="4" placeholder="Contoh: Tidak didapatkan peserta yang memenuhi persyaratan. Akan dilakukan proses pemilihan ulang"></textarea>
+                    </div>
                 </div>
 
                 <!-- Tombol Action -->
@@ -234,7 +251,7 @@
             <div class="w-full max-w-[210mm] flex justify-between items-center">
                 <div>
                     <h2 class="text-[17px] font-bold text-gray-900 title-serif">Preview Surat</h2>
-                    <p class="text-[11px] text-gray-500 mt-0.5">Tampilan akan mengikuti data formulir</p>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Tampilan otomatis menyesuaikan pilihanmu</p>
                 </div>
             </div>
         </div>
@@ -245,9 +262,8 @@
                 <div class="a4-paper">
 
                     <!-- Logo SIG -->
-                    <div style="position: absolute; top: 12mm; left: 10mm;">
-                        <img src="./logo/logosig.png" alt="Logo SIG"
-                            style="height: 65px; width: auto; object-fit: contain;">
+                    <div style="margin-bottom: 10px; margin-left: -5mm;">
+                        <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
                     </div>
 
                     <!-- Header -->
@@ -256,19 +272,17 @@
                             PENGUMUMAN HASIL PEMILIHAN PENYEDIA
                         </div>
                         <div style="font-size: 11pt; margin-top: 2px;">
-                            Nomor: <span id="out-nomor">..............................</span>
+                            Nomor: <span id="out-nomor" style="color: #dc2626; font-style: italic;">..............................</span>
                         </div>
                     </div>
 
-                    <!-- Paragraf Pembuka -->
-                    <div style="text-align: justify; margin-bottom: 20px;">
-                        Berdasarkan hasil evaluasi yang dilakukan oleh Panitia Pengadaan untuk Pemilihan Penyedia <span
-                            id="out-barang-text">..............................</span>, maka didapatkan peringkat
-                        sebagai berikut:
+                    <!-- Paragraf Pembuka Dinamis -->
+                    <div style="text-align: justify; margin-bottom: 20px;" id="paragraf-pembuka">
+                        <!-- JS fills this -->
                     </div>
 
-                    <!-- Tabel Peringkat -->
-                    <table class="pdf-table">
+                    <!-- Tabel Peringkat (Disembunyikan jika tidak ada pemenang) -->
+                    <table class="pdf-table" id="tabel-peringkat-container">
                         <thead>
                             <tr>
                                 <th style="width: 30%;">Peringkat</th>
@@ -277,37 +291,44 @@
                         </thead>
                         <tbody id="out-tbody-peringkat">
                             <!-- JS akan mengisi area ini -->
-                            <tr>
-                                <td style="text-align: center;">1</td>
-                                <td style="padding-left: 10px;"></td>
-                            </tr>
                         </tbody>
                     </table>
 
-                    <div style="text-align: left; margin-bottom: 15px;">
+                    <div style="text-align: left; margin-bottom: 15px;" id="teks-menetapkan">
                         dan Panitia Pengadaan menetapkan
                     </div>
 
-                    <div style="text-align: left; margin-bottom: 20px;">
-                        <b>Nama Pemenang &nbsp;&nbsp;&nbsp;&nbsp;: &nbsp;&nbsp;<span
-                                id="out-pemenang">..............................</span></b>
-                    </div>
+                    <!-- Layout Hasil Pemenang & Penjelasan Dinamis -->
+                    <table style="width: 100%; border: none; font-size: 11pt; line-height: 1.5; margin-bottom: 30px;">
+                        <tr id="row-nama-pemenang">
+                            <td style="width: 160px; font-weight: bold; vertical-align: top;">Nama Pemenang</td>
+                            <td style="width: 20px; font-weight: bold; vertical-align: top;">:</td>
+                            <td style="font-weight: bold; vertical-align: top;" id="out-pemenang">..............................</td>
+                        </tr>
+                        <tr id="row-penjelasan" style="display: none;">
+                            <td style="width: 160px; font-weight: bold; vertical-align: top;">Penjelasan</td>
+                            <td style="width: 20px; font-weight: bold; vertical-align: top;">:</td>
+                            <td style="font-style: italic; vertical-align: top; text-align: justify; color: #dc2626;" id="out-penjelasan">
+                                <!-- JS Fills this -->
+                            </td>
+                        </tr>
+                    </table>
 
                     <div style="text-align: justify; margin-bottom: 50px;">
                         Demikian disampaikan, atas partisipasi Peserta Pemilihan disampaikan terima kasih.
                     </div>
 
-                    <!-- Area Tanda Tangan -->
+                    <!-- Area Tanda Tangan Sesuai Referensi Gambar -->
                     <div style="display: flex; justify-content: flex-end; text-align: center; margin-right: 20px;">
-                        <div style="width: 250px;">
-                            <span id="out-tempat">........</span>, <span
-                                id="out-tanggal">....................</span><br>
-                            Panitia Pengadaan
+                        <div style="width: 300px;">
+                            <span id="out-tempat" style="color: #dc2626; font-style: italic;">Tempat</span>, 
+                            <span id="out-tanggal" style="color: #dc2626; font-style: italic;">tanggal/bulan/tahun</span><br>
+                            
+                            Panitia Pengadaan <span id="out-panitia-signature" style="color: #dc2626; font-style: italic;">(diisi nama panitia pengadaannya)</span>
                             <br><br><br><br><br><br>
-                            Ketua Panitia<br>
-                            <div style="margin-top: 5px;">
-                                <b id="out-ketua"></b>
-                            </div>
+                            
+                            <u><b id="out-ketua" style="color: #dc2626; font-style: italic;">(Diisi nama Ketua Panitia Pengadaan)</b></u><br>
+                            Ketua Panitia
                         </div>
                     </div>
 
@@ -336,6 +357,19 @@
         const pesertaContainer = document.getElementById('peserta-container');
         const inpBarang = document.getElementById('inp-barang');
         const inpPanitia = document.getElementById('inp-panitia');
+        const inpHasil = document.getElementById('inp-hasil');
+
+        // Logic Toggle Hasil Pemenang
+        inpHasil.addEventListener('change', function () {
+            if (this.value === 'Ada Pemenang') {
+                document.getElementById('section-ada-pemenang').classList.remove('hidden');
+                document.getElementById('section-tidak-ada-pemenang').classList.add('hidden');
+            } else {
+                document.getElementById('section-ada-pemenang').classList.add('hidden');
+                document.getElementById('section-tidak-ada-pemenang').classList.remove('hidden');
+            }
+            updatePreview();
+        });
 
         // Logic Auto-fill Panitia
         inpBarang.addEventListener('input', function () {
@@ -365,8 +399,6 @@
 
         function hapusPeserta(btn) {
             btn.closest('.row-peserta').remove();
-
-            // Re-urutkan nomor otomatis
             const rows = pesertaContainer.querySelectorAll('.row-peserta');
             rows.forEach((row, index) => {
                 row.querySelector('.inp-peringkat').value = index + 1;
@@ -376,55 +408,119 @@
 
         // Format Tanggal Indo
         function formatTanggalIndo(dateStr) {
-            if (!dateStr) return '....................';
+            if (!dateStr) return '';
             const d = new Date(dateStr);
             const blnArr = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             return `${d.getDate()} ${blnArr[d.getMonth()]} ${d.getFullYear()}`;
         }
 
-        // Update Live Preview PDF
+        // === FUNGSI UTAMA UPDATE PREVIEW PDF ===
         function updatePreview() {
             const val = (id) => document.getElementById(id).value.trim();
-            const setTxt = (outId, value, fallback) => {
-                document.getElementById(outId).innerText = value ? value : fallback;
+            
+            // Helper untuk set teks & warna merah jika kosong
+            const applyField = (id, value, fallback) => {
+                const el = document.getElementById(id);
+                if (value) {
+                    el.innerText = value;
+                    el.style.color = '#000';
+                    el.style.fontStyle = 'normal';
+                } else {
+                    el.innerText = fallback;
+                    el.style.color = '#dc2626';
+                    el.style.fontStyle = 'italic';
+                }
             };
 
-            setTxt('out-nomor', val('inp-nomor'), '..............................');
+            applyField('out-nomor', val('inp-nomor'), 'Nomor Surat');
 
-            // Barang pada teks paragraf
-            let barangVal = val('inp-barang');
-            setTxt('out-barang-text', barangVal, '..............................');
+            const hasil = val('inp-hasil');
+            const barang = val('inp-barang');
+            
+            // Format HTML khusus untuk nama barang di paragraf
+            const namaBarangHTML = barang ? `<i>${barang}</i>` : `<span style="color:#dc2626; font-style:italic;">(diisi nama Pengadaan yang diproses)</span>`;
 
-            setTxt('out-pemenang', val('inp-pemenang'), '..............................');
-            setTxt('out-tempat', val('inp-tempat'), '........');
-            setTxt('out-tanggal', formatTanggalIndo(val('inp-tanggal')), '....................');
-            setTxt('out-ketua', val('inp-ketua'), '');
+            const paragrafPembuka = document.getElementById('paragraf-pembuka');
+            const tabelPeringkat = document.getElementById('tabel-peringkat-container');
+            const teksMenetapkan = document.getElementById('teks-menetapkan');
+            const rowPenjelasan = document.getElementById('row-penjelasan');
+            const outPemenang = document.getElementById('out-pemenang');
+            
+            // --- JIKA ADA PEMENANG ---
+            if (hasil === 'Ada Pemenang') {
+                paragrafPembuka.innerHTML = `Berdasarkan hasil evaluasi yang dilakukan oleh Panitia Pengadaan untuk Pemilihan Penyedia ${namaBarangHTML}, maka didapatkan peringkat sebagai berikut:`;
+                tabelPeringkat.style.display = 'table';
+                teksMenetapkan.style.display = 'block';
+                rowPenjelasan.style.display = 'none';
+                
+                applyField('out-pemenang', val('inp-pemenang'), '(Diisi nama Pemenang)');
+                outPemenang.style.fontWeight = 'bold'; // Tetap bold
 
-            // Update Tabel Peringkat Dinamis
-            const rows = document.querySelectorAll('.row-peserta');
-            const tbody = document.getElementById('out-tbody-peringkat');
-            tbody.innerHTML = '';
+                // Render Tabel Peringkat
+                const rows = document.querySelectorAll('.row-peserta');
+                const tbody = document.getElementById('out-tbody-peringkat');
+                tbody.innerHTML = '';
 
-            if (rows.length === 0) {
-                tbody.innerHTML = `<tr><td style="text-align: center;">-</td><td></td></tr>`;
-            } else {
-                rows.forEach(row => {
-                    const peringkat = row.querySelector('.inp-peringkat').value || '-';
-                    const nama = row.querySelector('.inp-nama-peserta').value || '';
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="text-align: center;">${peringkat}</td>
-                            <td style="padding-left: 10px;">${nama}</td>
-                        </tr>
-                    `;
-                });
+                if (rows.length === 0) {
+                    tbody.innerHTML = `<tr><td style="text-align: center;">-</td><td></td></tr>`;
+                } else {
+                    rows.forEach(row => {
+                        const peringkat = row.querySelector('.inp-peringkat').value || '-';
+                        const nama = row.querySelector('.inp-nama-peserta').value || '';
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="text-align: center;">${peringkat}</td>
+                                <td style="padding-left: 10px;">${nama}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } 
+            // --- JIKA TIDAK ADA PEMENANG ---
+            else {
+                paragrafPembuka.innerHTML = `Berdasarkan hasil evaluasi yang dilakukan oleh Panitia Pengadaan untuk Pemilihan Penyedia ${namaBarangHTML}, Panitia Pengadaan menetapkan`;
+                tabelPeringkat.style.display = 'none';
+                teksMenetapkan.style.display = 'none';
+                rowPenjelasan.style.display = 'table-row';
+                
+                outPemenang.innerText = 'Tidak Ada';
+                outPemenang.style.color = '#000';
+                outPemenang.style.fontStyle = 'normal';
+                
+                const penjelasan = val('inp-penjelasan');
+                const outPenj = document.getElementById('out-penjelasan');
+                if (penjelasan) {
+                    outPenj.innerText = penjelasan;
+                    outPenj.style.color = '#000';
+                    outPenj.style.fontStyle = 'normal';
+                } else {
+                    outPenj.innerHTML = '(disampaikan penjelasan mengapa tidak ada Pemenang dan langkah yang akan diambil untuk proses berikutnya.)<br>Contoh: Tidak didapatkan peserta yang memenuhi persyaratan. Akan dilakukan proses pemilihan ulang';
+                    outPenj.style.color = '#dc2626';
+                    outPenj.style.fontStyle = 'italic';
+                }
             }
+
+            // --- TANDA TANGAN ---
+            applyField('out-tempat', val('inp-tempat'), 'Tempat');
+            applyField('out-tanggal', val('inp-tanggal') ? formatTanggalIndo(val('inp-tanggal')) : '', 'tanggal/bulan/tahun');
+            
+            // Nama Panitia (kosongkan jika inputnya kosong, jangan render teks "Panitia Pengadaan")
+            const panitiaVal = val('inp-panitia');
+            const signaturePanitia = document.getElementById('out-panitia-signature');
+            if(panitiaVal){
+                signaturePanitia.innerText = '';
+            } else {
+                signaturePanitia.innerText = '(diisi nama panitia pengadaannya)';
+                signaturePanitia.style.color = '#dc2626';
+                signaturePanitia.style.fontStyle = 'italic';
+            }
+            
+            applyField('out-ketua', val('inp-ketua'), '(Diisi nama Ketua Panitia Pengadaan)');
+            document.getElementById('out-ketua').style.fontWeight = 'bold';
         }
 
         // Event Listener untuk semua input form
         formContainer.addEventListener('input', updatePreview);
-        formContainer.addEventListener('change', updatePreview);
 
         // Render Inisial
         updatePreview();
@@ -447,7 +543,7 @@
             });
         });
 
-        // Tombol View PDF (Hanya memberikan alert/efek karena layar sudah terbagi secara live)
+        // Tombol View PDF
         document.getElementById('btnView').addEventListener('click', () => {
             alert('Live preview dokumen sudah tampil di panel sebelah kanan secara otomatis mengikuti data yang Anda ketik.');
         });
