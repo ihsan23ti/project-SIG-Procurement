@@ -192,12 +192,13 @@
 
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-3 mt-4 border-t pt-4">
-                    <button type="button" id="btnView" class="bg-[#2563eb] hover:bg-blue-700 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center transition-colors">
-                        Lihat Hasil
+                    <button type="button" id="btnView" class="bg-[#2563eb] hover:bg-blue-700 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center transition-colors gap-2">
+                        <i class="ph-fill ph-eye text-lg"></i> Lihat Hasil
                     </button>
-                    <button type="button" id="btnGeneratePDF" class="bg-[#16a34a] hover:bg-green-700 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center transition-colors">
-                        Download PDF
-                    </button>
+                    <!-- Tombol diubah untuk langsung membuka tautan OneDrive di tab baru -->
+                    <a href="https://1drv.ms/w/c/bf1bdcf51ba1f1cc/EQ7-r0Z_jZNKs8tQyK8q0zYB529P1xM-856X1_7h2Z9k0w?e=Y7iZ0a" target="_blank" class="bg-[#1f2937] hover:bg-gray-800 text-white rounded-md py-2.5 text-xs font-bold flex items-center justify-center transition-colors gap-2">
+                        <i class="ph-fill ph-file-doc text-lg"></i> Download Template IKPP
+                    </a>
                 </div>
                 
             </form>
@@ -210,7 +211,12 @@
         <!-- Toolbar Dokumen -->
         <div class="w-full flex-none bg-[#2a303c] p-3 px-6 shadow-md flex justify-between items-center z-10">
             <span class="text-white text-sm font-semibold">Preview Dokumen</span>
-            <span class="bg-[#ef4444] text-white text-[10px] font-bold px-2.5 py-1 rounded-full">Ukuran A4</span>
+            <div class="flex items-center gap-3">
+                <span class="bg-[#ef4444] text-white text-[10px] font-bold px-2.5 py-1 rounded-full">Ukuran A4</span>
+                <button type="button" id="btnDownloadToolbar" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1 text-xs transition-colors">
+                    <i class="ph-bold ph-download-simple"></i> Download PDF
+                </button>
+            </div>
         </div>
 
         <div id="previewScrollWrapper" class="flex-1 overflow-y-auto py-8 flex flex-col items-center">
@@ -847,10 +853,11 @@
             });
         }
 
-        document.getElementById('btnGeneratePDF').addEventListener('click', () => {
-            updatePreviewData();
-            setTimeout(() => { executeDownloadPDF(); }, 500); 
-        });
+        // --- DIHAPUS KARENA TOMBOL SUDAH BERUBAH FUNGSI KE LINK ONEDRIVE ---
+        // document.getElementById('btnGeneratePDF').addEventListener('click', () => {
+        //     updatePreviewData();
+        //     setTimeout(() => { executeDownloadPDF(); }, 500); 
+        // });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', () => {
             executeDownloadPDF();

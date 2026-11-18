@@ -32,6 +32,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             color: #000;
             transition: margin 0.3s ease;
+            box-sizing: border-box;
         }
 
         /* Styling Tabel Dokumen dengan border hitam tegas */
@@ -40,6 +41,7 @@
             border-collapse: collapse;
             margin-bottom: 12px;
             font-size: 13px;
+            box-sizing: border-box;
         }
         .doc-table th, .doc-table td {
             border: 1px solid #000;
@@ -65,6 +67,7 @@
             outline: none;
             border-radius: 1px;
             color: #000; 
+            box-sizing: border-box;
         }
         .doc-input:focus {
             border-color: #000;
@@ -158,14 +161,23 @@
         }
 
         /* ================= KUNCI UKURAN PDF ================= */
-        /* Dipanggil 1 detik sebelum proses download agar tidak melar */
         .pdf-mode-active {
             width: 170mm !important; /* 210mm (A4) - 40mm (Margin) */
             max-width: 170mm !important;
-            padding: 0 !important; /* CSS padding dihapus agar tidak terlipat ganda dengan margin jsPDF */
+            padding: 0 5px !important; /* MENGAMANKAN BORDER KANAN AGAR TIDAK TERPOTONG */
             margin: 0 auto !important;
             border: none !important;
             box-shadow: none !important;
+            box-sizing: border-box !important;
+        }
+
+        /* MENGAMANKAN BORDER KANAN TABEL DARI BLEEDING BORDER-COLLAPSE */
+        .pdf-mode-active .doc-table,
+        .pdf-mode-active hr,
+        .pdf-mode-active .border-b {
+            width: calc(100% - 2px) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
         }
 
         .section-title {
@@ -178,6 +190,12 @@
         .hidden-mode {
             display: none !important;
         }
+
+        /* KUNCI ANTI POTONG HALAMAN UNTUK ELEMEN BESAR SEPERTI GAMBAR */
+        .page-break-avoid {
+            page-break-inside: avoid !important;
+        }
+        
     </style>
 </head>
 <body class="pb-12 text-black" id="mainBody">
@@ -276,174 +294,226 @@
             </tr>
         </table>
 
-        <!-- Tahap 2 -->
-        <div class="section-title">Tahap 2. Persiapan Pemilihan Penyedia</div>
-        <table class="doc-table">
-            <tr>
-                <td class="w-[30%] td-top">Susunan Panitia Pengadaan</td>
-                <td class="td-top pb-1">
-                    <div class="mb-2">
-                        <span class="text-[13px] block mb-0.5">Ketua Panitia:</span>
-                        <input type="text" placeholder="Nama Ketua Panitia" class="doc-input">
-                    </div>
-                    <div>
-                        <span class="text-[13px] block mb-0.5">Anggota Panitia:</span>
-                        <div id="containerAnggota" class="flex flex-col gap-1 mb-1.5">
-                            <div class="flex items-center gap-1 row-anggota">
-                                <span class="text-[13px] row-number-ang w-4 text-left">1.</span>
-                                <input type="text" placeholder="Nama Anggota 1" class="doc-input flex-1">
+        <!-- Tahap 2 (Dibungkus page-break-avoid agar judul & tabel tidak terpisah) -->
+        <div class="page-break-avoid">
+            <div class="section-title">Tahap 2. Persiapan Pemilihan Penyedia</div>
+            <table class="doc-table">
+                <tr>
+                    <td class="w-[30%] td-top">Susunan Panitia Pengadaan</td>
+                    <td class="td-top pb-1">
+                        <div class="mb-2">
+                            <span class="text-[13px] block mb-0.5">Ketua Panitia:</span>
+                            <input type="text" placeholder="Nama Ketua Panitia" class="doc-input">
+                        </div>
+                        <div>
+                            <span class="text-[13px] block mb-0.5">Anggota Panitia:</span>
+                            <div id="containerAnggota" class="flex flex-col gap-1 mb-1.5">
+                                <div class="flex items-center gap-1 row-anggota">
+                                    <span class="text-[13px] row-number-ang w-4 text-left">1.</span>
+                                    <input type="text" placeholder="Nama Anggota 1" class="doc-input flex-1">
+                                </div>
+                            </div>
+                            <div class="action-btn-container">
+                                <button type="button" id="btnTambahAnggota" class="btn-action">+ Tambah Anggota</button>
                             </div>
                         </div>
-                        <div class="action-btn-container">
-                            <button type="button" id="btnTambahAnggota" class="btn-action">+ Tambah Anggota</button>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="td-top">Metode Pengadaan</td>
-                <td class="td-top">
-                    <div class="flex flex-col gap-1 text-[13px]">
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Penunjukan Langsung</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Tender Terbatas / Seleksi Terbatas</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Tender/Seleksi Umum</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Pengadaan Langsung (selain e-Catalog atau e-Purchasing atau e-Commerce)</label>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="td-top">Metode Penyampaian Penawaran</td>
-                <td class="td-top">
-                    <div class="flex flex-col gap-1 text-[13px]">
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Satu Tahap Satu Sampul</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Satu Tahap Dua Sampul</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Dua Tahap Dua Sampul</label>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td class="td-top">Metode Evaluasi Penawaran</td>
-                <td class="td-top">
-                    <div class="text-[13px] font-bold mb-1">Barang, jasa pekerjaan konstruksi, jasa lainnya:</div>
-                    <div class="flex flex-col gap-1 text-[13px]">
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Sistem Gugur</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked> Sistem Nilai (Passing Grade)</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked> Sistem Nilai (Merit Point)</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Sistem Penilaian TCO</label>
-                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode lainnya</label>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>HPS</td>
-                <td><input type="text" placeholder="Rp. xxxxxxxX" class="doc-input"></td>
-            </tr>
-            <tr>
-                <td>Peserta Pemilihan Penyedia</td>
-                <td><input type="text" placeholder="Diisi peserta pemilihan yang diundang" class="doc-input"></td>
-            </tr>
-        </table>
-
-        <!-- Tahap 3 -->
-        <div class="section-title">Tahap 3. Pelaksanaan Pemilihan Penyedia</div>
-        <hr class="border-black mb-2">
-        
-        <div class="text-[13px] font-bold mb-1">1. Rekap Pembukaan Penawaran Dokumen Administrasi</div>
-        <div class="flex items-center gap-2 mb-1.5 text-[13px]">
-            Tanggal Pembukaan: 
-            <input type="text" placeholder="Tanggal pembukaan..." class="doc-input keep-border w-64">
-        </div>
-        <textarea placeholder="Diisi tabel Evaluasi Penawaran Dokumen Administrasi..." class="doc-input keep-border w-full mb-3" style="min-height: 50px;"></textarea>
-
-        <div class="text-[13px] font-bold mb-1">2. Rekap Evaluasi Penawaran Teknis</div>
-        <div class="flex items-center gap-2 mb-1.5 text-[13px]">
-            Tanggal Penetapan Hasil: 
-            <input type="text" placeholder="Tanggal penetapan teknis..." class="doc-input keep-border w-64">
-        </div>
-        <textarea placeholder="Diisi tabel Evaluasi Penawaran Teknis sesuai metode..." class="doc-input keep-border w-full mb-3" style="min-height: 50px;"></textarea>
-
-        <div class="text-[13px] font-bold mb-1">3. Rekap Evaluasi Penawaran Harga</div>
-        <div class="flex items-center gap-2 mb-1.5 text-[13px]">
-            Tanggal Penetapan Hasil: 
-            <input type="text" placeholder="Tanggal penetapan hasil..." class="doc-input keep-border w-64">
-        </div>
-        <textarea placeholder="Diisi tabel Evaluasi Penawaran Harga sesuai metode..." class="doc-input keep-border w-full mb-3" style="min-height: 50px;"></textarea>
-
-        <!-- Kesimpulan -->
-        <div class="section-title mt-2">Kesimpulan</div>
-        <hr class="border-black mb-2">
-        <textarea placeholder="Berdasarkan hal-hal tersebut diatas, maka (diisi nama calon pemenang) ditetapkan sebagai calon Pemenang Pengadaan..." class="doc-input keep-border w-full mb-3" style="min-height: 50px;"></textarea>
-
-        <!-- Ketetapan Pemenang -->
-        <div class="section-title mt-2">Ketetapan Pemenang:</div>
-        <table class="doc-table !mb-1.5">
-            <thead>
+                    </td>
+                </tr>
                 <tr>
-                    <th class="w-8">No</th>
-                    <th>Uraian Ketetapan Pemenang (Termyn, Delivery, dll)</th>
-                    <th class="w-14 action-col">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="bodyKetetapan">
-                <tr class="row-ket">
-                    <td class="text-center row-number-ket">1</td>
-                    <td><input type="text" value="Termyn pembayaran: DP 30%, Pelunasan 70%" class="doc-input"></td>
-                    <td class="text-center action-col">
-                        <button type="button" class="btn-action btn-hapus-ket">Hapus</button>
+                    <td class="td-top">Metode Pengadaan</td>
+                    <td class="td-top">
+                        <div class="flex flex-col gap-1 text-[13px]">
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Penunjukan Langsung</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Tender Terbatas / Seleksi Terbatas</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Tender/Seleksi Umum</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Pengadaan Langsung (selain e-Catalog atau e-Purchasing atau e-Commerce)</label>
+                        </div>
                     </td>
                 </tr>
-                <tr class="row-ket">
-                    <td class="text-center row-number-ket">2</td>
-                    <td><input type="text" value="Term of Delivery / Jangka waktu pekerjaan: 60 hari kalender" class="doc-input"></td>
-                    <td class="text-center action-col">
-                        <button type="button" class="btn-action btn-hapus-ket">Hapus</button>
+                <tr>
+                    <td class="td-top">Metode Penyampaian Penawaran</td>
+                    <td class="td-top">
+                        <div class="flex flex-col gap-1 text-[13px]">
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Satu Tahap Satu Sampul</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Satu Tahap Dua Sampul</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode Dua Tahap Dua Sampul</label>
+                        </div>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-        <div class="action-btn-container mb-4">
-            <button type="button" id="btnTambahKetetapan" class="btn-action">+ Tambah Ketetapan</button>
+                <tr>
+                    <td class="td-top">Metode Evaluasi Penawaran</td>
+                    <td class="td-top">
+                        <div class="text-[13px] font-bold mb-1">Barang, jasa pekerjaan konstruksi, jasa lainnya:</div>
+                        <div class="flex flex-col gap-1 text-[13px]">
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Sistem Gugur</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked> Sistem Nilai (Passing Grade)</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked> Sistem Nilai (Merit Point)</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Sistem Penilaian TCO</label>
+                            <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox"> Metode lainnya</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>HPS</td>
+                    <td><input type="text" placeholder="Rp. xxxxxxxX" class="doc-input"></td>
+                </tr>
+                <tr>
+                    <td>Peserta Pemilihan Penyedia</td>
+                    <td><input type="text" placeholder="Diisi peserta pemilihan yang diundang" class="doc-input"></td>
+                </tr>
+            </table>
         </div>
 
-        <!-- ================= KOTAK FOKUS PADA BAGIAN TANDA TANGAN ================= -->
-        
-        <p class="text-[13px] mb-4">Demikian disampaikan, dimohon arahan atau persetujuan dari Bapak/Ibu.</p>
+        <!-- BLOK EVALUASI 1 (Termasuk Judul Tahap 3 agar tidak terpisah) -->
+        <div class="page-break-avoid pb-4">
+            <!-- Judul Tahap 3 digeser ke dalam blok ini -->
+            <div class="section-title">Tahap 3. Pelaksanaan Pemilihan Penyedia</div>
+            <hr class="border-black mb-2">
 
-        <!-- Tanda Tangan (Sisi Kanan) -->
-        <div class="flex justify-end mb-4">
-            <div class="w-[300px] flex flex-col items-start text-[13px]">
-                
-                <input type="date" class="border border-gray-300 rounded-md px-2 py-1 w-full mb-3 outline-none text-gray-800 doc-hide-border">
-                
-                <span class="block mb-0.5">Pengusul</span>
-                <input type="text" placeholder="(diisi nama panitia pengadaannya)" class="input-focus-effect italic text-black placeholder-gray-500 mb-12">
-                
-                <div class="w-full text-left">
-                    <input type="text" placeholder="(Diisi nama Ketua Panitia Pengadaan)" class="input-focus-effect text-black placeholder-gray-600 mb-0.5 font-bold" style="text-decoration: underline;">
-                    <span class="block ml-1">Ketua Panitia</span>
+            <div class="text-[13px] font-bold mb-1">1. Rekap Pembukaan Penawaran Dokumen Administrasi</div>
+            <div class="flex items-center gap-2 mb-1.5 text-[13px]">
+                Tanggal Pembukaan: 
+                <input type="text" placeholder="Tanggal pembukaan..." class="doc-input keep-border w-64">
+            </div>
+            <div class="upload-wrapper mb-3">
+                <textarea placeholder="Diisi keterangan / tabel Evaluasi Penawaran Dokumen Administrasi..." class="doc-input keep-border w-full mb-1" style="min-height: 50px;"></textarea>
+                <div class="action-col mb-1">
+                    <input type="file" accept="image/*" class="text-[12px] image-upload cursor-pointer">
+                    <span class="text-[11px] text-gray-500 italic ml-2">*Opsional: Upload gambar tabel</span>
+                </div>
+                <!-- Menghapus text-center pada wrapper agar rata kiri -->
+                <div class="image-preview-wrapper hidden relative w-full text-left mt-1 pb-1">
+                    <!-- Menghapus mx-auto agar gambar rata kiri -->
+                    <img class="preview-img max-w-[60%] max-h-[250px] object-contain border border-black shadow-sm">
+                    <button type="button" class="btn-hapus-img action-col absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-[11px] font-bold rounded shadow cursor-pointer">X Hapus</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tabel Mengetahui & Pemutus -->
-        <table class="doc-table mb-1 text-[13px]">
-            <tr>
-                <td class="w-1/2 p-2 h-28 relative td-top border-black">
-                    <div class="font-bold">Mengetahui:</div>
-                    <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
-                        <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
-                        <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
+        <!-- BLOK EVALUASI 2 -->
+        <div class="page-break-avoid pb-4">
+            <div class="text-[13px] font-bold mb-1">2. Rekap Evaluasi Penawaran Teknis</div>
+            <div class="flex items-center gap-2 mb-1.5 text-[13px]">
+                Tanggal Penetapan Hasil: 
+                <input type="text" placeholder="Tanggal penetapan teknis..." class="doc-input keep-border w-64">
+            </div>
+            <div class="upload-wrapper mb-3">
+                <textarea placeholder="Diisi keterangan / tabel Evaluasi Penawaran Teknis sesuai metode..." class="doc-input keep-border w-full mb-1" style="min-height: 50px;"></textarea>
+                <div class="action-col mb-1">
+                    <input type="file" accept="image/*" class="text-[12px] image-upload cursor-pointer">
+                    <span class="text-[11px] text-gray-500 italic ml-2">*Opsional: Upload gambar tabel</span>
+                </div>
+                <!-- Menghapus text-center pada wrapper agar rata kiri -->
+                <div class="image-preview-wrapper hidden relative w-full text-left mt-1 pb-1">
+                    <!-- Menghapus mx-auto agar gambar rata kiri -->
+                    <img class="preview-img max-w-[60%] max-h-[250px] object-contain border border-black shadow-sm">
+                    <button type="button" class="btn-hapus-img action-col absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-[11px] font-bold rounded shadow cursor-pointer">X Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOK EVALUASI 3 -->
+        <div class="page-break-avoid pb-4">
+            <div class="text-[13px] font-bold mb-1">3. Rekap Evaluasi Penawaran Harga</div>
+            <div class="flex items-center gap-2 mb-1.5 text-[13px]">
+                Tanggal Penetapan Hasil: 
+                <input type="text" placeholder="Tanggal penetapan hasil..." class="doc-input keep-border w-64">
+            </div>
+            <div class="upload-wrapper mb-3">
+                <textarea placeholder="Diisi keterangan / tabel Evaluasi Penawaran Harga sesuai metode..." class="doc-input keep-border w-full mb-1" style="min-height: 50px;"></textarea>
+                <div class="action-col mb-1">
+                    <input type="file" accept="image/*" class="text-[12px] image-upload cursor-pointer">
+                    <span class="text-[11px] text-gray-500 italic ml-2">*Opsional: Upload gambar tabel</span>
+                </div>
+                <!-- Menghapus text-center pada wrapper agar rata kiri -->
+                <div class="image-preview-wrapper hidden relative w-full text-left mt-1 pb-1">
+                    <!-- Menghapus mx-auto agar gambar rata kiri -->
+                    <img class="preview-img max-w-[60%] max-h-[250px] object-contain border border-black shadow-sm">
+                    <button type="button" class="btn-hapus-img action-col absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-[11px] font-bold rounded shadow cursor-pointer">X Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kesimpulan -->
+        <div class="page-break-avoid">
+            <div class="section-title mt-2">Kesimpulan</div>
+            <hr class="border-black mb-2">
+            <textarea placeholder="Berdasarkan hal-hal tersebut diatas, maka (diisi nama calon pemenang) ditetapkan sebagai calon Pemenang Pengadaan..." class="doc-input keep-border w-full mb-3" style="min-height: 50px;"></textarea>
+        </div>
+
+        <!-- Ketetapan Pemenang -->
+        <div class="page-break-avoid">
+            <div class="section-title mt-2">Ketetapan Pemenang:</div>
+            <table class="doc-table !mb-1.5">
+                <thead>
+                    <tr>
+                        <th class="w-8">No</th>
+                        <th>Uraian Ketetapan Pemenang (Termyn, Delivery, dll)</th>
+                        <th class="w-14 action-col">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyKetetapan">
+                    <tr class="row-ket">
+                        <td class="text-center row-number-ket">1</td>
+                        <td><input type="text" value="Termyn pembayaran: DP 30%, Pelunasan 70%" class="doc-input"></td>
+                        <td class="text-center action-col">
+                            <button type="button" class="btn-action btn-hapus-ket">Hapus</button>
+                        </td>
+                    </tr>
+                    <tr class="row-ket">
+                        <td class="text-center row-number-ket">2</td>
+                        <td><input type="text" value="Term of Delivery / Jangka waktu pekerjaan: 60 hari kalender" class="doc-input"></td>
+                        <td class="text-center action-col">
+                            <button type="button" class="btn-action btn-hapus-ket">Hapus</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="action-btn-container mb-4">
+                <button type="button" id="btnTambahKetetapan" class="btn-action">+ Tambah Ketetapan</button>
+            </div>
+        </div>
+
+        <!-- ================= KOTAK FOKUS PADA BAGIAN TANDA TANGAN ================= -->
+        <div class="page-break-avoid">
+            <p class="text-[13px] mb-4">Demikian disampaikan, dimohon arahan atau persetujuan dari Bapak/Ibu.</p>
+
+            <!-- Tanda Tangan (Sisi Kanan) -->
+            <div class="flex justify-end mb-4">
+                <div class="w-[300px] flex flex-col items-start text-[13px]">
+                    
+                    <input type="date" class="border border-gray-300 rounded-md px-2 py-1 w-full mb-3 outline-none text-gray-800 doc-hide-border">
+                    
+                    <span class="block mb-0.5">Pengusul</span>
+                    <input type="text" placeholder="(diisi nama panitia pengadaannya)" class="input-focus-effect italic text-black placeholder-gray-500 mb-12">
+                    
+                    <div class="w-full text-left">
+                        <input type="text" placeholder="(Diisi nama Ketua Panitia Pengadaan)" class="input-focus-effect text-black placeholder-gray-600 mb-0.5 font-bold" style="text-decoration: underline;">
+                        <span class="block ml-1">Ketua Panitia</span>
                     </div>
-                </td>
-                <td class="w-1/2 p-2 h-28 relative td-top border-black">
-                    <div class="font-bold">Pemutus:</div>
-                    <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
-                        <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
-                        <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
-                    </div>
-                </td>
-            </tr>
-        </table>
+                </div>
+            </div>
+
+            <!-- Tabel Mengetahui & Pemutus -->
+            <table class="doc-table mb-1 text-[13px]">
+                <tr>
+                    <td class="w-1/2 p-2 h-28 relative td-top border-black">
+                        <div class="font-bold">Mengetahui:</div>
+                        <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
+                            <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
+                            <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
+                        </div>
+                    </td>
+                    <td class="w-1/2 p-2 h-28 relative td-top border-black">
+                        <div class="font-bold">Pemutus:</div>
+                        <div class="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
+                            <input type="text" placeholder="(Diisi nama pejabat yang berwenang)" class="input-focus-effect text-black placeholder-gray-500 font-bold">
+                            <input type="text" placeholder="Diisi nama jabatan yang berwenang" class="input-focus-effect text-black placeholder-gray-400">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
         
         <!-- Tombol Toolbar -->
         <div class="main-buttons flex justify-center gap-3 pt-4 border-t border-gray-100 mt-6">
@@ -453,14 +523,48 @@
             <button id="btnCetakPDF" class="bg-[#0d6efd] hover:bg-blue-700 text-white px-5 py-2.5 rounded shadow-sm flex items-center gap-2 font-semibold text-[13px] transition-colors">
                 <i class="ph-fill ph-printer text-lg"></i> Cetak / Simpan ke PDF
             </button>
-            <button class="bg-[#28a745] hover:bg-green-600 text-white px-5 py-2.5 rounded shadow-sm flex items-center gap-2 font-semibold text-[13px] transition-colors">
-                <i class="ph-fill ph-file-doc text-lg"></i> Export to Word
-            </button>
+            <a href="https://semenindonesia.sharepoint.com/:w:/s/FGD/IQD3Ip62BDicTKeyb8sDYjKQAXd9jGi_OjH-FMVIQrR_Fpw?e=mGQE44" target="_blank" class="bg-[#1f2937] hover:bg-gray-800 text-white px-5 py-2.5 rounded shadow-sm flex items-center gap-2 font-semibold text-[13px] transition-colors">
+                <i class="ph-fill ph-file-doc text-lg"></i> Download Template
+            </a>
         </div>
 
     </div>
 
     <script>
+        // === LOGIKA UPLOAD GAMBAR TAHAP 3 ===
+        document.querySelectorAll('.image-upload').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    const wrapper = this.closest('.upload-wrapper');
+                    const previewWrapper = wrapper.querySelector('.image-preview-wrapper');
+                    const previewImg = wrapper.querySelector('.preview-img');
+                    
+                    reader.onload = function(event) {
+                        previewImg.src = event.target.result;
+                        previewWrapper.classList.remove('hidden');
+                        previewWrapper.classList.add('block');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-hapus-img').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const wrapper = this.closest('.upload-wrapper');
+                const fileInput = wrapper.querySelector('.image-upload');
+                const previewWrapper = wrapper.querySelector('.image-preview-wrapper');
+                const previewImg = wrapper.querySelector('.preview-img');
+                
+                fileInput.value = ''; // Reset file input
+                previewImg.src = '';
+                previewWrapper.classList.add('hidden');
+                previewWrapper.classList.remove('block');
+            });
+        });
+
         // === LOGIKA UNTUK TAMBAH/HAPUS BARIS DINAMIS ===
         document.getElementById('btnTambahDokumen').addEventListener('click', () => {
             const tbody = document.getElementById('bodyDokumen');
@@ -584,10 +688,11 @@
                 filename:     'Laporan_Hasil_Pemilihan_Penyedia.pdf',
                 image:        { type: 'jpeg', quality: 1 }, 
                 html2canvas:  { 
-                    scale: 2, // Skala 2 lebih tahan terhadap clipping
+                    scale: 3, // Skala 3 untuk hasil gambar lebih jernih dan menghindari pixel bleeding pada border
                     useCORS: true,
                     scrollY: 0,
-                    scrollX: 0
+                    scrollX: 0,
+                    windowWidth: document.documentElement.offsetWidth // Kunci ukuran layar asli saat proses
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'] }

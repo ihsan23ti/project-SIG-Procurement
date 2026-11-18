@@ -125,10 +125,6 @@
                         <input type="text" id="nama-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="Pengadaan Barang Jasa Operasional Pabrik">
                     </div>
                     <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Kategori Pengadaan (Judul)</label>
-                        <input type="text" id="kategori-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="PENGADAAN BARANG">
-                    </div>
-                    <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Pembentukan Sebelumnya</label>
                         <input type="text" id="no-surat-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="050/SIG/PRO/2026">
                     </div>
@@ -489,8 +485,11 @@
             document.getElementById('outPerubahanKe').innerText = valOrDefault(getVal('perubahan-ke'), '---');
             document.getElementById('outNamaPengadaan1').innerText = valOrDefault(getVal('nama-pengadaan'));
             document.getElementById('outNamaPengadaan2').innerText = valOrDefault(getVal('nama-pengadaan'));
-            document.getElementById('outKategoriPengadaan1').innerText = valOrDefault(getVal('kategori-pengadaan'), '---');
-            document.getElementById('outKategoriPengadaan2').innerText = valOrDefault(getVal('kategori-pengadaan'), '---');
+            
+            // PERUBAHAN: outKategoriPengadaan 1 & 2 sekarang mengambil nilai dari input nama-pengadaan
+            document.getElementById('outKategoriPengadaan1').innerText = valOrDefault(getVal('nama-pengadaan'), '---');
+            document.getElementById('outKategoriPengadaan2').innerText = valOrDefault(getVal('nama-pengadaan'), '---');
+            
             document.getElementById('outNomorSebelumnya1').innerText = valOrDefault(getVal('no-surat-sebelumnya'), '........................');
             document.getElementById('outNomorSebelumnya2').innerText = valOrDefault(getVal('no-surat-sebelumnya'), '........................');
             
