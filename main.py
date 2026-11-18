@@ -647,11 +647,15 @@ def buka_pdf(nama_file):
     return redirect(url)
 
 # ==========================================
-# RUTE YANG SUDAH DIPERBAIKI UNTUK FOLDER 'TEMPLATE'
+# RUTE UNTUK DOKUMEN & TEMPLATE SUPABASE
 # ==========================================
 @app.get("/data procurement document/<path:nama_file>")
 def buka_procurement_pdf(nama_file):
-    # Rute URL menggunakan 'document', tapi file tetap diambil dari folder 'template' di Supabase
+    url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"procurement/{nama_file}")
+    return redirect(url)
+
+@app.get("/template/<path:nama_file>")
+def buka_template_pdf(nama_file):
     url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"template/{nama_file}")
     return redirect(url)
 
