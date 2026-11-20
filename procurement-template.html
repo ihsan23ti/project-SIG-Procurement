@@ -231,7 +231,11 @@
       box-shadow: 0 6px 18px -12px rgba(22, 32, 44, .25)
     }
 
-    .card:hover {
+    .card.clickable {
+      cursor: pointer;
+    }
+
+    .card.clickable:hover {
       border-color: var(--red);
       box-shadow: 0 10px 24px -12px rgba(215, 25, 42, .3)
     }
@@ -249,7 +253,7 @@
       transition: .2s
     }
 
-    .card:hover .icon {
+    .card.clickable:hover .icon {
       background: var(--red);
       color: #fff
     }
@@ -267,7 +271,7 @@
       transition: transform .2s, color .2s
     }
 
-    .card:hover .arrow {
+    .card.clickable:hover .arrow {
       color: var(--red);
       transform: translateX(3px)
     }
@@ -297,6 +301,23 @@
       color: var(--slate)
     }
 
+    /* Gaya saat template dimatikan (OFF) oleh admin utama */
+    .card.is-off {
+      opacity: .68;
+      background: #F8F9FA;
+      border-style: dashed;
+    }
+
+    .card.is-off .icon {
+      background: #EEF0F3;
+      color: #8A95A3;
+    }
+
+    .card.is-off:hover .icon {
+      background: #EEF0F3;
+      color: #8A95A3;
+    }
+
     .badge {
       flex: none;
       font-size: .72rem;
@@ -305,6 +326,78 @@
       background: #EEF0F3;
       border-radius: 999px;
       padding: .15rem .6rem
+    }
+
+    .badge.off-badge {
+      color: #B01220;
+      background: #FDEDEE;
+    }
+
+    /* Switch ON/OFF khusus admin utama */
+    .admin-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      flex: none;
+      position: relative;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background-color: #CBD5E1;
+      transition: .2s;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    .switch input:checked + .slider {
+      background-color: #16A34A;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--slate);
+      min-width: 24px;
+      user-select: none;
     }
 
     footer {
@@ -391,6 +484,23 @@
       document.getElementById('displayUsername').textContent = username;
       document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
 
+      // Cek apakah user saat ini adalah ADMIN UTAMA
+      const rawRole = (
+        sessionStorage.getItem('role') ||
+        sessionStorage.getItem('userRole') ||
+        sessionStorage.getItem('user_role') ||
+        ''
+      ).toLowerCase().trim();
+
+      const isAdminUtama =
+        rawRole === 'admin_utama' ||
+        rawRole === 'admin utama' ||
+        rawRole === 'super_admin' ||
+        rawRole === 'superadmin' ||
+        sessionStorage.getItem('isAdminUtama') === 'true' ||
+        username.toLowerCase().trim() === 'yulia dafitri' ||
+        username.toLowerCase().trim() === 'admin_utama';
+
       // 2. Cek apakah variabel dari config.js terbaca untuk mencegah crash
       if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
         document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--red); padding: 1rem; border: 1px solid var(--red); border-radius: 8px;"><b>Error:</b> config.js gagal dimuat atau variabel SUPABASE tidak ditemukan.</p>';
@@ -399,6 +509,54 @@
 
       // 3. Inisialisasi Supabase
       const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Navigasi aman saat kartu diklik (bukan saat klik switch ON/OFF)
+      window.openDocument = function (href) {
+        if (!href || href === '#') return;
+        window.location.href = href;
+      };
+
+      // Fungsi update status ON/OFF di Supabase (hanya dipanggil oleh admin utama)
+      window.toggleTemplateStatus = async function (event, id, nextState) {
+        event.stopPropagation();
+
+        if (!isAdminUtama) {
+          alert('Hanya admin utama yang dapat mengubah status ON/OFF template.');
+          return;
+        }
+
+        const checkbox = event.currentTarget;
+        const labelEl = checkbox.closest('.admin-toggle-wrap')?.querySelector('.toggle-label');
+        checkbox.disabled = true;
+
+        try {
+          const { data: updatedRows, error } = await _supabase
+            .from('procurement_documents')
+            .update({ is_active: nextState })
+            .eq('id', id)
+            .select();
+
+          if (error) throw error;
+
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error('Tidak ada baris yang terupdate di Supabase (cek id atau RLS policy UPDATE pada tabel procurement_documents).');
+          }
+
+          if (labelEl) {
+            labelEl.textContent = nextState ? 'ON' : 'OFF';
+          }
+
+          await fetchDocuments();
+        } catch (err) {
+          console.error('Gagal mengubah status ON/OFF:', err);
+          alert('Gagal menyimpan status ON/OFF: ' + (err.message || err));
+          checkbox.checked = !nextState;
+          if (labelEl) {
+            labelEl.textContent = !nextState ? 'ON' : 'OFF';
+          }
+          checkbox.disabled = false;
+        }
+      };
 
       // 4. Fungsi ambil dokumen
       async function fetchDocuments() {
@@ -410,23 +568,64 @@
 
           if (error) throw error;
 
-          // Cegah blank putih jika tabel Supabase berhasil diakses tapi belum ada isinya
           if (!items || items.length === 0) {
             document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--slate);">Belum ada dokumen di database Supabase (tabel procurement_documents kosong).</p>';
             return;
           }
 
-          // Render data dari Supabase
-          document.getElementById('grid').innerHTML = items.map(function (it) {
-            const soon = it.href === "#" || !it.href;
-            const tag = soon ? 'div' : 'a';
-            const attrs = soon ? 'class="card soon"' : 'class="card" href="' + it.href + '"';
-            const end = soon ? '<span class="badge">Segera tersedia</span>' : '<i class="ph ph-arrow-right arrow"></i>';
+          const visibleItems = isAdminUtama
+            ? items
+            : items.filter(function (it) {
+                return it.is_active !== false;
+              });
 
-            return '<' + tag + ' ' + attrs + '>' +
+          if (visibleItems.length === 0) {
+            document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--slate);">Saat ini belum ada template yang aktif.</p>';
+            return;
+          }
+
+          document.getElementById('grid').innerHTML = visibleItems.map(function (it) {
+            const isActive = it.is_active !== false;
+            const canOpen = isActive && it.href && it.href !== '#';
+            const cardClasses = ['card'];
+
+            if (!isActive) {
+              cardClasses.push('is-off');
+            } else if (!canOpen) {
+              cardClasses.push('soon');
+            } else {
+              cardClasses.push('clickable');
+            }
+
+            const clickAttr = canOpen
+              ? ' onclick="openDocument(' + JSON.stringify(it.href) + ')"'
+              : '';
+
+            let statusBadge = '';
+            if (!isActive) {
+              statusBadge = '<span class="badge off-badge">OFF</span>';
+            } else if (!canOpen) {
+              statusBadge = '<span class="badge">Segera tersedia</span>';
+            } else {
+              statusBadge = '<i class="ph ph-arrow-right arrow"></i>';
+            }
+
+            const adminControl = isAdminUtama
+              ? '<div class="admin-toggle-wrap" onclick="event.stopPropagation();">' +
+                  '<label class="switch" title="Aktifkan / Nonaktifkan template">' +
+                    '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="toggleTemplateStatus(event, ' + JSON.stringify(it.id) + ', this.checked)">' +
+                    '<span class="slider"></span>' +
+                  '</label>' +
+                  '<span class="toggle-label">' + (isActive ? 'ON' : 'OFF') + '</span>' +
+                '</div>'
+              : '';
+
+            return '<div class="' + cardClasses.join(' ') + '"' + clickAttr + '>' +
               '<div class="icon"><i class="ph ph-' + it.i + '"></i></div>' +
-              '<span class="t">' + it.t + '</span>' + end +
-              '</' + tag + '>';
+              '<span class="t">' + it.t + '</span>' +
+              statusBadge +
+              adminControl +
+              '</div>';
           }).join('');
 
         } catch (err) {
