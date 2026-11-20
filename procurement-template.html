@@ -25,13 +25,13 @@
       --slate: #5B6675;
       --line: #E3E7EC;
       --bg: #F5F6F8;
-      --navy: #16202C
+      --navy: #16202C;
     }
 
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
-      padding: 0
+      padding: 0;
     }
 
     body {
@@ -41,17 +41,17 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      line-height: 1.5
+      line-height: 1.5;
     }
 
     a {
       color: inherit;
-      text-decoration: none
+      text-decoration: none;
     }
 
     :focus-visible {
       outline: 3px solid var(--red);
-      outline-offset: 3px
+      outline-offset: 3px;
     }
 
     .nav {
@@ -59,7 +59,7 @@
       border-bottom: 1px solid var(--line);
       position: sticky;
       top: 0;
-      z-index: 10
+      z-index: 10;
     }
 
     .nav-inner {
@@ -69,7 +69,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem
+      gap: 1rem;
     }
 
     .brand {
@@ -77,12 +77,12 @@
       align-items: center;
       gap: .75rem;
       font-weight: 600;
-      font-size: .95rem
+      font-size: .95rem;
     }
 
     .brand img {
       height: 36px;
-      width: auto
+      width: auto;
     }
 
     .brand small {
@@ -90,7 +90,7 @@
       font-weight: 400;
       color: var(--slate);
       font-size: .75rem;
-      line-height: 1.2
+      line-height: 1.2;
     }
 
     .user {
@@ -98,18 +98,18 @@
       align-items: center;
       gap: 1rem;
       font-size: .9rem;
-      color: var(--slate)
+      color: var(--slate);
     }
 
     .user strong {
       color: var(--ink);
-      font-weight: 600
+      font-weight: 600;
     }
 
     .who {
       display: flex;
       align-items: center;
-      gap: .6rem
+      gap: .6rem;
     }
 
     .avatar {
@@ -121,7 +121,7 @@
       display: grid;
       place-items: center;
       font-weight: 600;
-      font-size: .85rem
+      font-size: .85rem;
     }
 
     .btn-back {
@@ -135,20 +135,20 @@
       border-radius: 6px;
       font-size: .85rem;
       font-weight: 500;
-      transition: .2s
+      transition: .2s;
     }
 
     .btn-back:hover {
       border-color: var(--red);
       color: var(--red);
-      background: #FFF5F5
+      background: #FFF5F5;
     }
 
     .hero {
       background: var(--navy);
       color: #fff;
       position: relative;
-      overflow: hidden
+      overflow: hidden;
     }
 
     .hero::before {
@@ -158,7 +158,7 @@
       top: 0;
       bottom: 0;
       width: 6px;
-      background: var(--red)
+      background: var(--red);
     }
 
     .hero::after {
@@ -169,7 +169,7 @@
       width: 400px;
       height: 400px;
       border-radius: 50%;
-      border: 56px solid rgba(255, 255, 255, .04)
+      border: 56px solid rgba(255, 255, 255, .04);
     }
 
     .hero-inner {
@@ -177,30 +177,30 @@
       margin: 0 auto;
       padding: 2.75rem 1.5rem 5rem;
       position: relative;
-      z-index: 1
+      z-index: 1;
     }
 
     .crumb {
       font-size: .85rem;
       color: #8FA0B3;
-      margin-bottom: .75rem
+      margin-bottom: .75rem;
     }
 
     .crumb a:hover {
-      color: #fff
+      color: #fff;
     }
 
     .hero h1 {
       font-size: clamp(1.7rem, 3.5vw, 2.4rem);
       font-weight: 700;
       letter-spacing: -.02em;
-      line-height: 1.2
+      line-height: 1.2;
     }
 
     .hero p {
       margin-top: .6rem;
       color: #B9C3D0;
-      max-width: 58ch
+      max-width: 58ch;
     }
 
     .wrap {
@@ -209,13 +209,13 @@
       padding: 0 1.5rem 3rem;
       width: 100%;
       position: relative;
-      z-index: 2
+      z-index: 2;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem
+      gap: 1rem;
     }
 
     .card {
@@ -228,7 +228,7 @@
       gap: 1rem;
       position: relative;
       transition: border-color .2s, box-shadow .2s;
-      box-shadow: 0 6px 18px -12px rgba(22, 32, 44, .25)
+      box-shadow: 0 6px 18px -12px rgba(22, 32, 44, .25);
     }
 
     .card.clickable {
@@ -237,7 +237,7 @@
 
     .card.clickable:hover {
       border-color: var(--red);
-      box-shadow: 0 10px 24px -12px rgba(215, 25, 42, .3)
+      box-shadow: 0 10px 24px -12px rgba(215, 25, 42, .3);
     }
 
     .card .icon {
@@ -250,55 +250,55 @@
       display: grid;
       place-items: center;
       font-size: 1.35rem;
-      transition: .2s
+      transition: .2s;
     }
 
     .card.clickable:hover .icon {
       background: var(--red);
-      color: #fff
+      color: #fff;
     }
 
     .card .t {
       flex: 1;
       font-size: .93rem;
       font-weight: 600;
-      line-height: 1.35
+      line-height: 1.35;
     }
 
     .card .arrow {
       flex: none;
       color: #9AA5B2;
-      transition: transform .2s, color .2s
+      transition: transform .2s, color .2s;
     }
 
     .card.clickable:hover .arrow {
       color: var(--red);
-      transform: translateX(3px)
+      transform: translateX(3px);
     }
 
     .card.soon {
       cursor: default;
       background: #FBFBFC;
-      box-shadow: none
+      box-shadow: none;
     }
 
     .card.soon:hover {
       border-color: var(--line);
-      box-shadow: none
+      box-shadow: none;
     }
 
     .card.soon .icon {
       background: #EEF0F3;
-      color: #8A95A3
+      color: #8A95A3;
     }
 
     .card.soon:hover .icon {
       background: #EEF0F3;
-      color: #8A95A3
+      color: #8A95A3;
     }
 
     .card.soon .t {
-      color: var(--slate)
+      color: var(--slate);
     }
 
     /* Gaya saat template dimatikan (OFF) oleh admin utama */
@@ -325,7 +325,7 @@
       color: var(--slate);
       background: #EEF0F3;
       border-radius: 999px;
-      padding: .15rem .6rem
+      padding: .15rem .6rem;
     }
 
     .badge.off-badge {
@@ -407,32 +407,32 @@
       text-align: center;
       font-size: .8rem;
       color: var(--slate);
-      padding: 1.1rem 1rem
+      padding: 1.1rem 1rem;
     }
 
     @media(max-width:960px) {
       .grid {
-        grid-template-columns: repeat(2, 1fr)
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media(max-width:640px) {
       .grid {
-        grid-template-columns: 1fr
+        grid-template-columns: 1fr;
       }
 
       .user .label {
-        display: none
+        display: none;
       }
 
       .hero-inner {
-        padding: 2rem 1.5rem 4.25rem
+        padding: 2rem 1.5rem 4.25rem;
       }
     }
 
     @media(prefers-reduced-motion:reduce) {
-      * {
-        transition: none !important
+      *, *::before, *::after {
+        transition: none !important;
       }
     }
   </style>
@@ -476,15 +476,13 @@
   <!-- 2. Load file config kamu -->
   <script src="config.js"></script>
 
-  <!-- 3. Script utama yang sudah dirapikan -->
+  <!-- 3. Script utama -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      // 1. Setup Profile/Avatar user
       const username = sessionStorage.getItem('username') || 'User';
       document.getElementById('displayUsername').textContent = username;
       document.getElementById('avatar').textContent = username.charAt(0).toUpperCase();
 
-      // Cek apakah user saat ini adalah ADMIN UTAMA
       const rawRole = (
         sessionStorage.getItem('role') ||
         sessionStorage.getItem('userRole') ||
@@ -501,22 +499,29 @@
         username.toLowerCase().trim() === 'yulia dafitri' ||
         username.toLowerCase().trim() === 'admin_utama';
 
-      // 2. Cek apakah variabel dari config.js terbaca untuk mencegah crash
       if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
         document.getElementById('grid').innerHTML = '<p style="grid-column: 1/-1; color: var(--red); padding: 1rem; border: 1px solid var(--red); border-radius: 8px;"><b>Error:</b> config.js gagal dimuat atau variabel SUPABASE tidak ditemukan.</p>';
         return;
       }
 
-      // 3. Inisialisasi Supabase
       const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Navigasi aman saat kartu diklik (bukan saat klik switch ON/OFF)
-      window.openDocument = function (href) {
-        if (!href || href === '#') return;
-        window.location.href = href;
+      function parseIsActive(val) {
+        if (val === false || val === 0) return false;
+        if (typeof val === 'string' && val.trim().toLowerCase() === 'false') return false;
+        return true;
+      }
+
+      window.openDocument = function (href, isActive) {
+        if (!parseIsActive(isActive)) return;
+        const cleanHref = (href || '').trim();
+        if (!cleanHref || cleanHref === '#') {
+          alert('Link template belum diatur di database.');
+          return;
+        }
+        window.location.href = cleanHref;
       };
 
-      // Fungsi update status ON/OFF di Supabase (hanya dipanggil oleh admin utama)
       window.toggleTemplateStatus = async function (event, id, nextState) {
         event.stopPropagation();
 
@@ -530,9 +535,10 @@
         checkbox.disabled = true;
 
         try {
+          const boolState = Boolean(nextState);
           const { data: updatedRows, error } = await _supabase
             .from('procurement_documents')
-            .update({ is_active: nextState })
+            .update({ is_active: boolState })
             .eq('id', id)
             .select();
 
@@ -543,7 +549,7 @@
           }
 
           if (labelEl) {
-            labelEl.textContent = nextState ? 'ON' : 'OFF';
+            labelEl.textContent = boolState ? 'ON' : 'OFF';
           }
 
           await fetchDocuments();
@@ -558,7 +564,6 @@
         }
       };
 
-      // 4. Fungsi ambil dokumen
       async function fetchDocuments() {
         try {
           const { data: items, error } = await _supabase
@@ -576,7 +581,7 @@
           const visibleItems = isAdminUtama
             ? items
             : items.filter(function (it) {
-                return it.is_active !== false;
+                return parseIsActive(it.is_active);
               });
 
           if (visibleItems.length === 0) {
@@ -585,44 +590,51 @@
           }
 
           document.getElementById('grid').innerHTML = visibleItems.map(function (it) {
-            const isActive = it.is_active !== false;
-            const canOpen = isActive && it.href && it.href !== '#';
+            const isActive = parseIsActive(it.is_active);
+            const cleanHref = (it.href || '').trim();
+            const hasHref = Boolean(cleanHref && cleanHref !== '#');
+            const canOpen = isActive && hasHref;
             const cardClasses = ['card'];
 
             if (!isActive) {
               cardClasses.push('is-off');
-            } else if (!canOpen) {
+            } else if (!hasHref) {
               cardClasses.push('soon');
             } else {
               cardClasses.push('clickable');
             }
 
+            // PERBAIKAN: Menggunakan tanda kutip tunggal untuk membungkus atribut onclick
             const clickAttr = canOpen
-              ? ' onclick="openDocument(' + JSON.stringify(it.href) + ')"'
-              : '';
+              ? " onclick='openDocument(" + JSON.stringify(cleanHref) + ", " + isActive + ")'"
+              : "";
 
             let statusBadge = '';
             if (!isActive) {
               statusBadge = '<span class="badge off-badge">OFF</span>';
-            } else if (!canOpen) {
+            } else if (!hasHref) {
               statusBadge = '<span class="badge">Segera tersedia</span>';
             } else {
               statusBadge = '<i class="ph ph-arrow-right arrow"></i>';
             }
 
+            // PERBAIKAN: Menggunakan tanda kutip tunggal untuk input adminControl
             const adminControl = isAdminUtama
               ? '<div class="admin-toggle-wrap" onclick="event.stopPropagation();">' +
                   '<label class="switch" title="Aktifkan / Nonaktifkan template">' +
-                    '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="toggleTemplateStatus(event, ' + JSON.stringify(it.id) + ', this.checked)">' +
+                    "<input type='checkbox' " + (isActive ? "checked" : "") + " onchange='toggleTemplateStatus(event, " + JSON.stringify(it.id) + ", this.checked)'>" +
                     '<span class="slider"></span>' +
                   '</label>' +
                   '<span class="toggle-label">' + (isActive ? 'ON' : 'OFF') + '</span>' +
                 '</div>'
               : '';
 
+            const iconName = (it.i || 'file-text').trim();
+            const titleText = it.t || 'Dokumen';
+
             return '<div class="' + cardClasses.join(' ') + '"' + clickAttr + '>' +
-              '<div class="icon"><i class="ph ph-' + it.i + '"></i></div>' +
-              '<span class="t">' + it.t + '</span>' +
+              '<div class="icon"><i class="ph ph-' + iconName + '"></i></div>' +
+              '<span class="t">' + titleText + '</span>' +
               statusBadge +
               adminControl +
               '</div>';
