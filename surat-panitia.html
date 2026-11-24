@@ -146,15 +146,15 @@
                     <div class="grid grid-cols-1 gap-4">
                         <div>
                             <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nomor Surat</label>
-                            <input type="text" id="inNoSurat" placeholder="Masukkan Nomor Surat" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <input type="text" id="inNoSurat" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                         </div>
                         <div>
                             <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Kategori Barang dan/atau Jasa</label>
-                            <input type="text" id="inKategori" placeholder="Contoh: PENGADAAN PERALATAN IT" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <input type="text" id="inKategori" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                         </div>
                         <div>
                             <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Pengadaan</label>
-                            <input type="text" id="inNamaPengadaan" placeholder="Otomatis mengikuti Nama Barang dan/atau Jasa" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                            <input type="text" id="inNamaPengadaan" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                         </div>
                         <div>
                             <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Batas Nilai Pengadaan</label>
@@ -166,7 +166,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Ditetapkan di (Kota)</label>
-                                <input type="text" id="inTempat" placeholder="Contoh: Padang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
+                                <input type="text" id="inTempat" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                             </div>
                             <div>
                                 <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Pada Tanggal Ditetapkan</label>
@@ -269,7 +269,7 @@
                         <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
                     </div>
 
-                    <h3 class="mb-2" style="text-align: center;">SURAT PEMBENTUKAN PANITIA PENGADAAN</h3>
+                    <h3 class="font-bold text-center leading-snug" style="text-align: center;">SURAT PEMBENTUKAN PANITIA PENGADAAN</h3>
                     <h3 class="mb-6" style="font-weight: normal; text-align: center;">Nomor: <span id="outNoSurat">[Nomor Surat]</span></h3>
 
                     <!-- Tabel Menimbang dan Mengingat -->
@@ -412,7 +412,11 @@
                         <p>Tanggal: <span id="outTglDitetapkanLampiran">........................</span></p>
                     </div>
 
-                    <h3 class="font-bold text-center mb-6">SUSUNAN KEANGGOTAAN <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></h3>
+                    <div class="font-bold text-center mb-6 leading-snug">
+                        <div>SUSUNAN KEANGGOTAAN</div>
+                        <div>Panitia Pengadaan <span id="outKategoriLampiran">[Kategori Barang dan/atau Jasa]</span></div>
+                        <div>Dengan Nilai <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></div>
+                    </div>
                     
                     <table class="a4-table mt-4" id="outTableKeanggotaan">
                         <thead>
