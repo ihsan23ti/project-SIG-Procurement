@@ -114,23 +114,27 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Addendum</label>
-                        <input type="text" id="no-surat-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="001/SIG/PRO/2026">
+                        <input type="text" id="no-surat-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Perubahan Ke- (Angka/Huruf)</label>
-                        <input type="text" id="perubahan-ke" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="PERTAMA">
+                        <input type="text" id="perubahan-ke" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Panitia</label>
+                        <input type="text" id="nama-panitia" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
-                        <input type="text" id="nama-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="Pengadaan Barang Jasa Operasional Pabrik">
+                        <input type="text" id="nama-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Pembentukan Sebelumnya</label>
-                        <input type="text" id="no-surat-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" value="050/SIG/PRO/2026">
+                        <input type="text" id="no-surat-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Surat Pembentukan Sebelumnya</label>
-                        <input type="date" id="tgl-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" value="2026-01-10">
+                        <input type="date" id="tgl-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Batas Nilai Pengadaan</label>
@@ -141,11 +145,11 @@
                     </div>
                     <div>
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Ditetapkan Addendum</label>
-                        <input type="date" id="tgl-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" value="2026-09-28">
+                        <input type="date" id="tgl-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
-                    <div>
+                    <div class="col-span-2">
                         <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Masa Berlaku (Pasal 3 ayat 3)</label>
-                        <input type="date" id="masa-berlaku" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" value="2026-12-31">
+                        <input type="date" id="masa-berlaku" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
                 </div>
 
@@ -164,15 +168,15 @@
                             </div>
                             <div class="w-2/6">
                                 <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
-                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="Ahmad Fauzi">
+                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <div class="w-1/6">
                                 <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
-                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="19850101">
+                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <div class="w-2/6">
                                 <label class="block text-[11px] font-semibold mb-1">Entitas</label>
-                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="PT Semen Indonesia (Persero) Tbk">
+                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota" disabled>
                                 <i class="ph ph-x text-lg"></i>
@@ -189,15 +193,15 @@
                             </div>
                             <div class="w-2/6">
                                 <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
-                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="Budi Santoso">
+                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <div class="w-1/6">
                                 <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
-                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="19900202">
+                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <div class="w-2/6">
                                 <label class="block text-[11px] font-semibold mb-1">Entitas</label>
-                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="PT Semen Indonesia (Persero) Tbk">
+                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                             </div>
                             <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota">
                                 <i class="ph ph-x text-lg"></i>
@@ -270,7 +274,7 @@
                         <td style="font-weight: bold; padding-top: 15px;">Menetapkan</td>
                         <td style="text-align: center; padding-top: 15px;">:</td>
                         <td style="padding-top: 15px;">
-                            <b>PERUBAHAN <span id="outPerubahanKe"></span> SURAT PEMBENTUKAN PANITIA PENGADAAN [<span id="outKategoriPengadaan1"></span>]</b>
+                            <b>PERUBAHAN <span id="outPerubahanKe"></span> SURAT PEMBENTUKAN PANITIA PENGADAAN [<span id="outNamaPanitiaMenetapkan"></span>]</b>
                         </td>
                     </tr>
                 </table>
@@ -298,7 +302,7 @@
             <!-- ================= HALAMAN 2 ================= -->
             <div class="a4-paper">
                 <div style="text-align: center; font-weight: bold; margin: 30px 0 15px 0;">PASAL 2</div>
-                <p style="margin: 0 0 10px 0;"><b>(1)</b> Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan ini dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</p>
+                <p style="margin: 0 0 10px 0;"><b>(1)</b> Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan <span id="outNamaPanitiaPasal2"></span> dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</p>
                 <p style="margin: 0 0 10px 0;"><b>(2)</b> Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan (<span id="outNamaPengadaan2"></span>), sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</p>
 
                 <div style="text-align: center; font-weight: bold; margin: 25px 0 15px 0;">PASAL 3</div>
@@ -322,7 +326,7 @@
                     </tr>
                     <tr>
                         <td style="border: none; padding: 0; vertical-align: top;">
-                            <b>Ade Meirivadi</b><br>
+                            <b>Ade Meiriyadi</b><br>
                             GH of Procurement
                         </td>
                     </tr>
@@ -357,7 +361,7 @@
 
                 <div class="font-bold text-center mt-8 mb-6 leading-snug">
                     <div>SUSUNAN KEANGGOTAAN</div>
-                    <div>Panitia Pengadaan <span id="outKategoriLampiran">[Nama Pengadaan]</span></div>
+                    <div>Panitia Pengadaan <span id="outNamaPanitiaLampiran">[Nama Panitia]</span></div>
                     <div>Dengan Nilai <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></div>
                 </div>
 
@@ -442,7 +446,7 @@
                 </div>
                 <div class="w-2/6">
                     <label class="block text-[11px] font-semibold mb-1">Entitas</label>
-                    <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none" value="PT Semen Indonesia (Persero) Tbk">
+                    <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
                 </div>
                 <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota">
                     <i class="ph ph-x text-lg"></i>
@@ -485,12 +489,16 @@
             
             document.getElementById('outNomorAddendum').innerText = valOrDefault(getVal('no-surat-addendum'), '........................');
             document.getElementById('outPerubahanKe').innerText = valOrDefault(getVal('perubahan-ke'), '---');
+            
+            // Inputan Nama Panitia -> Menetapkan, Pasal 2 ayat (1), & Judul Susunan Keanggotaan Lampiran
+            document.getElementById('outNamaPanitiaMenetapkan').innerText = valOrDefault(getVal('nama-panitia'), '---');
+            document.getElementById('outNamaPanitiaPasal2').innerText = valOrDefault(getVal('nama-panitia'), '[Nama Panitia]');
+            document.getElementById('outNamaPanitiaLampiran').innerText = valOrDefault(getVal('nama-panitia'), '[Nama Panitia]');
+            
+            // Inputan Nama Pengadaan -> Mengingat no. 2, Pasal 2 ayat (2), & Pasal 3 ayat (2)
             document.getElementById('outNamaPengadaan1').innerText = valOrDefault(getVal('nama-pengadaan'));
             document.getElementById('outNamaPengadaan2').innerText = valOrDefault(getVal('nama-pengadaan'));
-            
-            // PERUBAHAN: outKategoriPengadaan 1 & 2 sekarang mengambil nilai dari input nama-pengadaan
-            document.getElementById('outKategoriPengadaan1').innerText = valOrDefault(getVal('nama-pengadaan'), '---');
-            document.getElementById('outKategoriPengadaan2').innerText = valOrDefault(getVal('nama-pengadaan'), '---');
+            document.getElementById('outKategoriPengadaan2').innerText = valOrDefault(getVal('nama-pengadaan'));
             
             document.getElementById('outNomorSebelumnya1').innerText = valOrDefault(getVal('no-surat-sebelumnya'), '........................');
             document.getElementById('outNomorSebelumnya2').innerText = valOrDefault(getVal('no-surat-sebelumnya'), '........................');

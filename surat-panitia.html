@@ -149,7 +149,7 @@
                             <input type="text" id="inNoSurat" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                         </div>
                         <div>
-                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Kategori Barang dan/atau Jasa</label>
+                            <label class="block text-[13px] font-medium text-gray-700 mb-1.5">Nama Panitia</label>
                             <input type="text" id="inKategori" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0d9488] outline-none">
                         </div>
                         <div>
@@ -305,7 +305,7 @@
                             <td class="col-judul" style="width: 85px;">Menetapkan</td>
                             <td class="col-titikdua" style="width: 15px;">:</td>
                             <td class="col-isi" style="font-weight: bold; padding-left: 5px;">
-                                SURAT PEMBENTUKAN PANITIA PENGADAAN <span id="outKategori" class="uppercase">[KATEGORI BARANG DAN/ATAU JASA]</span>
+                                SURAT PEMBENTUKAN PANITIA PENGADAAN <span id="outKategori" class="uppercase">[NAMA PANITIA]</span>
                             </td>
                         </tr>
                     </table>
@@ -348,11 +348,11 @@
                     <table class="table-konsideran">
                         <tr>
                             <td class="col-huruf" style="width: 20px;">1.</td>
-                            <td class="col-isi">Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan ini dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</td>
+                            <td class="col-isi">Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan <span id="outNamaPanitiaPasal">[Nama Panitia]</span> dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</td>
                         </tr>
                         <tr>
                             <td class="col-huruf">2.</td>
-                            <td class="col-isi">Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan <strong>[<span id="outNamaPengadaanPasal">diisi nama pengadaan Barang dan/atau Jasa</span>]</strong>, sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</td>
+                            <td class="col-isi">Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan <strong>[<span id="outNamaPengadaanPasal">diisi nama pengadaan </span>]</strong>, sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</td>
                         </tr>
                     </table>
 
@@ -364,10 +364,6 @@
                         </tr>
                         <tr>
                             <td class="col-huruf">2.</td>
-                            <td class="col-isi">Dengan diberlakukannya Surat Pembentukan Panitia Pengadaan ini, maka Surat Pembentukan Panitia Pengadaan nomor <span id="outNomorSebelumnya2"></span> tentang Pengadaan (<span id="outKategoriPengadaan2" class="uppercase"></span>) dinyatakan tidak berlaku.</td>
-                        </tr>
-                        <tr>
-                            <td class="col-huruf">3.</td>
                             <td class="col-isi">Surat Pembentukan Panitia Pengadaan ini berlaku sejak tanggal ditetapkan dan berakhir sampai dengan <span id="outTglBerakhir">[tanggal/bulan/tahun]</span>.</td>
                         </tr>
                     </table>
@@ -414,7 +410,7 @@
 
                     <div class="font-bold text-center mb-6 leading-snug">
                         <div>SUSUNAN KEANGGOTAAN</div>
-                        <div>Panitia Pengadaan <span id="outKategoriLampiran">[Kategori Barang dan/atau Jasa]</span></div>
+                        <div>Panitia Pengadaan <span id="outKategoriLampiran">[Nama Panitia]</span></div>
                         <div>Dengan Nilai <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></div>
                     </div>
                     
@@ -455,10 +451,13 @@
         const container = document.getElementById('anggotaContainer');
         const btnTambah = document.getElementById('btnTambahAnggota');
 
-        // Sinkronisasi Kategori ke Nama Pengadaan
+        // Sinkronisasi Nama Panitia ke Nama Pengadaan dan Pasal 2
         const inKategori = document.getElementById('inKategori');
         const inNamaPengadaan = document.getElementById('inNamaPengadaan');
-        inKategori.addEventListener('input', () => { inNamaPengadaan.value = inKategori.value; });
+        inKategori.addEventListener('input', () => {
+            inNamaPengadaan.value = inKategori.value;
+            document.getElementById('outNamaPanitiaPasal').innerText = valOrDefault(inKategori.value, '[Nama Panitia]');
+        });
 
         container.addEventListener('click', function(e) {
             const btn = e.target.closest('.hapus-anggota');
@@ -494,7 +493,7 @@
 
         function updatePreviewData() {
             const noSurat = document.getElementById('inNoSurat').value;
-            const kategori = document.getElementById('inKategori').value;
+            const namaPanitia = document.getElementById('inKategori').value;
             const namaPengadaan = document.getElementById('inNamaPengadaan').value;
             const batasNilai = document.getElementById('inBatasNilai').value;
             const tempat = document.getElementById('inTempat').value;
@@ -503,8 +502,10 @@
 
             document.getElementById('outNoSurat').innerText = valOrDefault(noSurat, '[Nomor Surat]');
             document.getElementById('outNoSuratLampiran').innerText = valOrDefault(noSurat, '[Nomor Surat]');
-            document.getElementById('outKategori').innerText = valOrDefault(kategori, '[KATEGORI BARANG DAN/ATAU JASA]');
-            document.getElementById('outNamaPengadaanPasal').innerText = valOrDefault(namaPengadaan, 'diisi nama pengadaan Barang dan/atau Jasa');
+            document.getElementById('outKategori').innerText = valOrDefault(namaPanitia, '[NAMA PANITIA]');
+            document.getElementById('outKategoriLampiran').innerText = valOrDefault(namaPanitia, '[Nama Panitia]');
+            document.getElementById('outNamaPanitiaPasal').innerText = valOrDefault(namaPanitia, '[Nama Panitia]');
+            document.getElementById('outNamaPengadaanPasal').innerText = valOrDefault(namaPengadaan, 'diisi nama pengadaan Barang');
             document.getElementById('outBatasNilai').innerHTML = batasNilai;
             
             document.getElementById('outTempat').innerText = valOrDefault(tempat, 'Jakarta');
