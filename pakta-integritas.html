@@ -126,10 +126,6 @@
             page-break-inside: avoid !important;
         }
 
-        .hidden-mode {
-            display: none !important;
-        }
-
         /* STYLING KHUSUS UNTUK TANDA TANGAN ZIG-ZAG (RAPAT BAWAH) */
         .ttd-ganjil {
             text-align: left;
@@ -147,204 +143,200 @@
     </style>
 </head>
 
-<body class="min-h-screen pb-10">
+<body class="min-h-screen">
 
-    <!-- ==================== BAGIAN 1: FORM INPUT ==================== -->
-    <div id="formSection" class="pt-10 px-4 flex justify-center transition-all">
-        <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-10">
+    <!-- ==================== LAYOUT SPLIT: FORM DI KIRI, PREVIEW DI KANAN ==================== -->
+    <div class="flex flex-col lg:flex-row min-h-screen">
 
-            <div class="text-center mb-8">
-                <h1 class="text-xl font-bold text-[#1e293b]">FORM PAKTA INTEGRITAS</h1>
-                <p class="text-[13px] text-[#64748b] mt-1">Isi data di bawah ini untuk mencetak dokumen Pakta
-                    Integritas.</p>
-            </div>
+        <!-- ==================== BAGIAN 1: FORM INPUT (KIRI) ==================== -->
+        <div id="formSection" class="w-full lg:w-1/2 py-8 px-4 flex justify-center bg-[#f1f5f9] lg:h-screen lg:overflow-y-auto transition-all">
+            <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-10 h-fit">
 
-            <form id="paktaForm" class="space-y-8">
-
-                <!-- DATA PENGADAAN -->
-                <div>
-                    <h2 class="section-title">Data Pengadaan</h2>
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="input-label">Nama Pengadaan</label>
-                            <input type="text" id="inp-pengadaan" class="input-field"
-                                placeholder="">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="input-label">Tempat</label>
-                                <input type="text" id="inp-tempat" class="input-field" placeholder="">
-                            </div>
-                            <div>
-                                <label class="input-label">Tanggal</label>
-                                <input type="date" id="inp-tanggal" class="input-field text-gray-500">
-                            </div>
-                        </div>
-                    </div>
+                <div class="text-center mb-8">
+                    <h1 class="text-xl font-bold text-[#1e293b]">FORM PAKTA INTEGRITAS</h1>
+                    <p class="text-[13px] text-[#64748b] mt-1">Isi data di bawah ini untuk mencetak dokumen Pakta
+                        Integritas.</p>
                 </div>
 
-                <!-- DATA PANITIA -->
-                <div>
-                    <h2 class="section-title">Data Panitia</h2>
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="input-label">Nama Ketua Panitia Pengadaan</label>
-                            <input type="text" id="inp-ketua" class="input-field" placeholder="Nama Ketua Panitia">
-                        </div>
+                <form id="paktaForm" class="space-y-8">
 
-                        <!-- Area Anggota Dinamis -->
-                        <div id="anggota-container" class="space-y-3">
-                            <div class="anggota-row">
-                                <label class="input-label">Anggota Panitia Pengadaan (Maksimal 15)</label>
-                                <div class="flex gap-2">
-                                    <input type="text" class="input-field inp-anggota"
-                                        placeholder="Nama Anggota Panitia">
-                                    <button type="button"
-                                        class="bg-[#ef4444] hover:bg-red-600 text-white px-3 rounded-md transition-colors btn-hapus"
-                                        disabled style="opacity: 0.5; cursor: not-allowed;">
-                                        <i class="ph ph-x"></i>
-                                    </button>
+                    <!-- DATA PENGADAAN -->
+                    <div>
+                        <h2 class="section-title">Data Pengadaan</h2>
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="input-label">Nama Pengadaan</label>
+                                <input type="text" id="inp-pengadaan" class="input-field"
+                                    placeholder="">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="input-label">Tempat</label>
+                                    <input type="text" id="inp-tempat" class="input-field" placeholder="">
+                                </div>
+                                <div>
+                                    <label class="input-label">Tanggal</label>
+                                    <input type="date" id="inp-tanggal" class="input-field text-gray-500">
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Tombol Tambah Anggota -->
-                        <button type="button" onclick="tambahAnggota()"
-                            class="w-full border-2 border-dashed border-[#93c5fd] bg-[#eff6ff] hover:bg-[#dbeafe] text-[#3b82f6] text-[13px] font-semibold py-2.5 rounded-md transition-colors flex justify-center items-center gap-2 mt-2">
-                            + Tambah Anggota
-                        </button>
-                    </div>
-                </div>
-
-                <!-- ACTION BUTTONS -->
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="window.location.href='procurement-template.html'"
-                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium transition-colors">
-                        Kembali
-                    </button>
-                    <button type="button" id="btnView"
-                        class="bg-[#0ea5e9] hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md flex-1 flex justify-center items-center gap-2 text-[13px] transition-colors">
-                        <i class="ph-fill ph-eye text-lg"></i> View
-                    </button>
-                    <button type="button" id="btnGeneratePDF"
-                        class="bg-[#10b981] hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-md flex-1 flex justify-center items-center gap-2 text-[13px] transition-colors">
-                        <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
-                    </button>
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== BAGIAN 2: PREVIEW PDF ==================== -->
-    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4 bg-[#333] min-h-screen">
-
-        <!-- Toolbar -->
-        <div
-            class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
-            <div class="flex items-center gap-3">
-                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors"
-                    title="Kembali ke Form">
-                    <i class="ph ph-arrow-left text-xl"></i>
-                </button>
-                <span class="text-sm font-medium">Preview: Pakta_Integritas.pdf</span>
-            </div>
-            <button type="button" id="btnDownloadToolbar"
-                class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-sm font-semibold transition-colors flex items-center gap-2">
-                <i class="ph ph-download-simple text-lg"></i> Download PDF
-            </button>
-        </div>
-
-        <div id="previewScrollWrapper" class="w-full flex-1 overflow-y-auto">
-            <!-- Area Kertas A4 -->
-            <div id="dokumenA4Container">
-                <div class="a4-paper">
-
-                    <!-- Logo SIG -->
-                    <div style="margin-bottom: 10px; margin-left: -5mm;">
-                        <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
                     </div>
 
-                    <!-- Judul -->
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <div style="font-weight: bold; font-size: 12pt; text-decoration: underline;">
-                            PAKTA INTEGRITAS
+                    <!-- DATA PANITIA -->
+                    <div>
+                        <h2 class="section-title">Data Panitia</h2>
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="input-label">Nama Ketua Panitia Pengadaan</label>
+                                <input type="text" id="inp-ketua" class="input-field" placeholder="Nama Ketua Panitia">
+                            </div>
+
+                            <!-- Area Anggota Dinamis -->
+                            <div id="anggota-container" class="space-y-3">
+                                <div class="anggota-row">
+                                    <label class="input-label">Anggota Panitia Pengadaan (Maksimal 15)</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" class="input-field inp-anggota"
+                                            placeholder="Nama Anggota Panitia">
+                                        <button type="button"
+                                            class="bg-[#ef4444] hover:bg-red-600 text-white px-3 rounded-md transition-colors btn-hapus"
+                                            disabled style="opacity: 0.5; cursor: not-allowed;">
+                                            <i class="ph ph-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Tambah Anggota -->
+                            <button type="button" onclick="tambahAnggota()"
+                                class="w-full border-2 border-dashed border-[#93c5fd] bg-[#eff6ff] hover:bg-[#dbeafe] text-[#3b82f6] text-[13px] font-semibold py-2.5 rounded-md transition-colors flex justify-center items-center gap-2 mt-2">
+                                + Tambah Anggota
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Paragraf Pembuka -->
-                    <div style="text-align: justify; margin-bottom: 10px;">
-                        Kami yang bertanda tangan di bawah ini, dalam rangka Pengadaan <span
-                            id="out-pengadaan">......................................................</span>, dengan ini
-                        menyatakan bahwa:
+                    <!-- ACTION BUTTONS -->
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="window.location.href='procurement-template.html'"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2.5 px-4 text-sm font-medium transition-colors flex-1">
+                            Kembali
+                        </button>
+                        <button type="button" id="btnGeneratePDF"
+                            class="bg-[#10b981] hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-md flex-1 flex justify-center items-center gap-2 text-[13px] transition-colors">
+                            <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
+                        </button>
                     </div>
 
-                    <!-- List Pernyataan -->
-                    <table
-                        style="width: 100%; border: none; margin-top: 10px; margin-bottom: 10px; line-height: 1.6; table-layout: fixed;">
-                        <tr>
-                            <td
-                                style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
-                                1.</td>
-                            <td
-                                style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
-                                Tidak akan melakukan praktek Korupsi, Kolusi, dan Nepotisme (KKN)</td>
-                        </tr>
-                        <tr>
-                            <td
-                                style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
-                                2.</td>
-                            <td
-                                style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
-                                Akan melaporkan kepada pihak yang berwajib/berwenang apabila mengetahui ada indikasi KKN
-                                di dalam proses pengadaan ini</td>
-                        </tr>
-                        <tr>
-                            <td
-                                style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
-                                3.</td>
-                            <td
-                                style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
-                                Dalam proses pengadaan ini, berjanji akan melaksanakan tugas secara bersih, transparan,
-                                dan professional dalam arti akan mengarahkan segala kemampuan dan sumber daya secara
-                                optimal untuk memberikan hasil kerja terbaik mulai dari penyiapan penawaran, pelaksanaan
-                                dan penyelesaian pekerjaan/kegiatan ini.</td>
-                        </tr>
-                        <tr>
-                            <td
-                                style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
-                                4.</td>
-                            <td
-                                style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
-                                Apabila saya melanggar hal-hal yang telah saya nyatakan dalam PAKTA INTEGRITAS ini, saya
-                                bersedia dikenakan sanksi moral, sanksi administrasi serta dituntut ganti rugi dan
-                                pidana sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.</td>
-                        </tr>
-                    </table>
+                </form>
+            </div>
+        </div>
 
-                    <!-- Tanggal & Tanda Tangan -->
-                    <div style="margin-top: 30px; margin-bottom: 15px;">
-                        <span id="out-tempat">.......................</span>, <span id="out-tanggal">dd/mm/yy</span>
-                    </div>
+        <!-- ==================== BAGIAN 2: PREVIEW PDF (KANAN) ==================== -->
+        <div id="previewSection" class="w-full lg:w-1/2 flex flex-col items-center pb-12 pt-4 px-4 bg-[#333] lg:h-screen lg:overflow-y-auto">
 
-                    <!-- Tabel Tanda Tangan Dinamis (Kolom Resmi) -->
-                    <table class="signature-table">
-                        <thead>
+            <!-- Toolbar -->
+            <div
+                class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-0 z-50">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium">Preview: Pakta_Integritas.pdf</span>
+                </div>
+                <button type="button" id="btnDownloadToolbar"
+                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-sm font-semibold transition-colors flex items-center gap-2">
+                    <i class="ph ph-download-simple text-lg"></i> Download PDF
+                </button>
+            </div>
+
+            <div id="previewScrollWrapper" class="w-full flex-1 overflow-x-auto">
+                <!-- Area Kertas A4 -->
+                <div id="dokumenA4Container">
+                    <div class="a4-paper shrink-0">
+
+                        <!-- Logo SIG -->
+                        <div style="margin-bottom: 10px; margin-left: -5mm;">
+                            <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+                        </div>
+
+                        <!-- Judul -->
+                        <div style="text-align: center; margin-bottom: 25px;">
+                            <div style="font-weight: bold; font-size: 12pt; text-decoration: underline;">
+                                PAKTA INTEGRITAS
+                            </div>
+                        </div>
+
+                        <!-- Paragraf Pembuka -->
+                        <div style="text-align: justify; margin-bottom: 10px;">
+                            Kami yang bertanda tangan di bawah ini, dalam rangka Pengadaan <span
+                                id="out-pengadaan">......................................................</span>, dengan ini
+                            menyatakan bahwa:
+                        </div>
+
+                        <!-- List Pernyataan -->
+                        <table
+                            style="width: 100%; border: none; margin-top: 10px; margin-bottom: 10px; line-height: 1.6; table-layout: fixed;">
                             <tr>
-                                <th style="width: 8%; text-align: center; background-color: #f8fafc;">No</th>
-                                <th style="width: 42%; text-align: center; background-color: #f8fafc;">Nama Lengkap</th>
-                                <th style="width: 25%; text-align: center; background-color: #f8fafc;">Jabatan Panitia
-                                </th>
-                                <th style="width: 25%; text-align: center; background-color: #f8fafc;">Tanda Tangan</th>
+                                <td
+                                    style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
+                                    1.</td>
+                                <td
+                                    style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
+                                    Tidak akan melakukan praktek Korupsi, Kolusi, dan Nepotisme (KKN)</td>
                             </tr>
-                        </thead>
-                        <tbody id="out-signature-list">
-                            <!-- Akan diisi otomatis oleh JS -->
-                        </tbody>
-                    </table>
+                            <tr>
+                                <td
+                                    style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
+                                    2.</td>
+                                <td
+                                    style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
+                                    Akan melaporkan kepada pihak yang berwajib/berwenang apabila mengetahui ada indikasi KKN
+                                    di dalam proses pengadaan ini</td>
+                            </tr>
+                            <tr>
+                                <td
+                                    style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
+                                    3.</td>
+                                <td
+                                    style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
+                                    Dalam proses pengadaan ini, berjanji akan melaksanakan tugas secara bersih, transparan,
+                                    dan professional dalam arti akan mengarahkan segala kemampuan dan sumber daya secara
+                                    optimal untuk memberikan hasil kerja terbaik mulai dari penyiapan penawaran, pelaksanaan
+                                    dan penyelesaian pekerjaan/kegiatan ini.</td>
+                            </tr>
+                            <tr>
+                                <td
+                                    style="width: 5%; vertical-align: top; border: none; padding: 0 10px 8px 0; white-space: nowrap;">
+                                    4.</td>
+                                <td
+                                    style="width: 95%; vertical-align: top; border: none; padding: 0 0 8px 0; text-align: justify; word-wrap: break-word;">
+                                    Apabila saya melanggar hal-hal yang telah saya nyatakan dalam PAKTA INTEGRITAS ini, saya
+                                    bersedia dikenakan sanksi moral, sanksi administrasi serta dituntut ganti rugi dan
+                                    pidana sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.</td>
+                            </tr>
+                        </table>
 
+                        <!-- Tanggal & Tanda Tangan -->
+                        <div style="margin-top: 30px; margin-bottom: 15px;">
+                            <span id="out-tempat">.......................</span>, <span id="out-tanggal">dd/mm/yy</span>
+                        </div>
+
+                        <!-- Tabel Tanda Tangan Dinamis (Kolom Resmi) -->
+                        <table class="signature-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%; text-align: center; background-color: #f8fafc;">No</th>
+                                    <th style="width: 42%; text-align: center; background-color: #f8fafc;">Nama Lengkap</th>
+                                    <th style="width: 25%; text-align: center; background-color: #f8fafc;">Jabatan Panitia
+                                    </th>
+                                    <th style="width: 25%; text-align: center; background-color: #f8fafc;">Tanda Tangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="out-signature-list">
+                                <!-- Akan diisi otomatis oleh JS -->
+                            </tbody>
+                        </table>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -352,6 +344,7 @@
 
     <!-- ==================== LOGICS ==================== -->
     <script>
+        const paktaForm = document.getElementById('paktaForm');
         const anggotaContainer = document.getElementById('anggota-container');
         const formSection = document.getElementById('formSection');
         const previewSection = document.getElementById('previewSection');
@@ -392,11 +385,13 @@
             `;
             anggotaContainer.appendChild(tr);
             updateHapusButtons();
+            transferDataKePDF();
         }
 
         function hapusAnggota(btn) {
             btn.closest('.anggota-row').remove();
             updateHapusButtons();
+            transferDataKePDF();
         }
 
         // Format Tanggal jadi dd/mm/yyyy
@@ -462,24 +457,13 @@
             });
         }
 
-        // Toggle Views
-        document.getElementById('btnView').addEventListener('click', () => {
-            transferDataKePDF();
-            formSection.classList.add('hidden-mode');
-            previewSection.classList.remove('hidden-mode');
-            previewSection.classList.add('flex');
-            document.body.style.backgroundColor = '#333';
-        });
-
-        document.getElementById('btnBackToForm').addEventListener('click', () => {
-            previewSection.classList.add('hidden-mode');
-            previewSection.classList.remove('flex');
-            formSection.classList.remove('hidden-mode');
-            document.body.style.backgroundColor = '#f1f5f9';
-        });
+        // Update preview otomatis secara live saat form diubah
+        paktaForm.addEventListener('input', transferDataKePDF);
+        paktaForm.addEventListener('change', transferDataKePDF);
 
         // Unduh PDF Kualitas HD & Anti Potong
         function unduhPDF() {
+            transferDataKePDF();
             const elemenContainer = document.getElementById('dokumenA4Container');
             const previewScroll = document.getElementById('previewScrollWrapper');
 
@@ -517,20 +501,14 @@
         }
 
         document.getElementById('btnGeneratePDF').addEventListener('click', () => {
-            transferDataKePDF();
-            formSection.classList.add('hidden-mode');
-            previewSection.classList.remove('hidden-mode');
-            previewSection.classList.add('flex');
-            document.body.style.backgroundColor = '#333';
-
-            // Beri waktu browser merender tabelnya sebelum di-screenshot
-            setTimeout(unduhPDF, 500);
+            unduhPDF();
         });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', unduhPDF);
 
         // Inisialisasi awal
         updateHapusButtons();
+        transferDataKePDF();
 
     </script>
 </body>
