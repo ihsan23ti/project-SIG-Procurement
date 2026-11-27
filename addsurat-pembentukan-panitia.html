@@ -96,308 +96,308 @@
         .footer-logo-block { display: flex; width: 40px; height: 3px; }
         .footer-logo-block .black-box { flex: 1; background-color: #000; }
         .footer-logo-block .red-box { flex: 1; background-color: #dc2626; }
-
-        .hidden-mode { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <!-- ==================== BAGIAN 1: FORM INPUT ==================== -->
-    <div id="formSection" class="flex justify-center py-10 px-4 bg-[#F3F4F6] min-h-screen transition-all">
-        <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-fit">
+    <!-- ==================== LAYOUT SPLIT: FORM DI KIRI, PREVIEW DI KANAN ==================== -->
+    <div class="flex flex-col lg:flex-row min-h-screen">
 
-            <div class="mb-6 border-b pb-4">
-                <h2 class="text-lg font-bold text-gray-800">Data Pengadaan</h2>
+        <!-- ==================== BAGIAN 1: FORM INPUT (KIRI) ==================== -->
+        <div id="formSection" class="w-full lg:w-1/2 flex justify-center py-8 px-4 bg-[#F3F4F6] lg:h-screen lg:overflow-y-auto transition-all">
+            <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-fit">
+
+                <div class="mb-6 border-b pb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Data Pengadaan</h2>
+                </div>
+
+                <form id="addSuratForm" class="flex flex-col gap-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Addendum</label>
+                            <input type="text" id="no-surat-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Perubahan Ke- (Angka/Huruf)</label>
+                            <input type="text" id="perubahan-ke" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Panitia</label>
+                            <input type="text" id="nama-panitia" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
+                            <input type="text" id="nama-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Pembentukan Sebelumnya</label>
+                            <input type="text" id="no-surat-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Surat Pembentukan Sebelumnya</label>
+                            <input type="date" id="tgl-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Batas Nilai Pengadaan</label>
+                            <select id="batas-nilai" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                <option value="&le; Rp5.000.000.000,00">&le; Rp5.000.000.000,00 (Kecil/Sama Dengan 5M)</option>
+                                <option value="&gt; Rp5.000.000.000,00">&gt; Rp5.000.000.000,00 (Besar Dari 5M)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Ditetapkan Addendum</label>
+                            <input type="date" id="tgl-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Masa Berlaku (Pasal 3 ayat 3)</label>
+                            <input type="date" id="masa-berlaku" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="mt-2 border-t pt-4">
+                        <h2 class="text-lg font-bold text-gray-800 mb-2">Susunan Keanggotaan Panitia Pengadaan</h2>
+                        
+                        <div id="anggota-container" class="flex flex-col gap-2">
+                            <!-- Baris 1 -->
+                            <div class="flex gap-2 items-end row-anggota bg-gray-50 p-3 rounded border border-gray-200">
+                                <div class="w-1/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Jabatan</label>
+                                    <select class="anggota-jabatan w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none bg-white">
+                                        <option value="Ketua" selected>Ketua</option>
+                                        <option value="Anggota">Anggota</option>
+                                    </select>
+                                </div>
+                                <div class="w-2/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
+                                    <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <div class="w-1/6">
+                                    <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
+                                    <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <div class="w-2/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Entitas</label>
+                                    <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota" disabled>
+                                    <i class="ph ph-x text-lg"></i>
+                                </button>
+                            </div>
+                            <!-- Baris 2 -->
+                            <div class="flex gap-2 items-end row-anggota bg-gray-50 p-3 rounded border border-gray-200">
+                                <div class="w-1/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Jabatan</label>
+                                    <select class="anggota-jabatan w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none bg-white">
+                                        <option value="Ketua">Ketua</option>
+                                        <option value="Anggota" selected>Anggota</option>
+                                    </select>
+                                </div>
+                                <div class="w-2/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
+                                    <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <div class="w-1/6">
+                                    <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
+                                    <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <div class="w-2/6">
+                                    <label class="block text-[11px] font-semibold mb-1">Entitas</label>
+                                    <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
+                                </div>
+                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota">
+                                    <i class="ph ph-x text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" id="btnTambahAnggota" class="w-full mt-3 border border-dashed border-blue-400 text-blue-500 hover:bg-blue-50 rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph ph-plus"></i> Tambah Anggota
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="window.location.href='procurement-template.html'" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium transition-colors">
+                            Kembali
+                        </button>
+                        <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <form id="addSuratForm" class="flex flex-col gap-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Addendum</label>
-                        <input type="text" id="no-surat-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Perubahan Ke- (Angka/Huruf)</label>
-                        <input type="text" id="perubahan-ke" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Panitia</label>
-                        <input type="text" id="nama-panitia" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
-                        <input type="text" id="nama-pengadaan" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Surat Pembentukan Sebelumnya</label>
-                        <input type="text" id="no-surat-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Surat Pembentukan Sebelumnya</label>
-                        <input type="date" id="tgl-sebelumnya" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Batas Nilai Pengadaan</label>
-                        <select id="batas-nilai" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
-                            <option value="&le; Rp5.000.000.000,00">&le; Rp5.000.000.000,00 (Kecil/Sama Dengan 5M)</option>
-                            <option value="&gt; Rp5.000.000.000,00">&gt; Rp5.000.000.000,00 (Besar Dari 5M)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Ditetapkan Addendum</label>
-                        <input type="date" id="tgl-addendum" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Masa Berlaku (Pasal 3 ayat 3)</label>
-                        <input type="date" id="masa-berlaku" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                </div>
-
-                <div class="mt-2 border-t pt-4">
-                    <h2 class="text-lg font-bold text-gray-800 mb-2">Susunan Keanggotaan Panitia Pengadaan</h2>
-                    
-                    <div id="anggota-container" class="flex flex-col gap-2">
-                        <!-- Baris 1 -->
-                        <div class="flex gap-2 items-end row-anggota bg-gray-50 p-3 rounded border border-gray-200">
-                            <div class="w-1/6">
-                                <label class="block text-[11px] font-semibold mb-1">Jabatan</label>
-                                <select class="anggota-jabatan w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none bg-white">
-                                    <option value="Ketua" selected>Ketua</option>
-                                    <option value="Anggota">Anggota</option>
-                                </select>
-                            </div>
-                            <div class="w-2/6">
-                                <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
-                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <div class="w-1/6">
-                                <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
-                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <div class="w-2/6">
-                                <label class="block text-[11px] font-semibold mb-1">Entitas</label>
-                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota" disabled>
-                                <i class="ph ph-x text-lg"></i>
-                            </button>
-                        </div>
-                        <!-- Baris 2 -->
-                        <div class="flex gap-2 items-end row-anggota bg-gray-50 p-3 rounded border border-gray-200">
-                            <div class="w-1/6">
-                                <label class="block text-[11px] font-semibold mb-1">Jabatan</label>
-                                <select class="anggota-jabatan w-full border border-gray-300 rounded px-2 py-1.5 text-sm outline-none bg-white">
-                                    <option value="Ketua">Ketua</option>
-                                    <option value="Anggota" selected>Anggota</option>
-                                </select>
-                            </div>
-                            <div class="w-2/6">
-                                <label class="block text-[11px] font-semibold mb-1">Nama Lengkap</label>
-                                <input type="text" class="anggota-nama w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <div class="w-1/6">
-                                <label class="block text-[11px] font-semibold mb-1">No Pegawai</label>
-                                <input type="text" class="anggota-no w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <div class="w-2/6">
-                                <label class="block text-[11px] font-semibold mb-1">Entitas</label>
-                                <input type="text" class="anggota-entitas w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none">
-                            </div>
-                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-anggota">
-                                <i class="ph ph-x text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" id="btnTambahAnggota" class="w-full mt-3 border border-dashed border-blue-400 text-blue-500 hover:bg-blue-50 rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
-                        <i class="ph ph-plus"></i> Tambah Anggota
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-[1fr_1fr_1fr] gap-3 mt-4 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="window.location.href='procurement-template.html'" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium transition-colors">
-                        Kembali
-                    </button>
-                    <button type="button" id="btnView" class="bg-[#0ea5e9] hover:bg-blue-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors border border-blue-600 shadow-sm">
-                        <i class="ph-fill ph-eye text-lg"></i> View
-                    </button>
-                    <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
-                        <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
-                    </button>
-                </div>
-            </form>
         </div>
-    </div>
 
-    <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (3 HALAMAN) ==================== -->
-    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4">
+        <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (3 HALAMAN DI KANAN) ==================== -->
+        <div id="previewSection" class="w-full lg:w-1/2 flex flex-col items-center pb-12 pt-4 px-4 bg-[#333333] lg:h-screen lg:overflow-y-auto">
 
-        <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
-            <div class="flex items-center gap-3">
-                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Kembali">
-                    <i class="ph ph-arrow-left text-xl"></i>
+            <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-0 z-50">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium truncate">Preview: Addendum_Surat_Panitia.pdf</span>
+                </div>
+                <button type="button" id="btnDownloadToolbar" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 rounded text-sm transition-colors flex items-center gap-2">
+                    <i class="ph ph-download-simple text-lg"></i> Download PDF
                 </button>
-                <span class="text-sm font-medium truncate">Preview: Addendum_Surat_Panitia.pdf</span>
             </div>
-            <button type="button" id="btnDownloadToolbar" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 rounded text-sm transition-colors flex items-center gap-2">
-                <i class="ph ph-download-simple text-lg"></i> Download PDF
-            </button>
+
+            <div class="w-full overflow-x-auto">
+                <div id="dokumenA4Container">
+                    
+                    <!-- ================= HALAMAN 1 ================= -->
+                    <div class="a4-paper shrink-0">
+                        <div style="text-align: center; margin-bottom: 25px;">
+                            <h3 style="font-size: 11pt; font-weight: bold; margin: 0; text-decoration: underline;">ADDENDUM SURAT PEMBENTUKAN PANITIA PENGADAAN</h3>
+                            <h3 style="font-size: 11pt; font-weight: bold; margin: 5px 0 0 0;">Nomor: <span id="outNomorAddendum"></span></h3>
+                        </div>
+
+                        <table class="pdf-table-header" style="width: 100%; margin-bottom: 20px;">
+                            <tr>
+                                <td style="width: 15%; font-weight: bold;">Menimbang</td>
+                                <td style="width: 3%; text-align: center;">:</td>
+                                <td style="width: 82%;">
+                                    <p style="margin: 0 0 8px 0;"><b>a.</b> bahwa dalam pelaksanaan proses pengadaan barang dan/atau jasa, PT Semen Indonesia (Persero) Tbk membentuk panitia pengadaan untuk melaksanakan proses pengadaan pada tahap persiapan pemilihan penyedia dan pelaksanaan pemilihan penyedia;</p>
+                                    <p style="margin: 0 0 8px 0;"><b>b.</b> bahwa berdasarkan Pedoman Pengadaan Barang dan/atau Jasa Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026, panitia pengadaan yang menjalankan tugas sebagaimana dimaksud dalam huruf a di atas dibentuk berdasarkan surat pembentukan panitia pengadaan;</p>
+                                    <p style="margin: 0;"><b>c.</b> berdasarkan pertimbangan sebagaimana dimaksud dalam huruf a di atas, pembentukan panitia pengadaan tersebut selanjutnya ditetapkan melalui Surat Pembentukan Panitia Pengadaan ("<b>Surat Pembentukan Panitia Pengadaan</b>")</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding-top: 15px;">Mengingat</td>
+                                <td style="text-align: center; padding-top: 15px;">:</td>
+                                <td style="padding-top: 15px;">
+                                    <p style="margin: 0 0 8px 0;"><b>1.</b> Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026.</p>
+                                    <p style="margin: 0;"><b>2.</b> Surat Pembentukan Panitia Pengadaan nomor <span id="outNomorSebelumnya1"></span> tanggal <span id="outTglSebelumnya1"></span> tentang Pembentukan Panitia Pengadaan (<span id="outNamaPengadaan1"></span>)</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding-top: 15px;">Menetapkan</td>
+                                <td style="text-align: center; padding-top: 15px;">:</td>
+                                <td style="padding-top: 15px;">
+                                    <b>PERUBAHAN <span id="outPerubahanKe"></span> SURAT PEMBENTUKAN PANITIA PENGADAAN [<span id="outNamaPanitiaMenetapkan"></span>]</b>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="text-align: center; font-weight: bold; margin: 25px 0 15px 0;">PASAL 1</div>
+                        <p style="margin: 0 0 15px 0;">Kata dan/atau frasa yang memiliki huruf depan yang ditulis kapital dalam Surat Pembentukan Panitia Pengadaan ini memiliki arti, makna, dan/atau maksud sebagai berikut:</p>
+                        <p style="margin: 0 0 10px 0;"><b>1. Panitia Pengadaan</b> memiliki makna sebagaimana dimaksud dalam Pedoman Pengadaan Barang dan/atau Jasa.</p>
+                        <p style="margin: 0 0 10px 0;"><b>2. Pedoman Pengadaan Barang dan/atau Jasa</b> adalah Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026.</p>
+                        <p style="margin: 0 0 10px 0;"><b>3. Prosedur Pengadaan Barang dan/atau Jasa</b> adalah dokumen-dokumen prosedur pengadaan barang dan/atau jasa Perusahaan yang merupakan turunan dari Pedoman Pengadaan Barang dan/atau Jasa.</p>
+
+                        <!-- FOOTER PAGE 1 -->
+                        <div class="pdf-footer">
+                            <div class="pdf-footer-text">
+                                <b>PT Semen Indonesia (Persero) Tbk.</b><br>
+                                South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
+                                5261176 <b>www.sig.id</b>
+                            </div>
+                            <div class="footer-logo-block">
+                                <div class="black-box"></div>
+                                <div class="red-box"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= HALAMAN 2 ================= -->
+                    <div class="a4-paper shrink-0">
+                        <div style="text-align: center; font-weight: bold; margin: 30px 0 15px 0;">PASAL 2</div>
+                        <p style="margin: 0 0 10px 0;"><b>(1)</b> Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan <span id="outNamaPanitiaPasal2"></span> dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</p>
+                        <p style="margin: 0 0 10px 0;"><b>(2)</b> Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan <span id="outNamaPengadaan2"></span>, sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</p>
+
+                        <div style="text-align: center; font-weight: bold; margin: 25px 0 15px 0;">PASAL 3</div>
+                        <p style="margin: 0 0 10px 0;"><b>(1)</b> Hal-hal yang belum dan/atau belum cukup diatur dalam Surat Pembentukan Panitia Pengadaan ini akan diatur lebih lanjut oleh GH of Procurement.</p>
+                        <p style="margin: 0 0 10px 0;"><b>(2)</b> Dengan diberlakukannya Surat Pembentukan Panitia Pengadaan ini, maka Surat Pembentukan Panitia Pengadaan nomor <span id="outNomorSebelumnya2"></span> tentang Pengadaan <span id="outKategoriPengadaan2"></span> dinyatakan tidak berlaku.</p>
+                        <p style="margin: 0 0 25px 0;"><b>(3)</b> Surat Pembentukan Panitia Pengadaan ini berlaku sejak tanggal ditetapkan dan berakhir sampai dengan <span id="outMasaBerlaku"></span>.</p>
+
+                        <div style="margin-bottom: 25px;">
+                            Ditetapkan di : Jakarta<br>
+                            Pada tanggal : <span id="outTglAddendum1"></span><br>
+                            <b>PT Semen Indonesia (Persero) Tbk.</b>
+                        </div>
+
+                        <!-- TABEL TANDA TANGAN HANYA GH PROCUREMENT -->
+                        <table style="width: 100%; text-align: left; border: none; margin-top: 30px;">
+                            <tr>
+                                <td style="border: none; padding: 0;">Disetujui oleh:</td>
+                            </tr>
+                            <tr>
+                                <td style="height: 60px; border: none;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border: none; padding: 0; vertical-align: top;">
+                                    <b>Ade Meiriyadi</b><br>
+                                    GH of Procurement
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- FOOTER PAGE 2 -->
+                        <div class="pdf-footer">
+                            <div class="pdf-footer-text">
+                                <b>PT Semen Indonesia (Persero) Tbk.</b><br>
+                                South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
+                                5261176 <b>www.sig.id</b>
+                            </div>
+                            <div class="footer-logo-block">
+                                <div class="black-box"></div>
+                                <div class="red-box"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= HALAMAN 3 ================= -->
+                    <div class="a4-paper shrink-0">
+                        <!-- Kotak Lampiran Kanan Atas -->
+                        <div style="border: 1px solid black; padding: 12px; width: 320px; float: right; font-size: 10.5pt; line-height: 1.6; margin-top: 20px;">
+                            Lampiran 1 Surat Pembentukan Panitia<br>
+                            Pengadaan<br>
+                            PT Semen Indonesia (Persero) Tbk<br>
+                            Nomor: <span id="outNomorAddendumLampiran"></span><br>
+                            Tanggal: <span id="outTglAddendumLampiran"></span><br>
+                            Halaman: 1 dari 1
+                        </div>
+                        <div style="clear: both;"></div>
+
+                        <div class="font-bold text-center mt-8 mb-6 leading-snug">
+                            <div>SUSUNAN KEANGGOTAAN</div>
+                            <div>Panitia Pengadaan <span id="outNamaPanitiaLampiran">[Nama Panitia]</span></div>
+                            <div>Dengan Nilai <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></div>
+                        </div>
+
+                        <table class="a4-table" id="outTableAnggota">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Jabatan Panitia<br>Pengadaan</th>
+                                    <th style="width: 30%;">Nama</th>
+                                    <th style="width: 20%;">Nomor Pegawai</th>
+                                    <th style="width: 25%;">Entitas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Terisi otomatis oleh Javascript -->
+                            </tbody>
+                        </table>
+
+                        <!-- FOOTER PAGE 3 -->
+                        <div class="pdf-footer">
+                            <div class="pdf-footer-text">
+                                <b>PT Semen Indonesia (Persero) Tbk.</b><br>
+                                South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
+                                5261176 <b>www.sig.id</b>
+                            </div>
+                            <div class="footer-logo-block">
+                                <div class="black-box"></div>
+                                <div class="red-box"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
-        <div id="dokumenA4Container">
-            
-            <!-- ================= HALAMAN 1 ================= -->
-            <div class="a4-paper">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <h3 style="font-size: 11pt; font-weight: bold; margin: 0; text-decoration: underline;">ADDENDUM SURAT PEMBENTUKAN PANITIA PENGADAAN</h3>
-                    <h3 style="font-size: 11pt; font-weight: bold; margin: 5px 0 0 0;">Nomor: <span id="outNomorAddendum"></span></h3>
-                </div>
-
-                <table class="pdf-table-header" style="width: 100%; margin-bottom: 20px;">
-                    <tr>
-                        <td style="width: 15%; font-weight: bold;">Menimbang</td>
-                        <td style="width: 3%; text-align: center;">:</td>
-                        <td style="width: 82%;">
-                            <p style="margin: 0 0 8px 0;"><b>a.</b> bahwa dalam pelaksanaan proses pengadaan barang dan/atau jasa, PT Semen Indonesia (Persero) Tbk membentuk panitia pengadaan untuk melaksanakan proses pengadaan pada tahap persiapan pemilihan penyedia dan pelaksanaan pemilihan penyedia;</p>
-                            <p style="margin: 0 0 8px 0;"><b>b.</b> bahwa berdasarkan Pedoman Pengadaan Barang dan/atau Jasa Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026, panitia pengadaan yang menjalankan tugas sebagaimana dimaksud dalam huruf a di atas dibentuk berdasarkan surat pembentukan panitia pengadaan;</p>
-                            <p style="margin: 0;"><b>c.</b> berdasarkan pertimbangan sebagaimana dimaksud dalam huruf a di atas, pembentukan panitia pengadaan tersebut selanjutnya ditetapkan melalui Surat Pembentukan Panitia Pengadaan ("<b>Surat Pembentukan Panitia Pengadaan</b>")</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold; padding-top: 15px;">Mengingat</td>
-                        <td style="text-align: center; padding-top: 15px;">:</td>
-                        <td style="padding-top: 15px;">
-                            <p style="margin: 0 0 8px 0;"><b>1.</b> Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026.</p>
-                            <p style="margin: 0;"><b>2.</b> Surat Pembentukan Panitia Pengadaan nomor <span id="outNomorSebelumnya1"></span> tanggal <span id="outTglSebelumnya1"></span> tentang Pengadaan (<span id="outNamaPengadaan1"></span>)</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold; padding-top: 15px;">Menetapkan</td>
-                        <td style="text-align: center; padding-top: 15px;">:</td>
-                        <td style="padding-top: 15px;">
-                            <b>PERUBAHAN <span id="outPerubahanKe"></span> SURAT PEMBENTUKAN PANITIA PENGADAAN [<span id="outNamaPanitiaMenetapkan"></span>]</b>
-                        </td>
-                    </tr>
-                </table>
-
-                <div style="text-align: center; font-weight: bold; margin: 25px 0 15px 0;">PASAL 1</div>
-                <p style="margin: 0 0 15px 0;">Kata dan/atau frasa yang memiliki huruf depan yang ditulis kapital dalam Surat Pembentukan Panitia Pengadaan ini memiliki arti, makna, dan/atau maksud sebagai berikut:</p>
-                <p style="margin: 0 0 10px 0;"><b>1. Panitia Pengadaan</b> memiliki makna sebagaimana dimaksud dalam Pedoman Pengadaan Barang dan/atau Jasa.</p>
-                <p style="margin: 0 0 10px 0;"><b>2. Pedoman Pengadaan Barang dan/atau Jasa</b> adalah Pedoman Pengadaan Barang dan/atau Jasa, Kode Dokumen M/SIG/PRO/002, Revisi ke-2 Tanggal Revisi 01 November 2026.</p>
-                <p style="margin: 0 0 10px 0;"><b>3. Prosedur Pengadaan Barang dan/atau Jasa</b> adalah dokumen-dokumen prosedur pengadaan barang dan/atau jasa Perusahaan yang merupakan turunan dari Pedoman Pengadaan Barang dan/atau Jasa.</p>
-
-                <!-- FOOTER PAGE 1 -->
-                <div class="pdf-footer">
-                    <div class="pdf-footer-text">
-                        <b>PT Semen Indonesia (Persero) Tbk.</b><br>
-                        South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
-                        5261176 <b>www.sig.id</b>
-                    </div>
-                    <div class="footer-logo-block">
-                        <div class="black-box"></div>
-                        <div class="red-box"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= HALAMAN 2 ================= -->
-            <div class="a4-paper">
-                <div style="text-align: center; font-weight: bold; margin: 30px 0 15px 0;">PASAL 2</div>
-                <p style="margin: 0 0 10px 0;"><b>(1)</b> Membentuk Panitia Pengadaan berdasarkan Surat Pembentukan Panitia Pengadaan <span id="outNamaPanitiaPasal2"></span> dengan susunan keanggotaan sebagaimana tercantum dalam Lampiran Surat Pembentukan Panitia Pengadaan ini.</p>
-                <p style="margin: 0 0 10px 0;"><b>(2)</b> Ruang lingkup tugas Panitia Pengadaan ini adalah menjalankan tahap persiapan pemilihan penyedia dan tahap pelaksanaan pemilihan penyedia dalam proses pengadaan (<span id="outNamaPengadaan2"></span>), sesuai dengan Pedoman Pengadaan Barang dan/atau Jasa dan Prosedur Pengadaan Barang dan/atau Jasa berikut seluruh perubahannya yang berlaku pada saat Surat Pembentukan Panitia Pengadaan ini berlaku.</p>
-
-                <div style="text-align: center; font-weight: bold; margin: 25px 0 15px 0;">PASAL 3</div>
-                <p style="margin: 0 0 10px 0;"><b>(1)</b> Hal-hal yang belum dan/atau belum cukup diatur dalam Surat Pembentukan Panitia Pengadaan ini akan diatur lebih lanjut oleh GH of Procurement.</p>
-                <p style="margin: 0 0 10px 0;"><b>(2)</b> Dengan diberlakukannya Surat Pembentukan Panitia Pengadaan ini, maka Surat Pembentukan Panitia Pengadaan nomor <span id="outNomorSebelumnya2"></span> tentang Pengadaan (<span id="outKategoriPengadaan2"></span>) dinyatakan tidak berlaku.</p>
-                <p style="margin: 0 0 25px 0;"><b>(3)</b> Surat Pembentukan Panitia Pengadaan ini berlaku sejak tanggal ditetapkan dan berakhir sampai dengan <span id="outMasaBerlaku"></span>.</p>
-
-                <div style="margin-bottom: 25px;">
-                    Ditetapkan di : Jakarta<br>
-                    Pada tanggal : <span id="outTglAddendum1"></span><br>
-                    <b>PT Semen Indonesia (Persero) Tbk.</b>
-                </div>
-
-                <!-- TABEL TANDA TANGAN HANYA GH PROCUREMENT -->
-                <table style="width: 100%; text-align: left; border: none; margin-top: 30px;">
-                    <tr>
-                        <td style="border: none; padding: 0;">Disetujui oleh:</td>
-                    </tr>
-                    <tr>
-                        <td style="height: 60px; border: none;"></td>
-                    </tr>
-                    <tr>
-                        <td style="border: none; padding: 0; vertical-align: top;">
-                            <b>Ade Meiriyadi</b><br>
-                            GH of Procurement
-                        </td>
-                    </tr>
-                </table>
-
-                <!-- FOOTER PAGE 2 -->
-                <div class="pdf-footer">
-                    <div class="pdf-footer-text">
-                        <b>PT Semen Indonesia (Persero) Tbk.</b><br>
-                        South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
-                        5261176 <b>www.sig.id</b>
-                    </div>
-                    <div class="footer-logo-block">
-                        <div class="black-box"></div>
-                        <div class="red-box"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= HALAMAN 3 ================= -->
-            <div class="a4-paper">
-                <!-- Kotak Lampiran Kanan Atas -->
-                <div style="border: 1px solid black; padding: 12px; width: 320px; float: right; font-size: 10.5pt; line-height: 1.6; margin-top: 20px;">
-                    Lampiran 1 Surat Pembentukan Panitia<br>
-                    Pengadaan<br>
-                    PT Semen Indonesia (Persero) Tbk<br>
-                    Nomor: <span id="outNomorAddendumLampiran"></span><br>
-                    Tanggal: <span id="outTglAddendumLampiran"></span><br>
-                    Halaman: 1 dari 1
-                </div>
-                <div style="clear: both;"></div>
-
-                <div class="font-bold text-center mt-8 mb-6 leading-snug">
-                    <div>SUSUNAN KEANGGOTAAN</div>
-                    <div>Panitia Pengadaan <span id="outNamaPanitiaLampiran">[Nama Panitia]</span></div>
-                    <div>Dengan Nilai <span id="outBatasNilai">&le; Rp5.000.000.000,00</span></div>
-                </div>
-
-                <table class="a4-table" id="outTableAnggota">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%;">Jabatan Panitia<br>Pengadaan</th>
-                            <th style="width: 30%;">Nama</th>
-                            <th style="width: 20%;">Nomor Pegawai</th>
-                            <th style="width: 25%;">Entitas</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Terisi otomatis oleh Javascript -->
-                    </tbody>
-                </table>
-
-                <!-- FOOTER PAGE 3 -->
-                <div class="pdf-footer">
-                    <div class="pdf-footer-text">
-                        <b>PT Semen Indonesia (Persero) Tbk.</b><br>
-                        South Quarter Tower A Lt. 19-20 Jl. RA Kartini Kav. 8, Jakarta Selatan 12430, Indonesia <span class="red-text">p.</span> +62 21 5261174-5 <span class="red-text">f.</span> +62 21<br>
-                        5261176 <b>www.sig.id</b>
-                    </div>
-                    <div class="footer-logo-block">
-                        <div class="black-box"></div>
-                        <div class="red-box"></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
 
     <!-- ==================== LOGICS ==================== -->
     <script>
+        const addSuratForm = document.getElementById('addSuratForm');
         const container = document.getElementById('anggota-container');
         const btnTambah = document.getElementById('btnTambahAnggota');
 
@@ -422,6 +422,7 @@
             btn.addEventListener('click', function() {
                 this.closest('.row-anggota').remove();
                 updateDeleteButtons();
+                updatePreviewData();
             });
         });
 
@@ -456,8 +457,10 @@
             newRow.querySelector('.hapus-anggota').addEventListener('click', function() {
                 newRow.remove();
                 updateDeleteButtons();
+                updatePreviewData();
             });
             updateDeleteButtons();
+            updatePreviewData();
         });
         updateDeleteButtons();
 
@@ -480,9 +483,6 @@
         function valOrDefault(val, defaultStr = '........................................') {
             return val ? val : defaultStr;
         }
-
-        const formSection = document.getElementById('formSection');
-        const previewSection = document.getElementById('previewSection');
 
         function updatePreviewData() {
             const getVal = (id) => document.getElementById(id).value;
@@ -533,32 +533,20 @@
             });
         }
 
-        function showPreview() {
-            formSection.classList.add('hidden-mode');
-            previewSection.classList.remove('hidden-mode');
-            previewSection.classList.add('flex');
-            document.body.style.backgroundColor = '#333333';
-        }
+        // Update preview secara otomatis saat form diubah
+        addSuratForm.addEventListener('input', updatePreviewData);
+        addSuratForm.addEventListener('change', updatePreviewData);
 
-        document.getElementById('btnView').addEventListener('click', () => {
-            updatePreviewData();
-            showPreview();
-        });
-
-        document.getElementById('btnBackToForm').addEventListener('click', () => {
-            previewSection.classList.add('hidden-mode');
-            previewSection.classList.remove('flex');
-            formSection.classList.remove('hidden-mode');
-            document.body.style.backgroundColor = '';
-        });
+        // Inisialisasi preview saat halaman pertama kali dimuat
+        updatePreviewData();
 
         // ================= KUNCI UTAMA ANTI-MELAR & ANTI-BLANK =================
         function executeDownloadPDF() {
+            updatePreviewData();
             const elemenContainer = document.getElementById('dokumenA4Container');
             const previewSectionEl = document.getElementById('previewSection');
 
             // 1. Reset posisi scroll & hilangkan centering saat render
-            window.scrollTo(0, 0);
             if(previewSectionEl) {
                 previewSectionEl.scrollTop = 0;
                 previewSectionEl.scrollLeft = 0;
@@ -594,9 +582,7 @@
         }
 
         document.getElementById('btnGeneratePDF').addEventListener('click', () => {
-            updatePreviewData();
-            showPreview();
-            setTimeout(() => { executeDownloadPDF(); }, 500);
+            executeDownloadPDF();
         });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', () => {

@@ -15,20 +15,20 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #333333;
+            background-color: #F3F4F6;
         }
         
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #222; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #777; }
+        ::-webkit-scrollbar-track { background: #e5e7eb; }
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
         .a4-paper {
             font-family: 'Times New Roman', Times, serif;
             width: 210mm;
             min-height: 297mm;
             padding: 25mm 20mm;
-            margin: 20px auto;
+            margin: 0 auto;
             background: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             color: black;
@@ -63,191 +63,191 @@
         .a4-table .col-no { width: 5%; text-align: center; }
         .a4-table .col-nama { width: 45%; }
         .a4-table .col-nomor { width: 50%; }
-
-        .hidden-mode { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <!-- ==================== BAGIAN 1: FORM INPUT ==================== -->
-    <div id="formSection" class="flex justify-center py-10 px-4 bg-[#F3F4F6] min-h-screen transition-all">
-        <div class="w-full max-w-3xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-fit">
-            
-            <div class="text-center mb-8">
-                <h2 class="text-xl font-bold text-[#1e293b] leading-tight">BA SERAH TERIMA DOKUMEN<br>PERMINTAAN PEMILIHAN PENYEDIA</h2>
-                <p class="text-sm text-gray-500 mt-2">Isi formulir sesuai dengan dokumen yang tersedia.</p>
-            </div>
+    <!-- ==================== LAYOUT SPLIT: FORM DI KIRI, PREVIEW DI KANAN ==================== -->
+    <div class="flex flex-col lg:flex-row min-h-screen">
 
-            <form id="baForm" class="flex flex-col gap-5">
+        <!-- ==================== BAGIAN 1: FORM INPUT (KIRI) ==================== -->
+        <div id="formSection" class="w-full lg:w-1/2 flex justify-center py-8 px-4 bg-[#F3F4F6] lg:h-screen lg:overflow-y-auto">
+            <div class="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-fit">
                 
-                <div>
-                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Berita Acara</label>
-                    <input type="text" id="inNoBa" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <div class="text-center mb-8">
+                    <h2 class="text-xl font-bold text-[#1e293b] leading-tight">BA SERAH TERIMA DOKUMEN<br>PERMINTAAN PEMILIHAN PENYEDIA</h2>
+                    <p class="text-sm text-gray-500 mt-2">Isi formulir sesuai dengan dokumen yang tersedia.</p>
                 </div>
 
-                <div>
-                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Barang dan/atau Jasa</label>
-                    <input type="text" id="inNamaBarang" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor SKD/Surat Pembentukan Panitia Pengadaan</label>
-                    <input type="text" id="inNoSkd" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Pembentukan Panitia Pengadaan</label>
-                    <input type="date" id="inTglSkd" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </div>
-
-                <div class="mt-2">
-                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Dokumen yang Diserahterimakan</label>
-                    <div id="dokumenContainer" class="flex flex-col gap-2">
-                        <div class="flex gap-2 items-center row-dokumen">
-                            <input type="text" placeholder="Nama Dokumen" class="in-dok-nama flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <input type="text" placeholder="Nomor Dokumen" class="in-dok-nomor flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <input type="date" class="in-dok-tgl flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-dokumen" disabled>
-                                <i class="ph ph-x text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" id="btnTambahDokumen" class="w-full mt-3 border border-dashed border-blue-400 text-blue-500 hover:bg-blue-50 rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
-                        <i class="ph ph-plus"></i> Tambah Dokumen
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mt-2">
+                <form id="baForm" class="flex flex-col gap-5">
+                    
                     <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tempat</label>
-                        <input type="text" id="inTempat" placeholder="Contoh: Padang" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Berita Acara</label>
+                        <input type="text" id="inNoBa" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
+
                     <div>
-                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Berita Acara</label>
-                        <input type="date" id="inTglBa" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Barang dan/atau Jasa</label>
+                        <input type="text" id="inNamaBarang" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
-                </div>
 
-                <div class="mt-4">
-                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Pejabat</label>
-                    <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor SKD/Surat Pembentukan Panitia Pengadaan</label>
+                        <input type="text" id="inNoSkd" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Pembentukan Panitia Pengadaan</label>
+                        <input type="date" id="inTglSkd" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="block text-[14px] font-bold text-gray-800 mb-2">Dokumen yang Diserahterimakan</label>
+                        <div id="dokumenContainer" class="flex flex-col gap-2">
+                            <div class="flex gap-2 items-center row-dokumen">
+                                <input type="text" placeholder="Nama Dokumen" class="in-dok-nama flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" placeholder="Nomor Dokumen" class="in-dok-nomor flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="date" class="in-dok-tgl flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white w-[38px] h-[38px] rounded-md flex items-center justify-center transition-colors hapus-dokumen" disabled>
+                                    <i class="ph ph-x text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" id="btnTambahDokumen" class="w-full mt-3 border border-dashed border-blue-400 text-blue-500 hover:bg-blue-50 rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph ph-plus"></i> Tambah Dokumen
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-2">
                         <div>
-                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pejabat yang Berwenang</label>
-                            <input type="text" id="inNamaPejabat" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tempat</label>
+                            <input type="text" id="inTempat" placeholder="Contoh: Padang" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Jabatan</label>
-                            <input type="text" id="inJabatan" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Tanggal Berita Acara</label>
+                            <input type="date" id="inTglBa" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
                         </div>
                     </div>
-                </div>
 
-                <div class="mt-4 border-t border-gray-100 pt-4">
-                    <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Panitia Pengadaan</label>
-                    <div class="flex flex-col gap-4">
-                        <div>
-                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Ketua Panitia Pengadaan</label>
-                            <input type="text" id="inKetua" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
-                            <input type="text" id="inNamaPengadaan" placeholder="Otomatis mengikuti Nama Barang dan/atau Jasa" class="w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-500 cursor-not-allowed" readonly>
+                    <div class="mt-4">
+                        <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Pejabat</label>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pejabat yang Berwenang</label>
+                                <input type="text" id="inNamaPejabat" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Jabatan</label>
+                                <input type="text" id="inJabatan" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-[1fr_1fr_1fr] gap-3 mt-6 pt-4 border-t border-gray-100">
-                    <a href="procurement-template.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium flex items-center justify-center transition-colors">
-                        Kembali
-                    </a>
-                    <button type="button" id="btnView" class="bg-[#0ea5e9] hover:bg-blue-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors border border-blue-600 shadow-sm focus:ring-2 focus:ring-blue-400">
-                        <i class="ph-fill ph-eye text-lg"></i> View
-                    </button>
-                    <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
-                        <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+                    <div class="mt-4 border-t border-gray-100 pt-4">
+                        <label class="block text-[14px] font-bold text-gray-800 mb-2">Data Panitia Pengadaan</label>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Ketua Panitia Pengadaan</label>
+                                <input type="text" id="inKetua" placeholder="" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nama Pengadaan</label>
+                                <input type="text" id="inNamaPengadaan" placeholder="Otomatis mengikuti Nama Barang dan/atau Jasa" class="w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-500 cursor-not-allowed" readonly>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (A4) ==================== -->
-    <div id="previewSection" class="hidden-mode flex-col items-center pb-12 pt-4">
-        
-        <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-4 z-50">
-            <div class="flex items-center gap-3">
-                <button type="button" id="btnBackToForm" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="Kembali ke Editor">
-                    <i class="ph ph-arrow-left text-xl"></i>
-                </button>
-                <span class="text-sm font-medium truncate">Preview Dokumen: BA_Serah_Terima.pdf</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" id="btnDownloadToolbar" class="p-2 hover:bg-white/10 rounded transition-colors" title="Download PDF">
-                    <i class="ph ph-download-simple text-xl"></i>
-                </button>
-                <button type="button" class="p-2 hover:bg-white/10 rounded transition-colors"><i class="ph ph-printer text-xl"></i></button>
+                    <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-gray-100">
+                        <a href="procurement-template.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium flex items-center justify-center transition-colors">
+                            Kembali
+                        </a>
+                        <button type="button" id="btnGeneratePDF" class="bg-[#10b981] hover:bg-emerald-500 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors">
+                            <i class="ph-fill ph-file-pdf text-lg"></i> Generate PDF
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <div class="a4-paper" id="dokumenA4">
+        <!-- ==================== BAGIAN 2: DOCUMENT PREVIEW (A4 DI KANAN) ==================== -->
+        <div id="previewSection" class="w-full lg:w-1/2 flex flex-col items-center bg-[#333333] pb-12 pt-4 px-4 lg:h-screen lg:overflow-y-auto">
             
-            <!-- Tambahan Logo SIG -->
-            <div style="margin-bottom: 10px; margin-left: -5mm;">
-                    <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+            <div class="w-full max-w-[210mm] flex justify-between items-center mb-4 bg-[#2a2a2a] p-3 rounded-lg text-white shadow-md sticky top-0 z-50">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium truncate">Preview Dokumen: BA_Serah_Terima.pdf</span>
                 </div>
-
-            <h3>BERITA ACARA SERAH TERIMA</h3>
-            <h3 class="mb-4">DOKUMEN PERMINTAAN PEMILIHAN PENYEDIA</h3>
-            <p class="text-center mb-6">No. <span id="outNoBa">........................................</span></p>
-
-            <p class="text-justify mb-4">
-                Berdasarkan Permintaan Pengadaan <span id="outNamaBarang">........................................</span> dan Surat Pembentukan Panitia Pengadaan no. <span id="outNoSkd">........................................</span> tanggal <span id="outTglSkd">..............................</span>, dengan ini telah dilakukan serah terima dokumen Permintaan Pengadaan berupa:
-            </p>
-
-            <table class="a4-table" id="outTableDokumen">
-                <thead>
-                    <tr>
-                        <th class="col-no">No</th>
-                        <th class="col-nama">Nama Dokumen</th>
-                        <th class="col-nomor">Nomor dan Tanggal Dokumen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Baris tabel generate otomatis -->
-                </tbody>
-            </table>
-
-            <p class="text-justify mt-4 mb-8">
-                Dengan ditandatanganinya Berita Acara ini, maka dokumen Permintaan Pemilihan Penyedia dinyatakan lengkap dan dapat dilanjutkan ke proses berikutnya sesuai Pedoman Pengadaan Barang dan/atau Jasa nomor M/SIG/PRO/002.
-            </p>
-
-            <div class="flex justify-between mt-12">
-                <!-- Sisi Kiri -->
-                <div class="w-1/2">
-                    <p><span id="outTempat">......................</span>, <span id="outTglBa">......................</span></p>
-                    <p>Diserahkan oleh :</p>
-                    <p>Fungsi Pengadaan</p>
-                    <div class="h-20"></div> 
-                    <p class="font-bold underline" id="outNamaPejabat">........................................</p>
-                    <p id="outJabatan"></p> <!-- Jabatan diletakkan di bawah nama -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnDownloadToolbar" class="p-2 hover:bg-white/10 rounded transition-colors" title="Download PDF">
+                        <i class="ph ph-download-simple text-xl"></i>
+                    </button>
+                    <button type="button" class="p-2 hover:bg-white/10 rounded transition-colors"><i class="ph ph-printer text-xl"></i></button>
                 </div>
-                
-                <!-- Sisi Kanan -->
-                <div class="w-1/2 pl-12">
-                    <p>&nbsp;</p> 
-                    <p>Diterima Oleh :</p>
-                    <p>Panitia Pengadaan <span id="outNamaPengadaanKanan">................................</span></p>
-                    <div class="h-20"></div>
-                    <p class="font-bold underline" id="outKetua">........................................</p>
-                    <p>Ketua Panitia</p>
+            </div>
+
+            <div class="w-full overflow-x-auto flex justify-center">
+                <div class="a4-paper shrink-0" id="dokumenA4">
+                    
+                    <!-- Tambahan Logo SIG -->
+                    <div style="margin-bottom: 10px; margin-left: -5mm;">
+                        <img src="./logo/logosig.png" alt="Logo SIG" style="height: 70px; width: auto;">
+                    </div>
+
+                    <h3>BERITA ACARA SERAH TERIMA</h3>
+                    <h3 class="mb-4">DOKUMEN PERMINTAAN PEMILIHAN PENYEDIA</h3>
+                    <p class="text-center mb-6">No. <span id="outNoBa">........................................</span></p>
+
+                    <p class="text-justify mb-4">
+                        Berdasarkan Permintaan Pengadaan <span id="outNamaBarang">........................................</span> dan Surat Pembentukan Panitia Pengadaan no. <span id="outNoSkd">........................................</span> tanggal <span id="outTglSkd">..............................</span>, dengan ini telah dilakukan serah terima dokumen Permintaan Pengadaan berupa:
+                    </p>
+
+                    <table class="a4-table" id="outTableDokumen">
+                        <thead>
+                            <tr>
+                                <th class="col-no">No</th>
+                                <th class="col-nama">Nama Dokumen</th>
+                                <th class="col-nomor">Nomor dan Tanggal Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Baris tabel generate otomatis -->
+                        </tbody>
+                    </table>
+
+                    <p class="text-justify mt-4 mb-8">
+                        Dengan ditandatanganinya Berita Acara ini, maka dokumen Permintaan Pemilihan Penyedia dinyatakan lengkap dan dapat dilanjutkan ke proses berikutnya sesuai Pedoman Pengadaan Barang dan/atau Jasa nomor M/SIG/PRO/002.
+                    </p>
+
+                    <div class="flex justify-between mt-12">
+                        <!-- Sisi Kiri -->
+                        <div class="w-1/2">
+                            <p><span id="outTempat">......................</span>, <span id="outTglBa">......................</span></p>
+                            <p>Diserahkan oleh :</p>
+                            <p>Fungsi Pengadaan</p>
+                            <div class="h-20"></div> 
+                            <p class="font-bold underline" id="outNamaPejabat">........................................</p>
+                            <p id="outJabatan"></p> <!-- Jabatan diletakkan di bawah nama -->
+                        </div>
+                        
+                        <!-- Sisi Kanan -->
+                        <div class="w-1/2 pl-12">
+                            <p>&nbsp;</p> 
+                            <p>Diterima Oleh :</p>
+                            <p>Panitia Pengadaan <span id="outNamaPengadaanKanan">................................</span></p>
+                            <div class="h-20"></div>
+                            <p class="font-bold underline" id="outKetua">........................................</p>
+                            <p>Ketua Panitia</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- ==================== LOGICS ==================== -->
     <script>
-        // --- 1. SINKRONISASI FORM ---
+        // --- 1. SINKRONISASI FORM & LIVE PREVIEW ---
+        const baForm = document.getElementById('baForm');
         const inputBarang = document.getElementById('inNamaBarang');
         const inputPengadaan = document.getElementById('inNamaPengadaan');
         const container = document.getElementById('dokumenContainer');
@@ -290,16 +290,15 @@
             newRow.querySelector('.hapus-dokumen').addEventListener('click', function() {
                 newRow.remove();
                 updateDeleteButtons();
+                updatePreviewData();
             });
             updateDeleteButtons();
+            updatePreviewData();
         });
         updateDeleteButtons();
 
 
         // --- 2. UPDATE DATA KE VIEW ---
-        const formSection = document.getElementById('formSection');
-        const previewSection = document.getElementById('previewSection');
-
         function formatDateID(dateString) {
             if (!dateString) return null;
             const date = new Date(dateString);
@@ -360,27 +359,16 @@
             }
         }
 
-        function showPreview() {
-            formSection.classList.add('hidden-mode');
-            previewSection.classList.remove('hidden-mode');
-            previewSection.classList.add('flex');
-            document.body.style.backgroundColor = '#333333';
-        }
+        // Update preview otomatis saat ada perubahan di form
+        baForm.addEventListener('input', updatePreviewData);
+        baForm.addEventListener('change', updatePreviewData);
 
-        document.getElementById('btnView').addEventListener('click', () => {
-            updatePreviewData();
-            showPreview();
-        });
-
-        document.getElementById('btnBackToForm').addEventListener('click', () => {
-            previewSection.classList.add('hidden-mode');
-            previewSection.classList.remove('flex');
-            formSection.classList.remove('hidden-mode');
-            document.body.style.backgroundColor = ''; 
-        });
+        // Inisialisasi preview saat halaman pertama kali dibuka
+        updatePreviewData();
 
         // --- 3. GENERATE & DOWNLOAD PDF LOGIC ---
         function executeDownloadPDF() {
+            updatePreviewData();
             const elemenDokumen = document.getElementById('dokumenA4');
             
             const opsiPDF = {
@@ -400,8 +388,6 @@
             elemenDokumen.style.boxShadow = 'none';
             elemenDokumen.style.margin = '0';
 
-            window.scrollTo(0, 0);
-
             html2pdf().set(opsiPDF).from(elemenDokumen).save().then(() => {
                 elemenDokumen.style.boxShadow = boxshadowAsli;
                 elemenDokumen.style.margin = marginAsli;
@@ -409,11 +395,7 @@
         }
 
         document.getElementById('btnGeneratePDF').addEventListener('click', () => {
-            updatePreviewData();
-            showPreview();
-            setTimeout(() => {
-                executeDownloadPDF();
-            }, 500); 
+            executeDownloadPDF();
         });
 
         document.getElementById('btnDownloadToolbar').addEventListener('click', () => {
